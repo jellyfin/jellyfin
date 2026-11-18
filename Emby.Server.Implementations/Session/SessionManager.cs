@@ -61,6 +61,7 @@ namespace Emby.Server.Implementations.Session
         private readonly IServerApplicationHost _appHost;
         private readonly IDeviceManager _deviceManager;
         private readonly IVideoPlaybackCoordinator _videoPlaybackCoordinator;
+        private readonly ILiveStreamPlaybackManager _liveStreamPlaybackManager;
         private readonly CancellationTokenRegistration _shutdownCallback;
         private readonly ConcurrentDictionary<string, SessionInfo> _activeConnections
             = new(StringComparer.OrdinalIgnoreCase);
@@ -73,6 +74,59 @@ namespace Emby.Server.Implementations.Session
 
         private DtoOptions _itemInfoDtoOptions;
         private bool _disposed;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SessionManager"/> class.
+        /// </summary>
+        /// <param name="logger">Instance of <see cref="ILogger{SessionManager}"/> interface.</param>
+        /// <param name="eventManager">Instance of <see cref="IEventManager"/> interface.</param>
+        /// <param name="userDataManager">Instance of <see cref="IUserDataManager"/> interface.</param>
+        /// <param name="serverConfigurationManager">Instance of <see cref="IServerConfigurationManager"/> interface.</param>
+        /// <param name="libraryManager">Instance of <see cref="ILibraryManager"/> interface.</param>
+        /// <param name="userManager">Instance of <see cref="IUserManager"/> interface.</param>
+        /// <param name="musicManager">Instance of <see cref="IMusicManager"/> interface.</param>
+        /// <param name="dtoService">Instance of <see cref="IDtoService"/> interface.</param>
+        /// <param name="imageProcessor">Instance of <see cref="IImageProcessor"/> interface.</param>
+        /// <param name="appHost">Instance of <see cref="IServerApplicationHost"/> interface.</param>
+        /// <param name="deviceManager">Instance of <see cref="IDeviceManager"/> interface.</param>
+        /// <param name="mediaSourceManager">Instance of <see cref="IMediaSourceManager"/> interface.</param>
+        /// <param name="hostApplicationLifetime">Instance of <see cref="IHostApplicationLifetime"/> interface.</param>
+        /// <remarks>
+        /// Preserves legacy construction. Production dependency injection uses the
+        /// overload accepting the shared video playback coordinator. Manually created
+        /// instances do not participate in that shared registry unless it is supplied.
+        /// </remarks>
+        public SessionManager(
+            ILogger<SessionManager> logger,
+            IEventManager eventManager,
+            IUserDataManager userDataManager,
+            IServerConfigurationManager serverConfigurationManager,
+            ILibraryManager libraryManager,
+            IUserManager userManager,
+            IMusicManager musicManager,
+            IDtoService dtoService,
+            IImageProcessor imageProcessor,
+            IServerApplicationHost appHost,
+            IDeviceManager deviceManager,
+            IMediaSourceManager mediaSourceManager,
+            IHostApplicationLifetime hostApplicationLifetime)
+            : this(
+                logger,
+                eventManager,
+                userDataManager,
+                serverConfigurationManager,
+                libraryManager,
+                userManager,
+                musicManager,
+                dtoService,
+                imageProcessor,
+                appHost,
+                deviceManager,
+                mediaSourceManager,
+                hostApplicationLifetime,
+                new VideoPlaybackCoordinator(TimeProvider.System, TimeSpan.FromMinutes(5)))
+        {
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SessionManager"/> class.
@@ -106,6 +160,59 @@ namespace Emby.Server.Implementations.Session
             IMediaSourceManager mediaSourceManager,
             IHostApplicationLifetime hostApplicationLifetime,
             IVideoPlaybackCoordinator videoPlaybackCoordinator)
+            : this(
+                logger,
+                eventManager,
+                userDataManager,
+                serverConfigurationManager,
+                libraryManager,
+                userManager,
+                musicManager,
+                dtoService,
+                imageProcessor,
+                appHost,
+                deviceManager,
+                mediaSourceManager,
+                hostApplicationLifetime,
+                videoPlaybackCoordinator,
+                null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SessionManager"/> class with shared playback registries.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="eventManager">The event manager.</param>
+        /// <param name="userDataManager">The user data manager.</param>
+        /// <param name="serverConfigurationManager">The server configuration.</param>
+        /// <param name="libraryManager">The library manager.</param>
+        /// <param name="userManager">The user manager.</param>
+        /// <param name="musicManager">The music manager.</param>
+        /// <param name="dtoService">The DTO service.</param>
+        /// <param name="imageProcessor">The image processor.</param>
+        /// <param name="appHost">The server host.</param>
+        /// <param name="deviceManager">The device manager.</param>
+        /// <param name="mediaSourceManager">The media source manager.</param>
+        /// <param name="hostApplicationLifetime">The host lifetime.</param>
+        /// <param name="videoPlaybackCoordinator">The shared video admission registry.</param>
+        /// <param name="liveStreamPlaybackManager">The shared source ownership registry.</param>
+        public SessionManager(
+            ILogger<SessionManager> logger,
+            IEventManager eventManager,
+            IUserDataManager userDataManager,
+            IServerConfigurationManager serverConfigurationManager,
+            ILibraryManager libraryManager,
+            IUserManager userManager,
+            IMusicManager musicManager,
+            IDtoService dtoService,
+            IImageProcessor imageProcessor,
+            IServerApplicationHost appHost,
+            IDeviceManager deviceManager,
+            IMediaSourceManager mediaSourceManager,
+            IHostApplicationLifetime hostApplicationLifetime,
+            IVideoPlaybackCoordinator videoPlaybackCoordinator,
+            ILiveStreamPlaybackManager liveStreamPlaybackManager)
         {
             _logger = logger;
             _eventManager = eventManager;
@@ -120,6 +227,7 @@ namespace Emby.Server.Implementations.Session
             _deviceManager = deviceManager;
             _mediaSourceManager = mediaSourceManager;
             _videoPlaybackCoordinator = videoPlaybackCoordinator;
+            _liveStreamPlaybackManager = liveStreamPlaybackManager;
             _shutdownCallback = hostApplicationLifetime.ApplicationStopping.Register(OnApplicationStopping);
 
             _deviceManager.DeviceOptionsUpdated += OnDeviceManagerDeviceOptionsUpdated;
@@ -328,6 +436,12 @@ namespace Emby.Server.Implementations.Session
         /// <inheritdoc />
         public async Task CloseLiveStreamIfNeededAsync(string liveStreamId, string sessionIdOrPlaySessionId)
         {
+            if (_liveStreamPlaybackManager is not null
+                && await _liveStreamPlaybackManager.CloseSessionAsync(liveStreamId, sessionIdOrPlaySessionId).ConfigureAwait(false))
+            {
+                return;
+            }
+
             bool liveStreamNeedsToBeClosed = false;
 
             if (_activeLiveStreamSessions.TryGetValue(liveStreamId, out var activeSessionMappings))
@@ -760,6 +874,10 @@ namespace Emby.Server.Implementations.Session
             return libraryItem;
         }
 
+        /// <inheritdoc />
+        public Task OnPlaybackStart(PlaybackStartInfo info)
+            => OnPlaybackStart(info, null);
+
         /// <summary>
         /// Used to report that playback has started for an item.
         /// </summary>
@@ -767,7 +885,11 @@ namespace Emby.Server.Implementations.Session
         /// <param name="playbackOwnerId">The authenticated, token-bound playback owner, if available.</param>
         /// <returns>Task.</returns>
         /// <exception cref="ArgumentNullException"><c>info</c> is <c>null</c>.</exception>
-        public async Task OnPlaybackStart(PlaybackStartInfo info, string playbackOwnerId = null)
+        public Task OnPlaybackStart(PlaybackStartInfo info, string playbackOwnerId)
+            => OnPlaybackStart(info, playbackOwnerId, true);
+
+        /// <inheritdoc />
+        public async Task OnPlaybackStart(PlaybackStartInfo info, string playbackOwnerId, bool isVideoPlayback)
         {
             CheckDisposed();
 
@@ -775,7 +897,11 @@ namespace Emby.Server.Implementations.Session
 
             var session = GetSession(info.SessionId);
 
-            var playbackStatus = ResolveVideoPlayback(session, info.ItemId, info.PlaySessionId, playbackOwnerId, out var playback, out var playSessionId);
+            var playback = default(VideoPlaybackContext);
+            string playSessionId = null;
+            var playbackStatus = isVideoPlayback
+                ? ResolveVideoPlayback(session, info.ItemId, info.PlaySessionId, playbackOwnerId, out playback, out playSessionId)
+                : VideoPlaybackStatus.NotFound;
             if (playbackStatus is not (VideoPlaybackStatus.Success or VideoPlaybackStatus.NotFound))
             {
                 return;
@@ -879,10 +1005,22 @@ namespace Emby.Server.Implementations.Session
         }
 
         /// <inheritdoc />
-        public Task OnPlaybackProgress(PlaybackProgressInfo info, string playbackOwnerId = null)
+        public Task OnPlaybackProgress(PlaybackProgressInfo info)
+            => OnPlaybackProgress(info, false, null);
+
+        /// <inheritdoc />
+        public Task OnPlaybackProgress(PlaybackProgressInfo info, bool isAutomated)
+            => OnPlaybackProgress(info, isAutomated, null);
+
+        /// <inheritdoc />
+        public Task OnPlaybackProgress(PlaybackProgressInfo info, string playbackOwnerId)
         {
             return OnPlaybackProgress(info, false, playbackOwnerId);
         }
+
+        /// <inheritdoc />
+        public Task OnPlaybackProgress(PlaybackProgressInfo info, string playbackOwnerId, bool isVideoPlayback)
+            => OnPlaybackProgress(info, false, playbackOwnerId, isVideoPlayback);
 
         private void UpdateLiveStreamActiveSessionMappings(string liveStreamId, string sessionId, string playSessionId)
         {
@@ -917,7 +1055,11 @@ namespace Emby.Server.Implementations.Session
         /// <param name="isAutomated">Whether this is an automated update.</param>
         /// <param name="playbackOwnerId">The authenticated, token-bound playback owner, if available.</param>
         /// <returns>Task.</returns>
-        public async Task OnPlaybackProgress(PlaybackProgressInfo info, bool isAutomated, string playbackOwnerId = null)
+        public Task OnPlaybackProgress(PlaybackProgressInfo info, bool isAutomated, string playbackOwnerId)
+            => OnPlaybackProgress(info, isAutomated, playbackOwnerId, true);
+
+        /// <inheritdoc />
+        public async Task OnPlaybackProgress(PlaybackProgressInfo info, bool isAutomated, string playbackOwnerId, bool isVideoPlayback)
         {
             CheckDisposed();
 
@@ -931,7 +1073,7 @@ namespace Emby.Server.Implementations.Session
 
             var playback = default(VideoPlaybackContext);
             string playSessionId = null;
-            var playbackStatus = isAutomated
+            var playbackStatus = isAutomated || !isVideoPlayback
                 ? VideoPlaybackStatus.NotFound
                 : ResolveVideoPlayback(session, info.ItemId, info.PlaySessionId, playbackOwnerId, out playback, out playSessionId);
             if (playbackStatus is not (VideoPlaybackStatus.Success or VideoPlaybackStatus.NotFound))
@@ -1086,6 +1228,10 @@ namespace Emby.Server.Implementations.Session
             return changed;
         }
 
+        /// <inheritdoc />
+        public Task OnPlaybackStopped(PlaybackStopInfo info)
+            => OnPlaybackStopped(info, null);
+
         /// <summary>
         /// Used to report that playback has ended for an item.
         /// </summary>
@@ -1094,7 +1240,11 @@ namespace Emby.Server.Implementations.Session
         /// <returns>Task.</returns>
         /// <exception cref="ArgumentNullException"><c>info</c> is <c>null</c>.</exception>
         /// <exception cref="ArgumentOutOfRangeException"><c>info.PositionTicks</c> is <c>null</c> or negative.</exception>
-        public async Task OnPlaybackStopped(PlaybackStopInfo info, string playbackOwnerId = null)
+        public Task OnPlaybackStopped(PlaybackStopInfo info, string playbackOwnerId)
+            => OnPlaybackStopped(info, playbackOwnerId, true);
+
+        /// <inheritdoc />
+        public async Task OnPlaybackStopped(PlaybackStopInfo info, string playbackOwnerId, bool isVideoPlayback)
         {
             CheckDisposed();
 
@@ -1102,7 +1252,11 @@ namespace Emby.Server.Implementations.Session
 
             var session = GetSession(info.SessionId);
 
-            var playbackStatus = ResolveVideoPlayback(session, info.ItemId, info.PlaySessionId, playbackOwnerId, out var playback, out var playSessionId);
+            var playback = default(VideoPlaybackContext);
+            string playSessionId = null;
+            var playbackStatus = isVideoPlayback
+                ? ResolveVideoPlayback(session, info.ItemId, info.PlaySessionId, playbackOwnerId, out playback, out playSessionId)
+                : VideoPlaybackStatus.NotFound;
             if (playbackStatus is not (VideoPlaybackStatus.Success or VideoPlaybackStatus.NotFound))
             {
                 return;
@@ -1208,7 +1362,13 @@ namespace Emby.Server.Implementations.Session
 
             if (!string.IsNullOrEmpty(info.LiveStreamId))
             {
-                await CloseLiveStreamIfNeededAsync(info.LiveStreamId, session.Id).ConfigureAwait(false);
+                var handled = playbackStatus == VideoPlaybackStatus.Success
+                    && _liveStreamPlaybackManager is not null
+                    && await _liveStreamPlaybackManager.ClosePlaybackAsync(info.LiveStreamId, playback).ConfigureAwait(false);
+                if (!handled)
+                {
+                    await CloseLiveStreamIfNeededAsync(info.LiveStreamId, session.Id).ConfigureAwait(false);
+                }
             }
 
             var eventArgs = new PlaybackStopEventArgs

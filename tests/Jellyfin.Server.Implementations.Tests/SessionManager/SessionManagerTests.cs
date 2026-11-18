@@ -341,6 +341,72 @@ public class SessionManagerTests
     }
 
     [Fact]
+    public async Task ClassifiedAudioReports_ContinueAfterVideoMetadataExpiresWithoutTakingQuota()
+    {
+        var clock = new ManualTimeProvider();
+        var coordinator = new VideoPlaybackCoordinator(clock, TimeSpan.FromMinutes(2));
+        var sources = new Mock<IMediaSourceManager>();
+        sources.Setup(source => source.CloseLiveStream("audio-live")).Returns(Task.CompletedTask);
+        var user = new User("user", "default", "default");
+        await using var manager = CreateSessionManager(coordinator, sources.Object, user);
+        var session = await LogSessionActivity(manager, user);
+        var itemId = Guid.NewGuid();
+        var audio = new VideoPlaybackContext(user.Id, PlaybackOwnerId, itemId, "audio");
+        Assert.Equal(VideoPlaybackStatus.Success, coordinator.RegisterPlaySession(audio, "audio-encoding"));
+        clock.Advance(TimeSpan.FromMinutes(3));
+        coordinator.RemoveExpired();
+        var report = CreatePlaybackInfo(session.Id, itemId, "audio-encoding");
+        report.Item.MediaType = MediaType.Audio;
+        report.LiveStreamId = "audio-live";
+
+        await manager.OnPlaybackStart(report, PlaybackOwnerId, false);
+        Assert.Same(report.Item, session.NowPlayingItem);
+        await manager.OnPlaybackProgress(report, false, PlaybackOwnerId, false);
+        var video = audio with { PlaybackInstanceId = "video" };
+        Assert.Equal(VideoPlaybackStatus.Success, coordinator.RegisterPlaySession(video, "video-encoding"));
+        using var activeVideo = AcquireVideo(coordinator, video, "video-encoding");
+        await manager.OnPlaybackStopped(
+            new PlaybackStopInfo { SessionId = session.Id, ItemId = itemId, PlaySessionId = "audio-encoding", LiveStreamId = "audio-live" },
+            PlaybackOwnerId,
+            false);
+
+        Assert.Null(session.NowPlayingItem);
+        sources.Verify(source => source.CloseLiveStream("audio-live"), Times.Once);
+        Assert.Equal(VideoPlaybackStatus.Expired, coordinator.ResolvePlaySession(user.Id, PlaybackOwnerId, itemId, "audio-encoding", out _));
+        Assert.Equal(VideoPlaybackStatus.Success, coordinator.ReportActivity(video, "video-encoding"));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ManagedSourceStop_UsesLogicalCloseAndOnlyFallsBackWhenUnhandled(bool managed)
+    {
+        var coordinator = new VideoPlaybackCoordinator(new ManualTimeProvider(), TimeSpan.FromMinutes(10));
+        var sources = new Mock<IMediaSourceManager>();
+        sources.Setup(source => source.CloseLiveStream("live")).Returns(Task.CompletedTask);
+        var ownership = new Mock<ILiveStreamPlaybackManager>();
+        ownership.Setup(source => source.ClosePlaybackAsync("live", It.IsAny<VideoPlaybackContext>())).ReturnsAsync(managed);
+        ownership.Setup(source => source.CloseSessionAsync("live", It.IsAny<string>())).ReturnsAsync(managed);
+        var user = new User("user", "default", "default");
+        await using var manager = CreateSessionManager(coordinator, sources.Object, ownership.Object, user);
+        var session = await LogSessionActivity(manager, user);
+        var itemId = Guid.NewGuid();
+        var playback = new VideoPlaybackContext(user.Id, PlaybackOwnerId, itemId, "playback");
+        Assert.Equal(VideoPlaybackStatus.Success, coordinator.RegisterPlaySession(playback, "encoding"));
+        using (var request = AcquireVideo(coordinator, playback, "encoding"))
+        {
+            request.Acknowledge();
+        }
+
+        await manager.OnPlaybackStopped(
+            new PlaybackStopInfo { SessionId = session.Id, ItemId = itemId, PlaySessionId = "encoding", LiveStreamId = "live" },
+            PlaybackOwnerId);
+
+        ownership.Verify(source => source.ClosePlaybackAsync("live", playback), Times.Once);
+        sources.Verify(source => source.CloseLiveStream("live"), managed ? Times.Never() : Times.Once());
+    }
+
+    [Fact]
     public async Task OnPlaybackStopped_MetadataOnlyCancellationCleansItsLiveInput()
     {
         var coordinator = new VideoPlaybackCoordinator(new ManualTimeProvider(), TimeSpan.FromMinutes(10));
@@ -522,6 +588,9 @@ public class SessionManagerTests
         => CreateSessionManager(coordinator, Mock.Of<IMediaSourceManager>(), users);
 
     private static Emby.Server.Implementations.Session.SessionManager CreateSessionManager(IVideoPlaybackCoordinator coordinator, IMediaSourceManager mediaSourceManager, params User[] users)
+        => CreateSessionManager(coordinator, mediaSourceManager, null, users);
+
+    private static Emby.Server.Implementations.Session.SessionManager CreateSessionManager(IVideoPlaybackCoordinator coordinator, IMediaSourceManager mediaSourceManager, ILiveStreamPlaybackManager? liveStreams, params User[] users)
     {
         var userManager = new Mock<IUserManager>();
         foreach (var user in users)
@@ -543,13 +612,20 @@ public class SessionManagerTests
             Mock.Of<IDeviceManager>(),
             mediaSourceManager,
             Mock.Of<IHostApplicationLifetime>(),
-            coordinator);
+            coordinator,
+            liveStreams);
     }
 
     // All sessions are logged with the same client and device id on purpose, those values are taken
     // from the request headers and are not bound to the access token of the calling user.
     private static Task<SessionInfo> LogSessionActivity(ISessionManager sessionManager, User user)
         => sessionManager.LogSessionActivity("Jellyfin Web", "1.0.0", "victim-tv-01", "device_name", "127.0.0.1", user);
+
+    private static IVideoPlaybackRequest AcquireVideo(VideoPlaybackCoordinator coordinator, VideoPlaybackContext playback, string alias)
+    {
+        Assert.Equal(VideoPlaybackStatus.Success, coordinator.TryAcquire(playback, alias, 1, out var request));
+        return Assert.IsAssignableFrom<IVideoPlaybackRequest>(request);
+    }
 
     private sealed class ManualTimeProvider : TimeProvider
     {

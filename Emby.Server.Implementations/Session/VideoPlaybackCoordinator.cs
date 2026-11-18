@@ -9,6 +9,7 @@ namespace Emby.Server.Implementations.Session;
 /// </summary>
 public sealed class VideoPlaybackCoordinator : IVideoPlaybackCoordinator
 {
+    private static readonly IReadOnlySet<string> _noProtectedAliases = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
     private readonly object _gate = new();
     private readonly TimeProvider _timeProvider;
     private readonly TimeSpan _inactivityTimeout;
@@ -66,7 +67,7 @@ public sealed class VideoPlaybackCoordinator : IVideoPlaybackCoordinator
                 _playbacks.Add(key, entry);
             }
 
-            var session = new PlaySession(entry, ++entry.LastRegistration, playSessionId);
+            var session = new PlaySession(entry, ++entry.LastRegistration, playSessionId, now);
             _playSessions.Add(playSessionId, session);
             entry.LastRegisteredSession = session;
             entry.LastActivity = now;
@@ -100,7 +101,9 @@ public sealed class VideoPlaybackCoordinator : IVideoPlaybackCoordinator
                 return VideoPlaybackStatus.OwnershipMismatch;
             }
 
-            var status = ResolveStatus(session.Playback, _timeProvider.GetTimestamp());
+            var status = session.RetiredAt.HasValue
+                ? VideoPlaybackStatus.Expired
+                : ResolveStatus(session.Playback, _timeProvider.GetTimestamp());
             if (status == VideoPlaybackStatus.Success)
             {
                 playback = context;
@@ -130,7 +133,16 @@ public sealed class VideoPlaybackCoordinator : IVideoPlaybackCoordinator
             var status = ResolveStatus(entry, _timeProvider.GetTimestamp());
             if (status == VideoPlaybackStatus.Success)
             {
-                playSessionId = (entry.LastAcknowledgedSession ?? entry.LastRegisteredSession)!.Id;
+                var current = entry.LastAcknowledgedSession;
+                foreach (var active in entry.ActiveRegistrations.Values)
+                {
+                    if (current is null || active.Session.Registration > current.Registration)
+                    {
+                        current = active.Session;
+                    }
+                }
+
+                playSessionId = (current ?? entry.LastRegisteredSession)!.Id;
             }
 
             return status;
@@ -170,7 +182,9 @@ public sealed class VideoPlaybackCoordinator : IVideoPlaybackCoordinator
             }
 
             entry.LastActivity = now;
-            entry.ActiveRegistrations[session.Registration] = entry.ActiveRegistrations.GetValueOrDefault(session.Registration) + 1;
+            session.LastActivity = now;
+            var references = entry.ActiveRegistrations.GetValueOrDefault(session.Registration).Count;
+            entry.ActiveRegistrations[session.Registration] = (session, references + 1);
             session.HasAcquired = true;
             request = new PlaybackRequest(this, session);
             return VideoPlaybackStatus.Success;
@@ -247,7 +261,15 @@ public sealed class VideoPlaybackCoordinator : IVideoPlaybackCoordinator
 
     /// <inheritdoc />
     public int RemoveExpired()
+        => RemoveExpired(_noProtectedAliases);
+
+    /// <inheritdoc />
+    public int RemoveExpired(IReadOnlySet<string> protectedAliases)
     {
+        ArgumentNullException.ThrowIfNull(protectedAliases);
+        var protectedSnapshot = protectedAliases.Count == 0
+            ? null
+            : new HashSet<string>(protectedAliases, StringComparer.OrdinalIgnoreCase);
         lock (_gate)
         {
             var now = _timeProvider.GetTimestamp();
@@ -268,10 +290,25 @@ public sealed class VideoPlaybackCoordinator : IVideoPlaybackCoordinator
             var retiredSessions = new List<string>();
             foreach (var pair in _playSessions)
             {
-                if (pair.Value.Playback.RetiredAt is long retiredAt
+                var alias = pair.Value;
+                if (protectedSnapshot?.Contains(pair.Key) == true
+                    || alias.Playback.ActiveRegistrations.ContainsKey(alias.Registration))
+                {
+                    continue;
+                }
+
+                var retired = alias.Playback.RetiredAt ?? alias.RetiredAt;
+                if (retired is long retiredAt
                     && _timeProvider.GetElapsedTime(retiredAt, now) >= _inactivityTimeout)
                 {
                     retiredSessions.Add(pair.Key);
+                }
+                else if (retired is null
+                    && !ReferenceEquals(alias, alias.Playback.LastAcknowledgedSession)
+                    && !ReferenceEquals(alias, alias.Playback.LastRegisteredSession)
+                    && _timeProvider.GetElapsedTime(alias.LastActivity, now) >= _inactivityTimeout)
+                {
+                    alias.RetiredAt = now;
                 }
             }
 
@@ -310,6 +347,7 @@ public sealed class VideoPlaybackCoordinator : IVideoPlaybackCoordinator
         }
 
         session.Playback.LastActivity = timestamp;
+        session.LastActivity = timestamp;
     }
 
     private bool IsExpired(Playback entry, long now)
@@ -327,6 +365,11 @@ public sealed class VideoPlaybackCoordinator : IVideoPlaybackCoordinator
         if (!Matches(entry.Context, playback))
         {
             return VideoPlaybackStatus.OwnershipMismatch;
+        }
+
+        if (session.RetiredAt.HasValue)
+        {
+            return VideoPlaybackStatus.Expired;
         }
 
         return ResolveStatus(entry, now);
@@ -398,7 +441,8 @@ public sealed class VideoPlaybackCoordinator : IVideoPlaybackCoordinator
             }
 
             var registrations = request.Playback.ActiveRegistrations;
-            registrations[request.PlaySession.Registration]++;
+            var references = registrations[request.PlaySession.Registration].Count;
+            registrations[request.PlaySession.Registration] = (request.PlaySession, references + 1);
             return new PlaybackRequest(this, request.PlaySession);
         }
     }
@@ -415,17 +459,18 @@ public sealed class VideoPlaybackCoordinator : IVideoPlaybackCoordinator
             request.Released = true;
             var entry = request.Playback;
             var registration = request.PlaySession.Registration;
-            var references = entry.ActiveRegistrations[registration] - 1;
+            var references = entry.ActiveRegistrations[registration].Count - 1;
             if (references == 0)
             {
                 entry.ActiveRegistrations.Remove(registration);
             }
             else
             {
-                entry.ActiveRegistrations[registration] = references;
+                entry.ActiveRegistrations[registration] = (request.PlaySession, references);
             }
 
             entry.LastActivity = _timeProvider.GetTimestamp();
+            request.PlaySession.LastActivity = entry.LastActivity;
             if (entry.ActiveRegistrations.Count == 0)
             {
                 if (entry.Status == VideoPlaybackStatus.Stopped)
@@ -458,15 +503,19 @@ public sealed class VideoPlaybackCoordinator : IVideoPlaybackCoordinator
 
         public PlaySession? LastRegisteredSession { get; set; }
 
-        public Dictionary<long, int> ActiveRegistrations { get; } = new();
+        public Dictionary<long, (PlaySession Session, int Count)> ActiveRegistrations { get; } = new();
 
         public bool Counted { get; set; }
 
         public bool Acknowledged { get; set; }
     }
 
-    private sealed record PlaySession(Playback Playback, long Registration, string Id)
+    private sealed record PlaySession(Playback Playback, long Registration, string Id, long Timestamp)
     {
+        public long LastActivity { get; set; } = Timestamp;
+
+        public long? RetiredAt { get; set; }
+
         public bool HasAcquired { get; set; }
     }
 

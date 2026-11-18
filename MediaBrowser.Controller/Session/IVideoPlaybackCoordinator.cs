@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Session;
 
@@ -41,7 +42,7 @@ public interface IVideoPlaybackCoordinator
     /// Resolves the current encoding identifier for a verified logical playback.
     /// </summary>
     /// <param name="playback">The server-verified playback context.</param>
-    /// <param name="playSessionId">The last acknowledged identifier, or latest registered identifier before admission.</param>
+    /// <param name="playSessionId">The newest active or acknowledged identifier, or latest metadata identifier before admission.</param>
     /// <returns>The resolution result without acquiring playback quota.</returns>
     VideoPlaybackStatus ResolvePlayback(VideoPlaybackContext playback, out string? playSessionId);
 
@@ -84,4 +85,11 @@ public interface IVideoPlaybackCoordinator
     /// this registry does not start timers or perform I/O.
     /// </remarks>
     int RemoveExpired();
+
+    /// <summary>
+    /// Cleans expired aliases while preserving a snapshot of live job and source references.
+    /// </summary>
+    /// <param name="protectedAliases">The server-owned encoding identifiers still in use.</param>
+    /// <returns>The number of logical entries expired.</returns>
+    int RemoveExpired(IReadOnlySet<string> protectedAliases) => RemoveExpired();
 }

@@ -33,6 +33,11 @@ public class StreamState : EncodingJobInfo, IDisposable
     public string? RequestedUrl { get; set; }
 
     /// <summary>
+    /// Gets or sets the server-verified authentication record owning this request.
+    /// </summary>
+    public string? PlaybackOwnerId { get; set; }
+
+    /// <summary>
     /// Gets or sets the request.
     /// </summary>
     public StreamingRequestDto Request

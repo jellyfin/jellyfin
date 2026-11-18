@@ -35,6 +35,21 @@ public sealed class TranscodingJob : IDisposable
     public string? PlaySessionId { get; set; }
 
     /// <summary>
+    /// Gets or sets the canonical library item selected by the server.
+    /// </summary>
+    public Guid ItemId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the authenticated user owning the encoding.
+    /// </summary>
+    public Guid UserId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the authentication record owning the encoding.
+    /// </summary>
+    public string? PlaybackOwnerId { get; set; }
+
+    /// <summary>
     /// Gets or sets the live stream identifier.
     /// </summary>
     public string? LiveStreamId { get; set; }

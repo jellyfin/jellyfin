@@ -62,6 +62,52 @@ public class VideoPlaybackCoordinatorTests
     }
 
     [Fact]
+    public void RemoveExpired_RetiresObsoleteAliasesWhileKeepingCurrentAndProtectedAliases()
+    {
+        var clock = new ManualTimeProvider();
+        var coordinator = new VideoPlaybackCoordinator(clock, _timeout);
+        var owner = NewPlayback();
+        Register(coordinator, owner, "obsolete");
+        Register(coordinator, owner, "protected");
+        Register(coordinator, owner, "current");
+        using var current = Acquire(coordinator, owner, "current", 1);
+        current.Acknowledge();
+        var protectedAliases = new System.Collections.Generic.HashSet<string>(StringComparer.OrdinalIgnoreCase) { "PROTECTED" };
+        clock.Advance(_timeout);
+
+        coordinator.RemoveExpired(protectedAliases);
+
+        Assert.Equal(VideoPlaybackStatus.Expired, coordinator.ResolvePlaySession(owner.UserId, owner.SessionId, owner.ItemId, "obsolete", out _));
+        Assert.Equal(VideoPlaybackStatus.Success, coordinator.ResolvePlaySession(owner.UserId, owner.SessionId, owner.ItemId, "protected", out _));
+        Assert.Equal(VideoPlaybackStatus.OwnershipMismatch, coordinator.RegisterPlaySession(owner with { UserId = Guid.NewGuid() }, "obsolete"));
+        clock.Advance(_timeout);
+        coordinator.RemoveExpired(protectedAliases);
+        Assert.Equal(VideoPlaybackStatus.NotFound, coordinator.ResolvePlaySession(owner.UserId, owner.SessionId, owner.ItemId, "obsolete", out _));
+        Assert.Equal(VideoPlaybackStatus.Success, coordinator.ResolvePlaySession(owner.UserId, owner.SessionId, owner.ItemId, "current", out _));
+    }
+
+    [Fact]
+    public void RemoveExpired_ProtectedRetiredAliasKeepsItsOwnerBinding()
+    {
+        var clock = new ManualTimeProvider();
+        var coordinator = new VideoPlaybackCoordinator(clock, _timeout);
+        var owner = NewPlayback();
+        Register(coordinator, owner, "encoding");
+        using (var request = Acquire(coordinator, owner, "encoding", 1))
+        {
+            request.Acknowledge();
+        }
+
+        Assert.Equal(VideoPlaybackStatus.Success, coordinator.Stop(owner, "encoding"));
+        clock.Advance(_timeout + TimeSpan.FromTicks(1));
+        coordinator.RemoveExpired(new System.Collections.Generic.HashSet<string> { "encoding" });
+        Assert.Equal(VideoPlaybackStatus.Stopped, coordinator.ResolvePlaySession(owner.UserId, owner.SessionId, owner.ItemId, "encoding", out _));
+        Assert.Equal(VideoPlaybackStatus.OwnershipMismatch, coordinator.RegisterPlaySession(owner with { UserId = Guid.NewGuid() }, "ENCODING"));
+        coordinator.RemoveExpired();
+        Assert.Equal(VideoPlaybackStatus.NotFound, coordinator.ResolvePlaySession(owner.UserId, owner.SessionId, owner.ItemId, "encoding", out _));
+    }
+
+    [Fact]
     public void CreateLegacyId_IsStableWithinAuthenticatedScope()
     {
         var owner = NewPlayback();
@@ -114,7 +160,7 @@ public class VideoPlaybackCoordinatorTests
     }
 
     [Fact]
-    public void ResolvePlayback_SelectsAcknowledgedAliasWithoutRegressingDuringOverlap()
+    public void ResolvePlayback_SelectsActiveOrAcknowledgedAliasWithoutRegressingDuringOverlap()
     {
         var coordinator = CreateCoordinator();
         var owner = NewPlayback();
@@ -129,13 +175,27 @@ public class VideoPlaybackCoordinatorTests
         Assert.Equal("old-encoding", pending);
         using var replacement = Acquire(coordinator, owner, "new-encoding", 1);
         Assert.Equal(VideoPlaybackStatus.Success, coordinator.ResolvePlayback(owner, out var unacknowledged));
-        Assert.Equal("old-encoding", unacknowledged);
+        Assert.Equal("new-encoding", unacknowledged);
         replacement.Acknowledge();
         original.Acknowledge();
 
         Assert.Equal(VideoPlaybackStatus.Success, coordinator.ResolvePlayback(owner, out var current));
         Assert.Equal("new-encoding", current);
         Assert.Equal(VideoPlaybackStatus.Superseded, coordinator.Stop(owner, "old-encoding"));
+    }
+
+    [Fact]
+    public void ResolvePlayback_ActivePendingAliasTakesPrecedenceOverUnacquiredMetadata()
+    {
+        var coordinator = CreateCoordinator();
+        var owner = NewPlayback();
+        Register(coordinator, owner, "active-pending");
+        using var pending = Acquire(coordinator, owner, "active-pending", 1);
+        Register(coordinator, owner, "metadata-only");
+
+        Assert.Equal(VideoPlaybackStatus.Success, coordinator.ResolvePlayback(owner, out var current));
+        Assert.Equal("active-pending", current);
+        Assert.Equal(VideoPlaybackStatus.NotFound, coordinator.Stop(owner, "metadata-only"));
     }
 
     [Fact]
