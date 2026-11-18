@@ -59,5 +59,10 @@
     "NotificationOptionAudioPlaybackStopped": "Աուդիոյի նվագարկումը կանգնեցված է",
     "NotificationOptionCameraImageUploaded": "տեսախցիկի նկարը ներբեռնված է",
     "NotificationOptionInstallationFailed": "Տեղադրման խնդիր",
-    "NotificationOptionNewLibraryContent": "Նոր բովանդակություն ավելացվեց"
+    "NotificationOptionNewLibraryContent": "Նոր բովանդակություն ավելացվեց",
+    "HearingImpaired": "Լսողության խանգարումներ ունեցողների համար",
+    "NameExtraBehindTheScenes": "Կադրից Դուրս",
+    "NameExtraClip": "Հատված",
+    "NameExtraFeaturette": "Կարճամետրաժ ակնարկ",
+    "Original": "Բնօրինակ"
 }
