@@ -16,6 +16,11 @@ public static class InternalClaimTypes
     public const string DeviceId = "Jellyfin-DeviceId";
 
     /// <summary>
+    /// Authenticated video playback owner identifier.
+    /// </summary>
+    public const string PlaybackOwnerId = "Jellyfin-PlaybackOwnerId";
+
+    /// <summary>
     /// Device.
     /// </summary>
     public const string Device = "Jellyfin-Device";

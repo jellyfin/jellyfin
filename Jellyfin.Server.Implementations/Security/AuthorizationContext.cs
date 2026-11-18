@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net;
 using System.Threading.Tasks;
 using Jellyfin.Data.Queries;
@@ -135,6 +136,7 @@ namespace Jellyfin.Server.Implementations.Security
                 if (device is not null)
                 {
                     authInfo.IsAuthenticated = true;
+                    authInfo.PlaybackOwnerId = device.Id.ToString(CultureInfo.InvariantCulture);
                     var updateToken = false;
 
                     // TODO: Remove these checks for IsNullOrWhiteSpace

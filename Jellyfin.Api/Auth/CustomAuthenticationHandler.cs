@@ -63,6 +63,7 @@ namespace Jellyfin.Api.Auth
                     new Claim(ClaimTypes.Role, role),
                     new Claim(InternalClaimTypes.UserId, authorizationInfo.UserId.ToString("N", CultureInfo.InvariantCulture)),
                     new Claim(InternalClaimTypes.DeviceId, authorizationInfo.DeviceId ?? string.Empty),
+                    new Claim(InternalClaimTypes.PlaybackOwnerId, authorizationInfo.PlaybackOwnerId ?? string.Empty),
                     new Claim(InternalClaimTypes.Device, authorizationInfo.Device ?? string.Empty),
                     new Claim(InternalClaimTypes.Client, authorizationInfo.Client ?? string.Empty),
                     new Claim(InternalClaimTypes.Version, authorizationInfo.Version ?? string.Empty),
