@@ -279,6 +279,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             AlwaysBurnInSubtitleWhenTranscoding = alwaysBurnInSubtitleWhenTranscoding
         };
 
+        StreamingHelpers.NormalizeRequest(streamingRequest);
         // CTS lifecycle is managed internally.
         var cancellationTokenSource = new CancellationTokenSource();
         // Due to CTS.Token calling ThrowIfDisposed (https://github.com/dotnet/runtime/issues/29970) we have to "cache" the token
@@ -298,7 +299,8 @@ public class DynamicHlsController : BaseJellyfinApiController
                 _encodingHelper,
                 _transcodeManager,
                 TranscodingJobType,
-                cancellationToken)
+                cancellationToken,
+                _videoPlaybackHelper)
             .ConfigureAwait(false);
 
         TranscodingJob? job = null;
@@ -345,7 +347,8 @@ public class DynamicHlsController : BaseJellyfinApiController
             _transcodeManager.OnTranscodeEndRequest(job);
         }
 
-        var playlistText = HlsHelpers.GetLivePlaylistText(playlistPath, state);
+        var playlistText = HlsHelpers.AuthenticatePlaylistSegments(HlsHelpers.GetLivePlaylistText(playlistPath, state), playlistPath, User.GetToken());
+        Response.Headers.CacheControl = "private, no-store";
 
         return VideoPlaybackHelper.Wrap(Content(playlistText, MimeTypes.GetMimeType("playlist.m3u8")), playback);
     }
@@ -523,6 +526,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             AlwaysBurnInSubtitleWhenTranscoding = alwaysBurnInSubtitleWhenTranscoding
         };
 
+        StreamingHelpers.NormalizeRequest(streamingRequest);
         using var playback = _videoPlaybackHelper.Acquire(HttpContext, itemId, streamingRequest.PlaySessionId, out var resolvedPlaySessionId);
         streamingRequest.PlaySessionId = resolvedPlaySessionId;
 
@@ -863,6 +867,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             AlwaysBurnInSubtitleWhenTranscoding = alwaysBurnInSubtitleWhenTranscoding
         };
 
+        StreamingHelpers.NormalizeRequest(streamingRequest);
         using var playback = _videoPlaybackHelper.Acquire(HttpContext, itemId, streamingRequest.PlaySessionId, out var resolvedPlaySessionId);
         streamingRequest.PlaySessionId = resolvedPlaySessionId;
 
@@ -1410,7 +1415,8 @@ public class DynamicHlsController : BaseJellyfinApiController
                 _encodingHelper,
                 _transcodeManager,
                 TranscodingJobType,
-                cancellationTokenSource.Token)
+                cancellationTokenSource.Token,
+                _videoPlaybackHelper)
             .ConfigureAwait(false);
         var mediaSourceId = state.BaseRequest.MediaSourceId;
         double fps = state.TargetFramerate ?? 0.0f;
@@ -1430,15 +1436,17 @@ public class DynamicHlsController : BaseJellyfinApiController
             state.RunTimeTicks ?? 0,
             state.Request.SegmentContainer ?? string.Empty,
             "hls1/main/",
-            Request.QueryString.ToString(),
+            HlsHelpers.GetAuthenticatedPlaylistQuery(Request.QueryString.ToString(), state.Request.PlaySessionId, User.GetToken()),
             EncodingHelper.IsCopyCodec(state.OutputVideoCodec));
         var playlist = _dynamicHlsPlaylistGenerator.CreateMainPlaylist(request);
 
+        Response.Headers.CacheControl = "private, no-store";
         return new FileContentResult(Encoding.UTF8.GetBytes(playlist), MimeTypes.GetMimeType("playlist.m3u8"));
     }
 
     private async Task<ActionResult> GetDynamicSegment(StreamingRequestDto streamingRequest, int segmentId)
     {
+        StreamingHelpers.NormalizeRequest(streamingRequest);
         if ((streamingRequest.StartTimeTicks ?? 0) > 0)
         {
             throw new ArgumentException("StartTimeTicks is not allowed.");
@@ -1463,7 +1471,8 @@ public class DynamicHlsController : BaseJellyfinApiController
                 _encodingHelper,
                 _transcodeManager,
                 TranscodingJobType,
-                cancellationToken)
+                cancellationToken,
+                _videoPlaybackHelper)
             .ConfigureAwait(false);
 
         var playlistPath = Path.ChangeExtension(state.OutputFilePath, ".m3u8");

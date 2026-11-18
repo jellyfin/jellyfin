@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Results;
 using Jellyfin.Data.Enums;
@@ -8,6 +9,9 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Controller.Streaming;
+using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -22,6 +26,9 @@ public sealed class VideoPlaybackHelper
     private readonly IVideoPlaybackCoordinator _coordinator;
     private readonly IUserManager _userManager;
     private readonly ILibraryManager _libraryManager;
+    private readonly ITranscodeManager? _transcodeManager;
+    private readonly ILiveStreamPlaybackManager? _liveStreams;
+    private readonly IInternalLiveTvAccess? _internalLiveTvAccess;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VideoPlaybackHelper"/> class.
@@ -30,10 +37,33 @@ public sealed class VideoPlaybackHelper
     /// <param name="userManager">The user manager.</param>
     /// <param name="libraryManager">The library manager.</param>
     public VideoPlaybackHelper(IVideoPlaybackCoordinator coordinator, IUserManager userManager, ILibraryManager libraryManager)
+        : this(coordinator, userManager, libraryManager, null, null, null)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="VideoPlaybackHelper"/> class.
+    /// </summary>
+    /// <param name="coordinator">The playback registry.</param>
+    /// <param name="userManager">The user manager.</param>
+    /// <param name="libraryManager">The library manager.</param>
+    /// <param name="transcodeManager">The server's encoding jobs.</param>
+    /// <param name="liveStreams">The ownership of opened live sources.</param>
+    /// <param name="internalLiveTvAccess">Access to internal encoder inputs.</param>
+    public VideoPlaybackHelper(
+        IVideoPlaybackCoordinator coordinator,
+        IUserManager userManager,
+        ILibraryManager libraryManager,
+        ITranscodeManager? transcodeManager,
+        ILiveStreamPlaybackManager? liveStreams,
+        IInternalLiveTvAccess? internalLiveTvAccess)
     {
         _coordinator = coordinator;
         _userManager = userManager;
         _libraryManager = libraryManager;
+        _transcodeManager = transcodeManager;
+        _liveStreams = liveStreams;
+        _internalLiveTvAccess = internalLiveTvAccess;
     }
 
     /// <summary>
@@ -120,6 +150,12 @@ public sealed class VideoPlaybackHelper
             }
             else if (status == VideoPlaybackStatus.NotFound)
             {
+                if (_transcodeManager?.GetTranscodingJob(playSessionId) is not null
+                    || (_liveStreams?.ContainsPlaySession(playSessionId) ?? false))
+                {
+                    throw new SecurityException("An existing source cannot be adopted by an unknown playback identifier.");
+                }
+
                 // Older clients may generate an encoding identifier without requesting metadata.
                 status = _coordinator.RegisterPlaySession(playback, playSessionId);
             }
@@ -133,6 +169,174 @@ public sealed class VideoPlaybackHelper
         resolvedPlaySessionId = playSessionId;
         return request;
     }
+
+    /// <summary>
+    /// Verifies the canonical content and authenticated owner before reusing an encoder input.
+    /// </summary>
+    /// <param name="context">The authenticated request.</param>
+    /// <param name="request">The requested canonical item and source.</param>
+    /// <param name="job">The existing encoding job, if any.</param>
+    /// <param name="isVideoOutput">Whether this request delivers video bytes.</param>
+    public void VerifySource(HttpContext context, StreamingRequestDto request, TranscodingJob? job, bool isVideoOutput)
+    {
+        if (context.User.GetIsApiKey())
+        {
+            return;
+        }
+
+        var userId = context.User.GetUserId();
+        var ownerId = context.User.GetPlaybackOwnerId();
+        var encodingStatus = VideoPlaybackStatus.NotFound;
+        if (!string.IsNullOrWhiteSpace(request.PlaySessionId) && !string.IsNullOrEmpty(ownerId))
+        {
+            encodingStatus = _coordinator.ResolvePlaySession(userId, ownerId, request.Id, request.PlaySessionId, out _);
+            if (encodingStatus == VideoPlaybackStatus.OwnershipMismatch)
+            {
+                EnsureSuccess(encodingStatus);
+            }
+
+            if (isVideoOutput && encodingStatus != VideoPlaybackStatus.NotFound)
+            {
+                EnsureSuccess(encodingStatus);
+            }
+        }
+
+        if (job is not null)
+        {
+            if ((!job.ItemId.Equals(Guid.Empty) && !job.ItemId.Equals(request.Id))
+                || (!job.UserId.Equals(Guid.Empty) && !job.UserId.Equals(userId))
+                || (job.PlaybackOwnerId is not null && !string.Equals(job.PlaybackOwnerId, ownerId, StringComparison.Ordinal)))
+            {
+                throw new SecurityException("The encoding source belongs to another playback.");
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.PlaySessionId) && !string.IsNullOrEmpty(ownerId))
+            {
+                if (encodingStatus != VideoPlaybackStatus.NotFound && isVideoOutput)
+                {
+                    EnsureSuccess(encodingStatus);
+                }
+                else if (encodingStatus == VideoPlaybackStatus.NotFound && (job.IsOutputVideo != false || job.ItemId.Equals(Guid.Empty)))
+                {
+                    throw new SecurityException("The video encoding has no verified playback owner.");
+                }
+            }
+            else if (job.IsOutputVideo != false)
+            {
+                throw new SecurityException("The video encoding requires an authenticated playback owner.");
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.LiveStreamId))
+        {
+            VerifyLiveStream(context, request.Id, request.LiveStreamId, request.PlaySessionId, isVideoOutput);
+        }
+    }
+
+    /// <summary>
+    /// Prevents incorrectly classified audio items from carrying uncounted video bytes.
+    /// </summary>
+    /// <param name="context">The authenticated request.</param>
+    /// <param name="request">The requested output.</param>
+    /// <param name="source">The server-selected media source.</param>
+    /// <param name="itemMediaType">The canonical library item's media type.</param>
+    public void VerifySelectedSource(HttpContext context, StreamingRequestDto request, MediaSourceInfo source, MediaType itemMediaType)
+    {
+        if ((!request.Static && request is not VideoRequestDto) || context.User.GetIsApiKey())
+        {
+            return;
+        }
+
+        var sourceContainsVideo = source.MediaStreams.Any(stream => stream.Type == MediaStreamType.Video);
+        if (itemMediaType != MediaType.Video && !sourceContainsVideo)
+        {
+            return;
+        }
+
+        var userId = context.User.GetUserId();
+        if (userId.Equals(Guid.Empty))
+        {
+            throw new SecurityException("Video bytes require an authenticated playback owner.");
+        }
+
+        if (itemMediaType != MediaType.Video && (_userManager.GetUserById(userId)?.MaxActiveVideoStreams ?? 0) > 0)
+        {
+            throw new SecurityException("A source containing video must use a video library item or audio-only encoding.");
+        }
+    }
+
+    /// <summary>
+    /// Verifies access to an opened live source without reserving another video slot.
+    /// </summary>
+    /// <param name="context">The authenticated request.</param>
+    /// <param name="itemId">The canonical library item.</param>
+    /// <param name="liveStreamId">The opened source.</param>
+    /// <param name="playSessionId">The playback identifier, if present.</param>
+    /// <param name="isVideoOutput">Whether the request will deliver video bytes.</param>
+    public void VerifyLiveStream(HttpContext context, Guid itemId, string liveStreamId, string? playSessionId = null, bool isVideoOutput = true)
+    {
+        if (context.User.GetIsApiKey())
+        {
+            return;
+        }
+
+        var ownerId = context.User.GetPlaybackOwnerId();
+        if (string.IsNullOrEmpty(ownerId)
+            || !(_liveStreams?.Verify(context.User.GetUserId(), ownerId, itemId, liveStreamId, playSessionId, isVideoOutput) ?? false))
+        {
+            throw new SecurityException("The live source belongs to another playback.");
+        }
+    }
+
+    /// <summary>
+    /// Verifies ownership before a playback report can control a live input.
+    /// </summary>
+    /// <param name="context">The authenticated request.</param>
+    /// <param name="liveStreamId">The input being controlled.</param>
+    /// <returns>Whether an open consumer still needs the report; closed consumers are idempotent no-ops.</returns>
+    public bool VerifyLiveStreamControl(HttpContext context, string liveStreamId)
+    {
+        if (context.User.GetIsApiKey())
+        {
+            return true;
+        }
+
+        var owner = context.User.GetPlaybackOwnerId();
+        var hasOpenConsumer = false;
+        if (string.IsNullOrEmpty(owner)
+            || !(_liveStreams?.VerifyOwner(context.User.GetUserId(), owner, liveStreamId, out hasOpenConsumer) ?? false))
+        {
+            throw new SecurityException("The live source belongs to another authenticated playback.");
+        }
+
+        return hasOpenConsumer;
+    }
+
+    /// <summary>
+    /// Resolves the verified video context for an already registered alias.
+    /// </summary>
+    /// <param name="context">The authenticated request.</param>
+    /// <param name="itemId">The expected item, or null to resolve it from the alias.</param>
+    /// <param name="playSessionId">The registered playback alias.</param>
+    /// <returns>The verified context.</returns>
+    public VideoPlaybackContext ResolvePlayback(HttpContext context, Guid? itemId, string playSessionId)
+    {
+        var ownerId = context.User.GetPlaybackOwnerId();
+        if (string.IsNullOrEmpty(ownerId))
+        {
+            throw new SecurityException("A verified playback owner is required.");
+        }
+
+        EnsureSuccess(_coordinator.ResolvePlaySession(context.User.GetUserId(), ownerId, itemId, playSessionId, out var playback));
+        return playback;
+    }
+
+    /// <summary>
+    /// Authorizes an internal source only in the server-owned input state.
+    /// </summary>
+    /// <param name="path">The server-resolved input URL.</param>
+    /// <returns>The encoder input URL, with internal access when necessary.</returns>
+    public string PrepareInputUrl(string path) => _internalLiveTvAccess?.GetInputUrl(path) ?? path;
 
     /// <summary>
     /// Resolves the current legacy alias for an authenticated item report.
@@ -210,6 +414,13 @@ public sealed class VideoPlaybackHelper
         if (string.IsNullOrEmpty(ownerId))
         {
             throw new SecurityException("A verified playback owner is required.");
+        }
+
+        if (job is not null
+            && ((!job.UserId.Equals(Guid.Empty) && !job.UserId.Equals(userId))
+                || (job.PlaybackOwnerId is not null && !string.Equals(job.PlaybackOwnerId, ownerId, StringComparison.Ordinal))))
+        {
+            throw new SecurityException("The encoding belongs to another authenticated playback.");
         }
 
         var status = _coordinator.ResolvePlaySession(userId, ownerId, null, playSessionId, out var playback);

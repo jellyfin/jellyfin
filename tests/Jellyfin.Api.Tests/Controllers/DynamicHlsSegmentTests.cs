@@ -97,6 +97,8 @@ public sealed class DynamicHlsSegmentTests : IAsyncLifetime
             Type = TranscodingJobType.Hls,
             PlaySessionId = "session",
             MediaSource = source,
+            ItemId = _item.Id,
+            IsOutputVideo = false,
             CancellationTokenSource = new CancellationTokenSource()
         };
     }

@@ -431,6 +431,7 @@ public class VideosController : BaseJellyfinApiController
             EnableAudioVbrEncoding = enableAudioVbrEncoding
         };
 
+        StreamingHelpers.NormalizeRequest(streamingRequest);
         using var playback = _videoPlaybackHelper.Acquire(HttpContext, itemId, streamingRequest.PlaySessionId, out var resolvedPlaySessionId);
         streamingRequest.PlaySessionId = resolvedPlaySessionId;
 
@@ -445,10 +446,11 @@ public class VideosController : BaseJellyfinApiController
                 _encodingHelper,
                 _transcodeManager,
                 _transcodingJobType,
-                cancellationTokenSource.Token)
+                cancellationTokenSource.Token,
+                _videoPlaybackHelper)
             .ConfigureAwait(false);
 
-        if (@static.HasValue && @static.Value && state.DirectStreamProvider is not null)
+        if (streamingRequest.Static && state.DirectStreamProvider is not null)
         {
             var liveStreamInfo = _mediaSourceManager.GetLiveStreamInfo(streamingRequest.LiveStreamId);
             if (liveStreamInfo is null)
@@ -462,19 +464,19 @@ public class VideosController : BaseJellyfinApiController
         }
 
         // Static remote stream
-        if (@static.HasValue && @static.Value && state.InputProtocol == MediaProtocol.Http)
+        if (streamingRequest.Static && state.InputProtocol == MediaProtocol.Http)
         {
             var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
             return VideoPlaybackHelper.Wrap(await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, httpClient, HttpContext).ConfigureAwait(false), playback);
         }
 
-        if (@static.HasValue && @static.Value && state.InputProtocol != MediaProtocol.File)
+        if (streamingRequest.Static && state.InputProtocol != MediaProtocol.File)
         {
             return BadRequest($"Input protocol {state.InputProtocol} cannot be streamed statically");
         }
 
         // Static stream
-        if (@static.HasValue && @static.Value && !(state.MediaSource.VideoType == VideoType.BluRay || state.MediaSource.VideoType == VideoType.Dvd))
+        if (streamingRequest.Static && !(state.MediaSource.VideoType == VideoType.BluRay || state.MediaSource.VideoType == VideoType.Dvd))
         {
             var contentType = state.GetMimeType("." + state.OutputContainer, false) ?? state.GetMimeType(state.MediaPath);
 

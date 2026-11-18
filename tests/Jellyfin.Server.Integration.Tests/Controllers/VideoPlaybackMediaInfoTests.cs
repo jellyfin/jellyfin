@@ -181,6 +181,43 @@ public sealed class VideoPlaybackMediaInfoTests : IClassFixture<VideoPlaybackMed
     }
 
     [Fact]
+    public async Task AudioLegacyParams_CannotBypassOccupiedVideoLimit()
+    {
+        using var client = await CreateClientAsync();
+        var user = await AuthHelper.GetUserDtoAsync(client);
+        var users = _factory.Services.GetRequiredService<IUserManager>();
+        var policy = users.GetUserDto(users.GetUserById(user.Id)!).Policy!;
+        var previousLimit = policy.MaxActiveVideoStreams;
+        policy.MaxActiveVideoStreams = 1;
+        await users.UpdatePolicyAsync(user.Id, policy);
+        try
+        {
+            var movie = CreateMovie();
+            var first = await PostPlaybackInfoAsync(client, movie.Id, "packed-params-player");
+            var owner = await ResolveOwnerAsync(client, movie.Id, first.PlaySessionId!);
+            var coordinator = _factory.Services.GetRequiredService<IVideoPlaybackCoordinator>();
+            Assert.Equal(VideoPlaybackStatus.Success, coordinator.TryAcquire(owner, first.PlaySessionId!, 1, out var admitted));
+            using var request = admitted;
+            var otherRecord = await _factory.Services.GetRequiredService<IDeviceManager>().CreateDevice(
+                new Device(user.Id, "Playback tests", "1.0", "Packed audio route", "packed-audio-device"));
+            using var competing = _factory.CreateClient();
+            competing.DefaultRequestHeaders.AddAuthHeader(otherRecord.AccessToken);
+
+            using var response = await competing.GetAsync(
+                $"Audio/{movie.Id}/stream?Params={Uri.EscapeDataString(";;;true")}",
+                TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+            Assert.Equal(nameof(PlaybackErrorCode.MaxActiveVideoStreamsReached), Assert.Single(response.Headers.GetValues("X-Jellyfin-Error-Code")));
+        }
+        finally
+        {
+            policy.MaxActiveVideoStreams = previousLimit;
+            await users.UpdatePolicyAsync(user.Id, policy);
+        }
+    }
+
+    [Fact]
     public async Task PlaybackInfoSchema_DescribesBoundedOptionalIdAndQuotaError()
     {
         using var client = _factory.CreateClient();

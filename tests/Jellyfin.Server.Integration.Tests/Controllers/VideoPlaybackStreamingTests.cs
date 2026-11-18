@@ -124,6 +124,22 @@ public sealed class VideoPlaybackStreamingTests : IClassFixture<VideoPlaybackStr
     }
 
     [Fact]
+    public async Task Stream_UnknownAliasCannotAdoptAnExistingEncodingInput()
+    {
+        var clients = await CreatePlaybackClientsAsync().ConfigureAwait(true);
+        using var first = clients.First;
+        using var second = clients.Second;
+        var movie = _factory.CreateMovie();
+        var alias = "unowned-" + Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
+        _factory.RegisterTranscodingJob(movie, alias);
+
+        using var response = await first.GetAsync(GetStaticPath(movie.Id, alias), TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.False(response.Headers.Contains("X-Jellyfin-Error-Code"));
+    }
+
+    [Fact]
     public async Task Stream_CaseVariantAliasCannotBeReboundByAnotherTokenOrUsedToStopFirstPlayer()
     {
         var clients = await CreatePlaybackClientsAsync().ConfigureAwait(true);
@@ -133,8 +149,8 @@ public sealed class VideoPlaybackStreamingTests : IClassFixture<VideoPlaybackStr
         // Legacy clients can supply their encoding identifier before requesting playback metadata.
         var originalAlias = "lowercase-" + Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
         var uppercaseAlias = originalAlias.ToUpperInvariant();
-        _factory.RegisterTranscodingJob(movie, originalAlias);
         await AssertRangeAsync(first, movie.Id, originalAlias).ConfigureAwait(true);
+        _factory.RegisterTranscodingJob(movie, originalAlias);
 
         var forgedHeader = Assert.Single(second.DefaultRequestHeaders.GetValues(AuthHelper.AuthHeaderName))
             .Replace("video-device-b", "video-device-a", StringComparison.Ordinal);

@@ -21,6 +21,8 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Net;
+using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -28,6 +30,7 @@ using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Api.Helpers;
@@ -46,6 +49,9 @@ public class MediaInfoHelper
     private readonly INetworkManager _networkManager;
     private readonly IDeviceManager _deviceManager;
     private readonly IServerApplicationHost _appHost;
+    private readonly VideoPlaybackHelper? _videoPlaybackHelper;
+    private readonly ILiveStreamPlaybackManager? _liveStreams;
+    private readonly ISessionManager? _sessionManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MediaInfoHelper"/> class.
@@ -69,6 +75,38 @@ public class MediaInfoHelper
         INetworkManager networkManager,
         IDeviceManager deviceManager,
         IServerApplicationHost appHost)
+        : this(userManager, libraryManager, mediaSourceManager, mediaEncoder, serverConfigurationManager, logger, networkManager, deviceManager, appHost, null, null, null)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MediaInfoHelper"/> class.
+    /// </summary>
+    /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
+    /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
+    /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
+    /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
+    /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+    /// <param name="logger">Instance of the <see cref="ILogger{MediaInfoHelper}"/> interface.</param>
+    /// <param name="networkManager">Instance of the <see cref="INetworkManager"/> interface.</param>
+    /// <param name="deviceManager">Instance of the <see cref="IDeviceManager"/> interface.</param>
+    /// <param name="appHost">Instance of the <see cref="IServerApplicationHost"/> interface.</param>
+    /// <param name="videoPlaybackHelper">The authenticated playback verifier.</param>
+    /// <param name="liveStreams">The ownership of opened inputs.</param>
+    /// <param name="sessionManager">The current server sessions.</param>
+    public MediaInfoHelper(
+        IUserManager userManager,
+        ILibraryManager libraryManager,
+        IMediaSourceManager mediaSourceManager,
+        IMediaEncoder mediaEncoder,
+        IServerConfigurationManager serverConfigurationManager,
+        ILogger<MediaInfoHelper> logger,
+        INetworkManager networkManager,
+        IDeviceManager deviceManager,
+        IServerApplicationHost appHost,
+        VideoPlaybackHelper? videoPlaybackHelper,
+        ILiveStreamPlaybackManager? liveStreams,
+        ISessionManager? sessionManager)
     {
         _userManager = userManager;
         _libraryManager = libraryManager;
@@ -79,6 +117,9 @@ public class MediaInfoHelper
         _networkManager = networkManager;
         _deviceManager = deviceManager;
         _appHost = appHost;
+        _videoPlaybackHelper = videoPlaybackHelper;
+        _liveStreams = liveStreams;
+        _sessionManager = sessionManager;
     }
 
     /// <summary>
@@ -99,6 +140,11 @@ public class MediaInfoHelper
     {
         var result = new PlaybackInfoResponse();
 
+        if (!string.IsNullOrWhiteSpace(liveStreamId))
+        {
+            _videoPlaybackHelper?.VerifyLiveStream(request.HttpContext, item.Id, liveStreamId, isVideoOutput: false);
+        }
+
         var mediaSources = await ResolvePlaybackMediaSources(item, user, mediaSourceId, liveStreamId).ConfigureAwait(false);
 
         if (mediaSources.Length == 0)
@@ -109,6 +155,8 @@ public class MediaInfoHelper
         }
         else
         {
+            result.PlaySessionId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
+
             // Since we're going to be setting properties on MediaSourceInfos that come out of _mediaSourceManager, we should clone it
             // Should we move this directly into MediaSourceManager?
             var mediaSourcesClone = JsonSerializer.Deserialize<MediaSourceInfo[]>(JsonSerializer.SerializeToUtf8Bytes(mediaSources));
@@ -123,13 +171,11 @@ public class MediaInfoHelper
 
                 foreach (var mediaSource in mediaSourcesClone)
                 {
-                    RewritePublishedLiveStreamPath(mediaSource, request);
+                    RewritePublishedLiveStreamPath(mediaSource, request, item.Id, result.PlaySessionId);
                 }
 
                 result.MediaSources = mediaSourcesClone;
             }
-
-            result.PlaySessionId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
         }
 
         return result;
@@ -155,6 +201,68 @@ public class MediaInfoHelper
         return mediaSourcesList
             .Where(i => string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase))
             .ToArray();
+    }
+
+    /// <summary>
+    /// Gives a new logical playback unopened sources instead of borrowing another input consumer.
+    /// </summary>
+    /// <param name="context">The authenticated request.</param>
+    /// <param name="item">The canonical item.</param>
+    /// <param name="user">The selected metadata preferences.</param>
+    /// <param name="info">The registered playback metadata.</param>
+    /// <returns>The asynchronous source refresh.</returns>
+    public async Task EnsurePlaybackSources(HttpContext context, BaseItem item, User? user, PlaybackInfoResponse info)
+    {
+        var owner = context.User.GetPlaybackOwnerId();
+        if (_liveStreams is null || info.PlaySessionId is null || owner is null || context.User.GetIsApiKey())
+        {
+            return;
+        }
+
+        if (info.MediaSources.Any(source => !string.IsNullOrEmpty(source.LiveStreamId)
+            && !_liveStreams.Verify(context.User.GetUserId(), owner, item.Id, source.LiveStreamId, info.PlaySessionId)))
+        {
+            var refreshed = await GetPlaybackInfo(item, user, context.Request).ConfigureAwait(false);
+            info.MediaSources = refreshed.MediaSources;
+        }
+    }
+
+    /// <summary>
+    /// Routes remote direct play through the server when the authenticated user has a video limit.
+    /// </summary>
+    /// <param name="context">The authenticated metadata request.</param>
+    /// <param name="itemId">The canonical library item.</param>
+    /// <param name="itemMediaType">The canonical media type.</param>
+    /// <param name="playSessionId">The registered encoding identifier.</param>
+    /// <param name="sources">The response copies of the media sources.</param>
+    public void RewriteBoundedRemoteSources(HttpContext context, Guid itemId, MediaType itemMediaType, string? playSessionId, System.Collections.Generic.IEnumerable<MediaSourceInfo> sources)
+    {
+        if (itemMediaType != MediaType.Video || string.IsNullOrWhiteSpace(playSessionId) || context.User.GetIsApiKey()
+            || _userManager.GetUserById(context.User.GetUserId()) is not { MaxActiveVideoStreams: > 0 })
+        {
+            return;
+        }
+
+        foreach (var source in sources)
+        {
+            if (source.Protocol != MediaProtocol.Http)
+            {
+                continue;
+            }
+
+            var endpoint = _appHost.GetSmartApiUrl(context.Request).TrimEnd('/') + "/Videos/" + itemId.ToString("N", CultureInfo.InvariantCulture) + "/stream";
+            source.Path = QueryHelpers.AddQueryString(endpoint, new System.Collections.Generic.Dictionary<string, string?>
+            {
+                ["Static"] = "true",
+                ["PlaySessionId"] = playSessionId,
+                ["MediaSourceId"] = source.Id,
+                ["LiveStreamId"] = source.LiveStreamId,
+                ["ApiKey"] = context.User.GetToken()
+            });
+            source.EncoderPath = null;
+            source.EncoderProtocol = null;
+            source.RequiredHttpHeaders.Clear();
+        }
     }
 
     /// <summary>
@@ -425,58 +533,188 @@ public class MediaInfoHelper
     /// <returns>A <see cref="Task"/> containing the <see cref="LiveStreamResponse"/>.</returns>
     public async Task<LiveStreamResponse> OpenMediaSource(HttpContext httpContext, LiveStreamRequest request)
     {
-        var result = await _mediaSourceManager.OpenLiveStream(request, CancellationToken.None).ConfigureAwait(false);
+        var opened = await OpenVerifiedMediaSource(httpContext, request).ConfigureAwait(false);
+        var result = opened.Response;
 
-        RewritePublishedLiveStreamPath(result.MediaSource, httpContext.Request);
-
-        var profile = request.DeviceProfile;
-        if (profile is null)
+        try
         {
-            var clientCapabilities = _deviceManager.GetCapabilities(httpContext.User.GetDeviceId());
-            if (clientCapabilities is not null)
+            RewritePublishedLiveStreamPath(result.MediaSource, httpContext.Request, request.ItemId, request.PlaySessionId);
+
+            var profile = request.DeviceProfile;
+            if (profile is null)
             {
-                profile = clientCapabilities.DeviceProfile;
+                var clientCapabilities = _deviceManager.GetCapabilities(httpContext.User.GetDeviceId());
+                if (clientCapabilities is not null)
+                {
+                    profile = clientCapabilities.DeviceProfile;
+                }
             }
+
+            if (profile is not null)
+            {
+                var item = _libraryManager.GetItemById<BaseItem>(request.ItemId)
+                    ?? throw new ResourceNotFoundException();
+
+                SetDeviceSpecificData(
+                    item,
+                    result.MediaSource,
+                    profile,
+                    httpContext.User,
+                    request.MaxStreamingBitrate,
+                    request.StartTimeTicks ?? 0,
+                    result.MediaSource.Id,
+                    request.AudioStreamIndex,
+                    request.SubtitleStreamIndex,
+                    request.MaxAudioChannels,
+                    request.PlaySessionId,
+                    request.UserId,
+                    request.EnableDirectPlay,
+                    request.EnableDirectStream,
+                    true,
+                    true,
+                    true,
+                    request.AlwaysBurnInSubtitleWhenTranscoding,
+                    httpContext.GetNormalizedRemoteIP());
+            }
+            else
+            {
+                if (!string.IsNullOrWhiteSpace(result.MediaSource.TranscodingUrl))
+                {
+                    result.MediaSource.TranscodingUrl += "&LiveStreamId=" + result.MediaSource.LiveStreamId;
+                }
+            }
+
+            // here was a check if (result.MediaSource is not null) but Rider said it will never be null
+            NormalizeMediaSourceContainer(result.MediaSource, profile!, DlnaProfileType.Video);
+
+            var canonicalItem = _libraryManager.GetItemById<BaseItem>(request.ItemId);
+            if (canonicalItem is not null)
+            {
+                RewriteBoundedRemoteSources(httpContext, canonicalItem.Id, canonicalItem.MediaType, request.PlaySessionId, new[] { result.MediaSource });
+            }
+
+            return result;
+        }
+        catch
+        {
+            var owner = httpContext.User.GetPlaybackOwnerId();
+            if (opened.OwnsNewConsumer)
+            {
+                if (_liveStreams is not null && !string.IsNullOrEmpty(owner))
+                {
+                    await _liveStreams.CloseOwnedAsync(httpContext.User.GetUserId(), owner, result.MediaSource.LiveStreamId, request.PlaySessionId).ConfigureAwait(false);
+                }
+                else
+                {
+                    await _mediaSourceManager.CloseLiveStream(result.MediaSource.LiveStreamId).ConfigureAwait(false);
+                }
+            }
+
+            throw;
+        }
+    }
+
+    private async Task<(LiveStreamResponse Response, bool OwnsNewConsumer)> OpenVerifiedMediaSource(HttpContext context, LiveStreamRequest request)
+    {
+        // Retain the original helper construction contract for server extensions.
+        if (_videoPlaybackHelper is null || _liveStreams is null || _sessionManager is null)
+        {
+            return (await _mediaSourceManager.OpenLiveStream(request, context.RequestAborted).ConfigureAwait(false), true);
         }
 
-        if (profile is not null)
+        ArgumentException.ThrowIfNullOrWhiteSpace(request.OpenToken);
+        var userId = context.User.GetUserId();
+        var user = userId.Equals(Guid.Empty) ? null : _userManager.GetUserById(userId);
+        if (request.ItemId.Equals(Guid.Empty) && !string.IsNullOrWhiteSpace(request.PlaySessionId))
         {
-            var item = _libraryManager.GetItemById<BaseItem>(request.ItemId)
-                ?? throw new ResourceNotFoundException();
+            request.ItemId = _videoPlaybackHelper.ResolvePlayback(context, null, request.PlaySessionId).ItemId;
+        }
 
-            SetDeviceSpecificData(
-                item,
-                result.MediaSource,
-                profile,
-                httpContext.User,
-                request.MaxStreamingBitrate,
-                request.StartTimeTicks ?? 0,
-                result.MediaSource.Id,
-                request.AudioStreamIndex,
-                request.SubtitleStreamIndex,
-                request.MaxAudioChannels,
-                request.PlaySessionId,
-                request.UserId,
-                request.EnableDirectPlay,
-                request.EnableDirectStream,
-                true,
-                true,
-                true,
-                request.AlwaysBurnInSubtitleWhenTranscoding,
-                httpContext.GetNormalizedRemoteIP());
+        BaseItem? item = null;
+        if (!request.ItemId.Equals(Guid.Empty))
+        {
+            item = _libraryManager.GetItemById<BaseItem>(request.ItemId, user);
         }
         else
         {
-            if (!string.IsNullOrWhiteSpace(result.MediaSource.TranscodingUrl))
+            // Built-in legacy OpenTokens contain the item id. Resolve it only after
+            // proving that this exact token is advertised by an accessible item.
+            foreach (var part in request.OpenToken.Split('_', StringSplitOptions.RemoveEmptyEntries))
             {
-                result.MediaSource.TranscodingUrl += "&LiveStreamId=" + result.MediaSource.LiveStreamId;
+                if (!Guid.TryParse(part, out var candidate))
+                {
+                    continue;
+                }
+
+                var candidateItem = _libraryManager.GetItemById<BaseItem>(candidate, user);
+                if (candidateItem is not null && await HasOpenToken(candidateItem, user, request.OpenToken, context.RequestAborted).ConfigureAwait(false))
+                {
+                    item = candidateItem;
+                    request.ItemId = item.Id;
+                    break;
+                }
             }
         }
 
-        // here was a check if (result.MediaSource is not null) but Rider said it will never be null
-        NormalizeMediaSourceContainer(result.MediaSource, profile!, DlnaProfileType.Video);
+        if (item is null)
+        {
+            throw new ResourceNotFoundException("An accessible live playback item is required.");
+        }
 
-        return result;
+        if (!await HasOpenToken(item, user, request.OpenToken, context.RequestAborted).ConfigureAwait(false))
+        {
+            throw new SecurityException("The live source does not belong to the requested item.");
+        }
+
+        using var operation = _videoPlaybackHelper.Acquire(context, item.Id, request.PlaySessionId, out var alias);
+        request.PlaySessionId = alias ?? request.PlaySessionId ?? Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
+        var owner = context.User.GetPlaybackOwnerId();
+        var managedOwner = !userId.Equals(Guid.Empty) && !string.IsNullOrEmpty(owner);
+        if (managedOwner && _liveStreams.TryGetLiveStream(userId, owner!, item.Id, request.PlaySessionId, out var existingId))
+        {
+            var existing = await _mediaSourceManager.GetLiveStream(existingId, context.RequestAborted).ConfigureAwait(false);
+            var clone = JsonSerializer.Deserialize<MediaSourceInfo>(JsonSerializer.SerializeToUtf8Bytes(existing))!;
+            clone.DefaultAudioIndexSource = existing.DefaultAudioIndexSource;
+            return (new LiveStreamResponse(clone), false);
+        }
+
+        var result = await _mediaSourceManager.OpenLiveStream(request, context.RequestAborted).ConfigureAwait(false);
+        if (!managedOwner)
+        {
+            return (result, true);
+        }
+
+        var duplicateReleased = false;
+        try
+        {
+            var playback = operation is null
+                ? new VideoPlaybackContext(userId, owner!, item.Id, request.PlaySessionId)
+                : _videoPlaybackHelper.ResolvePlayback(context, item.Id, request.PlaySessionId);
+            var sessionId = await RequestHelpers.GetSessionId(_sessionManager, _userManager, context).ConfigureAwait(false);
+            if (!_liveStreams.Register(playback, request.PlaySessionId, result.MediaSource.LiveStreamId, sessionId, operation is not null))
+            {
+                // Concurrent equivalent opens must not retain a second provider consumer.
+                duplicateReleased = true;
+                await _mediaSourceManager.CloseLiveStream(result.MediaSource.LiveStreamId).ConfigureAwait(false);
+            }
+        }
+        catch
+        {
+            if (!duplicateReleased)
+            {
+                await _mediaSourceManager.CloseLiveStream(result.MediaSource.LiveStreamId).ConfigureAwait(false);
+            }
+
+            throw;
+        }
+
+        return (result, !duplicateReleased);
+    }
+
+    private async Task<bool> HasOpenToken(BaseItem item, User? user, string openToken, CancellationToken cancellationToken)
+    {
+        var sources = await _mediaSourceManager.GetPlaybackMediaSources(item, user, true, false, cancellationToken).ConfigureAwait(false);
+        return sources.Any(source => string.Equals(source.OpenToken, openToken, StringComparison.Ordinal));
     }
 
     /// <summary>
@@ -547,7 +785,9 @@ public class MediaInfoHelper
     /// </summary>
     /// <param name="mediaSource">The media source clone to rewrite in place.</param>
     /// <param name="request">The current <see cref="HttpRequest"/>.</param>
-    private void RewritePublishedLiveStreamPath(MediaSourceInfo mediaSource, HttpRequest request)
+    /// <param name="itemId">The canonical item for the authenticated streaming URL.</param>
+    /// <param name="playSessionId">The verified playback alias.</param>
+    private void RewritePublishedLiveStreamPath(MediaSourceInfo mediaSource, HttpRequest request, Guid itemId = default, string? playSessionId = null)
     {
         // Opened live streams always carry a LiveStreamId; this excludes pre-open and plugin/remote sources.
         if (string.IsNullOrEmpty(mediaSource.LiveStreamId))
@@ -561,6 +801,22 @@ public class MediaInfoHelper
         if (publishedPath is not null)
         {
             mediaSource.Path = publishedPath;
+            if (_videoPlaybackHelper is not null && !itemId.Equals(Guid.Empty) && !string.IsNullOrWhiteSpace(playSessionId))
+            {
+                var marker = publishedPath.IndexOf("/LiveTv/LiveStreamFiles/", StringComparison.OrdinalIgnoreCase);
+                var endpoint = publishedPath[..marker] + "/Videos/" + itemId.ToString("N", CultureInfo.InvariantCulture) + "/stream.ts";
+                mediaSource.Path = QueryHelpers.AddQueryString(endpoint, new System.Collections.Generic.Dictionary<string, string?>
+                {
+                    ["Static"] = "true",
+                    ["LiveStreamId"] = mediaSource.LiveStreamId,
+                    ["PlaySessionId"] = playSessionId,
+                    ["MediaSourceId"] = mediaSource.Id,
+                    ["ApiKey"] = request.HttpContext.User.GetToken()
+                });
+                mediaSource.EncoderPath = null;
+                mediaSource.EncoderProtocol = null;
+            }
+
             return;
         }
 

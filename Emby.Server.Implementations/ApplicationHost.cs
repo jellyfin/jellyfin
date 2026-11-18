@@ -28,6 +28,7 @@ using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Library;
 using Emby.Server.Implementations.Library.Search;
 using Emby.Server.Implementations.Library.SimilarItems;
+using Emby.Server.Implementations.LiveTv;
 using Emby.Server.Implementations.Localization;
 using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations.Plugins;
@@ -606,6 +607,8 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<IDtoService, DtoService>();
 
             serviceCollection.AddSingleton<IVideoPlaybackCoordinator>(_ => new VideoPlaybackCoordinator(TimeProvider.System, TimeSpan.FromMinutes(5)));
+            serviceCollection.AddSingleton<IInternalLiveTvAccess, InternalLiveTvAccess>();
+            serviceCollection.AddSingleton<ILiveStreamPlaybackManager, LiveStreamPlaybackManager>();
             serviceCollection.AddSingleton<VideoPlaybackHelper>();
             serviceCollection.AddSingleton<ISessionManager, SessionManager>();
 

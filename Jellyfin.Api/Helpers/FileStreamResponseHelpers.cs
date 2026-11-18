@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Net.Mime;
@@ -32,14 +33,48 @@ public static class FileStreamResponseHelpers
         HttpContext httpContext,
         CancellationToken cancellationToken = default)
     {
+        if (!cancellationToken.CanBeCanceled)
+        {
+            cancellationToken = httpContext.RequestAborted;
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
         using var requestMessage = new HttpRequestMessage(HttpMethod.Get, new Uri(state.MediaPath));
 
-        // Forward User-Agent if provided
-        if (state.RemoteHttpHeaders.TryGetValue(HeaderNames.UserAgent, out var useragent))
+        var excludedHeaders = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
-            // Clear default and add specific one if exists, otherwise HttpClient default might be used
-            requestMessage.Headers.UserAgent.Clear();
-            requestMessage.Headers.TryAddWithoutValidation(HeaderNames.UserAgent, useragent);
+            HeaderNames.Host,
+            HeaderNames.Range,
+            HeaderNames.Connection,
+            "Keep-Alive",
+            "Proxy-Authenticate",
+            "Proxy-Authorization",
+            "Proxy-Connection",
+            "TE",
+            "Trailer",
+            HeaderNames.TransferEncoding,
+            HeaderNames.Upgrade
+        };
+        foreach (var header in state.RemoteHttpHeaders)
+        {
+            if (string.Equals(header.Key, HeaderNames.Connection, StringComparison.OrdinalIgnoreCase))
+            {
+                foreach (var name in header.Value.Split(','))
+                {
+                    excludedHeaders.Add(name.Trim());
+                }
+            }
+        }
+
+        // These headers belong to the trusted upstream source, not the caller's
+        // Jellyfin request. Range and transport headers remain under server control.
+        foreach (var header in state.RemoteHttpHeaders)
+        {
+            if (!excludedHeaders.Contains(header.Key)
+                && !header.Key.StartsWith("Content-", StringComparison.OrdinalIgnoreCase))
+            {
+                requestMessage.Headers.TryAddWithoutValidation(header.Key, header.Value);
+            }
         }
 
         // Forward Range header if present in the client request

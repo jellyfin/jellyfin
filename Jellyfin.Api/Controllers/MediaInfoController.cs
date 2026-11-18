@@ -13,6 +13,7 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -36,6 +37,7 @@ public class MediaInfoController : BaseJellyfinApiController
     private readonly MediaInfoHelper _mediaInfoHelper;
     private readonly IUserManager _userManager;
     private readonly VideoPlaybackHelper _videoPlaybackHelper;
+    private readonly ILiveStreamPlaybackManager? _liveStreams;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MediaInfoController"/> class.
@@ -55,6 +57,30 @@ public class MediaInfoController : BaseJellyfinApiController
         MediaInfoHelper mediaInfoHelper,
         IUserManager userManager,
         VideoPlaybackHelper videoPlaybackHelper)
+        : this(mediaSourceManager, deviceManager, libraryManager, logger, mediaInfoHelper, userManager, videoPlaybackHelper, null)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MediaInfoController"/> class.
+    /// </summary>
+    /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
+    /// <param name="deviceManager">Instance of the <see cref="IDeviceManager"/> interface.</param>
+    /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
+    /// <param name="logger">Instance of the <see cref="ILogger{MediaInfoController}"/> interface.</param>
+    /// <param name="mediaInfoHelper">Instance of the <see cref="MediaInfoHelper"/>.</param>
+    /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface..</param>
+    /// <param name="videoPlaybackHelper">The video playback admission helper.</param>
+    /// <param name="liveStreams">The ownership of opened inputs.</param>
+    public MediaInfoController(
+        IMediaSourceManager mediaSourceManager,
+        IDeviceManager deviceManager,
+        ILibraryManager libraryManager,
+        ILogger<MediaInfoController> logger,
+        MediaInfoHelper mediaInfoHelper,
+        IUserManager userManager,
+        VideoPlaybackHelper videoPlaybackHelper,
+        ILiveStreamPlaybackManager? liveStreams)
     {
         _mediaSourceManager = mediaSourceManager;
         _deviceManager = deviceManager;
@@ -63,6 +89,7 @@ public class MediaInfoController : BaseJellyfinApiController
         _mediaInfoHelper = mediaInfoHelper;
         _userManager = userManager;
         _videoPlaybackHelper = videoPlaybackHelper;
+        _liveStreams = liveStreams;
     }
 
     /// <summary>
@@ -96,8 +123,10 @@ public class MediaInfoController : BaseJellyfinApiController
         if (info.ErrorCode is null && info.PlaySessionId is not null)
         {
             info.PlaybackInstanceId = _videoPlaybackHelper.RegisterPlayback(HttpContext, item.Id, info.PlaySessionId, playbackInstanceId);
+            await _mediaInfoHelper.EnsurePlaybackSources(HttpContext, item, user, info).ConfigureAwait(false);
         }
 
+        _mediaInfoHelper.RewriteBoundedRemoteSources(HttpContext, item.Id, item.MediaType, info.PlaySessionId, info.MediaSources);
         return info;
     }
 
@@ -207,6 +236,7 @@ public class MediaInfoController : BaseJellyfinApiController
         if (info.PlaySessionId is not null)
         {
             info.PlaybackInstanceId = _videoPlaybackHelper.RegisterPlayback(HttpContext, item.Id, info.PlaySessionId, playbackInstanceId);
+            await _mediaInfoHelper.EnsurePlaybackSources(HttpContext, item, user, info).ConfigureAwait(false);
         }
 
         if (profile is not null)
@@ -268,6 +298,7 @@ public class MediaInfoController : BaseJellyfinApiController
             }
         }
 
+        _mediaInfoHelper.RewriteBoundedRemoteSources(HttpContext, item.Id, item.MediaType, info.PlaySessionId, info.MediaSources);
         return info;
     }
 
@@ -332,13 +363,28 @@ public class MediaInfoController : BaseJellyfinApiController
     /// Closes a media source.
     /// </summary>
     /// <param name="liveStreamId">The livestream id.</param>
+    /// <param name="playSessionId">The encoding alias, if supplied by the client.</param>
     /// <response code="204">Livestream closed.</response>
     /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
     [HttpPost("LiveStreams/Close")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<ActionResult> CloseLiveStream([FromQuery, Required] string liveStreamId)
+    public async Task<ActionResult> CloseLiveStream([FromQuery, Required] string liveStreamId, [FromQuery] string? playSessionId = null)
     {
-        await _mediaSourceManager.CloseLiveStream(liveStreamId).ConfigureAwait(false);
+        if (User.GetIsApiKey())
+        {
+            await _mediaSourceManager.CloseLiveStream(liveStreamId).ConfigureAwait(false);
+        }
+        else
+        {
+            var owner = User.GetPlaybackOwnerId();
+            if (_liveStreams is null || string.IsNullOrEmpty(owner))
+            {
+                throw new MediaBrowser.Controller.Net.SecurityException("A verified live playback owner is required.");
+            }
+
+            await _liveStreams.CloseOwnedAsync(User.GetUserId(), owner, liveStreamId, playSessionId).ConfigureAwait(false);
+        }
+
         return NoContent();
     }
 

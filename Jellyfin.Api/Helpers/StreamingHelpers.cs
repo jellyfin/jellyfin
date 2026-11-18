@@ -17,6 +17,7 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Streaming;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.MediaInfo;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
 
@@ -27,6 +28,19 @@ namespace Jellyfin.Api.Helpers;
 /// </summary>
 public static class StreamingHelpers
 {
+    /// <summary>
+    /// Applies legacy parameters once, before playback admission and source ownership checks.
+    /// </summary>
+    /// <param name="streamingRequest">The request to normalize.</param>
+    public static void NormalizeRequest(StreamingRequestDto streamingRequest)
+    {
+        if (!string.IsNullOrWhiteSpace(streamingRequest.Params))
+        {
+            ParseParams(streamingRequest);
+            streamingRequest.Params = null;
+        }
+    }
+
     /// <summary>
     /// Gets the current streaming state.
     /// </summary>
@@ -42,7 +56,7 @@ public static class StreamingHelpers
     /// <param name="transcodingJobType">The <see cref="TranscodingJobType"/>.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
     /// <returns>A <see cref="Task"/> containing the current <see cref="StreamState"/>.</returns>
-    public static async Task<StreamState> GetStreamingState(
+    public static Task<StreamState> GetStreamingState(
         StreamingRequestDto streamingRequest,
         HttpContext httpContext,
         IMediaSourceManager mediaSourceManager,
@@ -54,12 +68,38 @@ public static class StreamingHelpers
         ITranscodeManager transcodeManager,
         TranscodingJobType transcodingJobType,
         CancellationToken cancellationToken)
+        => GetStreamingState(streamingRequest, httpContext, mediaSourceManager, userManager, libraryManager, serverConfigurationManager, mediaEncoder, encodingHelper, transcodeManager, transcodingJobType, cancellationToken, null);
+
+    /// <summary>Resolves an input after verifying its playback ownership.</summary>
+    /// <param name="streamingRequest">The canonical item and encoding request.</param>
+    /// <param name="httpContext">The current HTTP request.</param>
+    /// <param name="mediaSourceManager">The server media sources.</param>
+    /// <param name="userManager">The user manager.</param>
+    /// <param name="libraryManager">The library manager.</param>
+    /// <param name="serverConfigurationManager">The server configuration.</param>
+    /// <param name="mediaEncoder">The media encoder.</param>
+    /// <param name="encodingHelper">The encoding argument builder.</param>
+    /// <param name="transcodeManager">The server encoding jobs.</param>
+    /// <param name="transcodingJobType">The requested encoding job type.</param>
+    /// <param name="cancellationToken">The request cancellation token.</param>
+    /// <param name="playbackHelper">The authenticated source verifier.</param>
+    /// <returns>The verified streaming state.</returns>
+    public static async Task<StreamState> GetStreamingState(
+        StreamingRequestDto streamingRequest,
+        HttpContext httpContext,
+        IMediaSourceManager mediaSourceManager,
+        IUserManager userManager,
+        ILibraryManager libraryManager,
+        IServerConfigurationManager serverConfigurationManager,
+        IMediaEncoder mediaEncoder,
+        EncodingHelper encodingHelper,
+        ITranscodeManager transcodeManager,
+        TranscodingJobType transcodingJobType,
+        CancellationToken cancellationToken,
+        VideoPlaybackHelper? playbackHelper)
     {
         var httpRequest = httpContext.Request;
-        if (!string.IsNullOrWhiteSpace(streamingRequest.Params))
-        {
-            ParseParams(streamingRequest);
-        }
+        NormalizeRequest(streamingRequest);
 
         streamingRequest.StreamOptions = ParseStreamOptions(httpRequest.Query);
         if (httpRequest.Path.Value is null)
@@ -78,7 +118,8 @@ public static class StreamingHelpers
         {
             Request = streamingRequest,
             RequestedUrl = url,
-            UserAgent = httpRequest.Headers[HeaderNames.UserAgent]
+            UserAgent = httpRequest.Headers[HeaderNames.UserAgent],
+            PlaybackOwnerId = httpContext.User.GetPlaybackOwnerId()
         };
 
         var userId = httpContext.User.GetUserId();
@@ -112,12 +153,15 @@ public static class StreamingHelpers
 
         state.IsInputVideo = item.MediaType == MediaType.Video;
 
+        var isVideoOutput = streamingRequest is VideoRequestDto || (streamingRequest.Static && item.MediaType == MediaType.Video);
         MediaSourceInfo? mediaSource = null;
         if (string.IsNullOrWhiteSpace(streamingRequest.LiveStreamId))
         {
             var currentJob = !string.IsNullOrWhiteSpace(streamingRequest.PlaySessionId)
                 ? transcodeManager.GetTranscodingJob(streamingRequest.PlaySessionId)
                 : null;
+
+            playbackHelper?.VerifySource(httpContext, streamingRequest, currentJob, isVideoOutput);
 
             if (currentJob is not null)
             {
@@ -140,6 +184,7 @@ public static class StreamingHelpers
         }
         else
         {
+            playbackHelper?.VerifySource(httpContext, streamingRequest, null, isVideoOutput);
             var liveStreamInfo = await mediaSourceManager.GetLiveStreamWithDirectStreamProvider(streamingRequest.LiveStreamId, cancellationToken).ConfigureAwait(false);
             mediaSource = liveStreamInfo.Item1;
             state.DirectStreamProvider = liveStreamInfo.Item2;
@@ -160,9 +205,25 @@ public static class StreamingHelpers
             }
         }
 
+        if (mediaSource is null)
+        {
+            throw new ResourceNotFoundException("No compatible media source was found.");
+        }
+
+        playbackHelper?.VerifySelectedSource(httpContext, streamingRequest, mediaSource, item.MediaType);
+        if (playbackHelper is not null && !string.IsNullOrWhiteSpace(mediaSource.LiveStreamId))
+        {
+            playbackHelper.VerifyLiveStream(httpContext, streamingRequest.Id, mediaSource.LiveStreamId, streamingRequest.PlaySessionId, isVideoOutput);
+            streamingRequest.LiveStreamId = mediaSource.LiveStreamId;
+        }
+
         var encodingOptions = serverConfigurationManager.GetEncodingOptions();
 
         encodingHelper.AttachMediaSourceInfo(state, encodingOptions, mediaSource, url);
+        if (state.InputProtocol == MediaProtocol.Http && playbackHelper is not null)
+        {
+            state.MediaPath = playbackHelper.PrepareInputUrl(state.MediaPath);
+        }
 
         string? containerInternal = Path.GetExtension(state.RequestedUrl);
 

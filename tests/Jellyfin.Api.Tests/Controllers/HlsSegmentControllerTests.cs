@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Security.Claims;
+using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Controllers;
 using Jellyfin.Api.Helpers;
@@ -18,6 +19,7 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -127,14 +129,30 @@ public sealed class HlsSegmentControllerTests
     }
 
     [Fact]
+    public void GetHlsAudioSegmentLegacy_DifferentCaseRootIsRejectedOnCaseSensitivePlatforms()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var controller = CreateController("/Audio/abc/hls/segment/stream.mp3");
+        var differentRoot = Path.Combine(_transcodePath.ToUpperInvariant(), "segment");
+
+        Assert.IsType<BadRequestObjectResult>(controller.GetHlsAudioSegmentLegacy("abc", differentRoot));
+    }
+
+    [Fact]
     public void GetHlsPlaylistLegacy_M3u8InsideTranscodePath_ReturnsFile()
     {
         RegisterJob("list");
+        File.WriteAllText(Path.Combine(_transcodePath, "list.m3u8"), "#EXTM3U\nlist0.ts\n");
         var controller = CreateController("/Videos/abc/hls/list/stream.m3u8");
 
         var result = controller.GetHlsPlaylistLegacy(_itemId.ToString(), "list");
 
         Assert.IsType<VideoPlaybackResult>(result);
+        Assert.Equal("private, no-store", controller.Response.Headers.CacheControl.ToString());
     }
 
     [Fact]
@@ -221,6 +239,23 @@ public sealed class HlsSegmentControllerTests
 
         Assert.Throws<VideoPlaybackLimitException>(() => controller.GetHlsVideoSegmentLegacy(_itemId.ToString(), "playlist123", "playlist1230", "ts"));
         _transcodeManager.Verify(value => value.OnTranscodeBeginRequest(It.IsAny<string>(), It.IsAny<TranscodingJobType>()), Times.Never);
+    }
+
+    [Fact]
+    public void GetHlsVideoSegmentLegacy_ResponseRegistrationFailureReleasesJobRequest()
+    {
+        var job = RegisterJob("playlist123");
+        var controller = CreateController("/Videos/abc/hls/playlist123/playlist1230.ts");
+        var response = new Mock<IHttpResponseFeature>();
+        response.Setup(value => value.OnCompleted(It.IsAny<Func<object, Task>>(), It.IsAny<object>()))
+            .Throws(new InvalidOperationException("Response registration failed."));
+        controller.HttpContext.Features.Set(response.Object);
+
+        Assert.Throws<InvalidOperationException>(() => controller.GetHlsVideoSegmentLegacy(_itemId.ToString(), "playlist123", "playlist1230", "ts"));
+
+        _transcodeManager.Verify(value => value.OnTranscodeEndRequest(job), Times.Once);
+        _request.Verify(value => value.Dispose(), Times.Once);
+        _request.Verify(value => value.Retain(), Times.Never);
     }
 
     [Theory]

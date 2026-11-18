@@ -46,6 +46,7 @@ public class DynamicHlsHelper
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly EncodingHelper _encodingHelper;
     private readonly ITrickplayManager _trickplayManager;
+    private readonly VideoPlaybackHelper? _videoPlaybackHelper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DynamicHlsHelper"/> class.
@@ -73,6 +74,38 @@ public class DynamicHlsHelper
         IHttpContextAccessor httpContextAccessor,
         EncodingHelper encodingHelper,
         ITrickplayManager trickplayManager)
+        : this(libraryManager, userManager, mediaSourceManager, serverConfigurationManager, mediaEncoder, transcodeManager, networkManager, logger, httpContextAccessor, encodingHelper, trickplayManager, null)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DynamicHlsHelper"/> class.
+    /// </summary>
+    /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
+    /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
+    /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
+    /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+    /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
+    /// <param name="transcodeManager">Instance of <see cref="ITranscodeManager"/>.</param>
+    /// <param name="networkManager">Instance of the <see cref="INetworkManager"/> interface.</param>
+    /// <param name="logger">Instance of the <see cref="ILogger{DynamicHlsHelper}"/> interface.</param>
+    /// <param name="httpContextAccessor">Instance of the <see cref="IHttpContextAccessor"/> interface.</param>
+    /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
+    /// <param name="trickplayManager">Instance of <see cref="ITrickplayManager"/>.</param>
+    /// <param name="videoPlaybackHelper">The authenticated source verifier.</param>
+    public DynamicHlsHelper(
+        ILibraryManager libraryManager,
+        IUserManager userManager,
+        IMediaSourceManager mediaSourceManager,
+        IServerConfigurationManager serverConfigurationManager,
+        IMediaEncoder mediaEncoder,
+        ITranscodeManager transcodeManager,
+        INetworkManager networkManager,
+        ILogger<DynamicHlsHelper> logger,
+        IHttpContextAccessor httpContextAccessor,
+        EncodingHelper encodingHelper,
+        ITrickplayManager trickplayManager,
+        VideoPlaybackHelper? videoPlaybackHelper)
     {
         _libraryManager = libraryManager;
         _userManager = userManager;
@@ -85,6 +118,7 @@ public class DynamicHlsHelper
         _httpContextAccessor = httpContextAccessor;
         _encodingHelper = encodingHelper;
         _trickplayManager = trickplayManager;
+        _videoPlaybackHelper = videoPlaybackHelper;
     }
 
     /// <summary>
@@ -133,7 +167,8 @@ public class DynamicHlsHelper
                 _encodingHelper,
                 _transcodeManager,
                 transcodingJobType,
-                cancellationTokenSource.Token)
+                cancellationTokenSource.Token,
+                _videoPlaybackHelper)
             .ConfigureAwait(false);
 
         _httpContextAccessor.HttpContext.Response.Headers.Append(HeaderNames.Expires, "0");
@@ -150,7 +185,11 @@ public class DynamicHlsHelper
 
         var isLiveStream = state.IsSegmentedLiveStream;
 
-        var queryString = _httpContextAccessor.HttpContext.Request.QueryString.ToString();
+        var queryString = HlsHelpers.GetAuthenticatedPlaylistQuery(
+            _httpContextAccessor.HttpContext.Request.QueryString.ToString(),
+            state.Request.PlaySessionId,
+            _httpContextAccessor.HttpContext.User.GetToken());
+        _httpContextAccessor.HttpContext.Response.Headers.CacheControl = "private, no-store";
         var playlistQuery = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(queryString);
 
         // From universal audio service: timeline is determined by segment index and runtime ticks, not StartTimeTicks

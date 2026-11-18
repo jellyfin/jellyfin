@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
+using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
@@ -157,7 +158,8 @@ public class HlsSegmentController : BaseJellyfinApiController
 
         var prefix = Path.ChangeExtension(playlistPath, null);
         var segment = Path.ChangeExtension(file, null);
-        if (!segment.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
+        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        if (!segment.StartsWith(prefix, comparison)
             || !int.TryParse(segment.AsSpan(prefix.Length), NumberStyles.Integer, CultureInfo.InvariantCulture, out var index)
             || index < -1)
         {
@@ -174,7 +176,8 @@ public class HlsSegmentController : BaseJellyfinApiController
         var transcodePath = Path.TrimEndingDirectorySeparator(Path.GetFullPath(_serverConfigurationManager.GetTranscodePath()));
         var file = Path.GetFullPath(filename, transcodePath);
         // Require a separator after the transcode path so a sibling like "<transcodePath>-evil" can't pass.
-        if (!file.StartsWith(transcodePath + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        if (!file.StartsWith(transcodePath + Path.DirectorySeparatorChar, comparison))
         {
             return null;
         }
@@ -208,16 +211,32 @@ public class HlsSegmentController : BaseJellyfinApiController
             return NotFound("Hls segment not found.");
         }
 
-        Response.OnCompleted(() =>
+        try
         {
-            if (transcodingJob is not null)
+            ActionResult result;
+            if (string.Equals(path, playlistPath, StringComparison.Ordinal))
             {
-                _transcodeManager.OnTranscodeEndRequest(transcodingJob);
+                var text = HlsHelpers.AuthenticatePlaylistSegments(System.IO.File.ReadAllText(path), playlistPath, User.GetToken());
+                Response.Headers.CacheControl = "private, no-store";
+                result = Content(text, MimeTypes.GetMimeType(path));
+            }
+            else
+            {
+                result = FileStreamResponseHelpers.GetStaticFileResult(path, MimeTypes.GetMimeType(path));
             }
 
-            return Task.CompletedTask;
-        });
+            Response.OnCompleted(() =>
+            {
+                _transcodeManager.OnTranscodeEndRequest(transcodingJob);
+                return Task.CompletedTask;
+            });
 
-        return FileStreamResponseHelpers.GetStaticFileResult(path, MimeTypes.GetMimeType(path));
+            return result;
+        }
+        catch
+        {
+            _transcodeManager.OnTranscodeEndRequest(transcodingJob);
+            throw;
+        }
     }
 }
