@@ -33,6 +33,7 @@ public class PlaystateController : BaseJellyfinApiController
     private readonly ISessionManager _sessionManager;
     private readonly ILogger<PlaystateController> _logger;
     private readonly ITranscodeManager _transcodeManager;
+    private readonly VideoPlaybackHelper _videoPlaybackHelper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PlaystateController"/> class.
@@ -42,6 +43,7 @@ public class PlaystateController : BaseJellyfinApiController
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="sessionManager">Instance of the <see cref="ISessionManager"/> interface.</param>
     /// <param name="loggerFactory">Instance of the <see cref="ILoggerFactory"/> interface.</param>
+    /// <param name="videoPlaybackHelper">The video playback authorization helper.</param>
     /// <param name="transcodeManager">Instance of the <see cref="ITranscodeManager"/> interface.</param>
     public PlaystateController(
         IUserManager userManager,
@@ -49,7 +51,8 @@ public class PlaystateController : BaseJellyfinApiController
         ILibraryManager libraryManager,
         ISessionManager sessionManager,
         ILoggerFactory loggerFactory,
-        ITranscodeManager transcodeManager)
+        ITranscodeManager transcodeManager,
+        VideoPlaybackHelper videoPlaybackHelper)
     {
         _userManager = userManager;
         _userDataRepository = userDataRepository;
@@ -58,6 +61,7 @@ public class PlaystateController : BaseJellyfinApiController
         _logger = loggerFactory.CreateLogger<PlaystateController>();
 
         _transcodeManager = transcodeManager;
+        _videoPlaybackHelper = videoPlaybackHelper;
     }
 
     /// <summary>
@@ -234,6 +238,7 @@ public class PlaystateController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public ActionResult PingPlaybackSession([FromQuery, Required] string playSessionId)
     {
+        _videoPlaybackHelper.VerifyEncodingControl(HttpContext, playSessionId, _transcodeManager.GetTranscodingJob(playSessionId), reportActivity: true);
         _transcodeManager.PingTranscodingJob(playSessionId, null);
         return NoContent();
     }
@@ -248,9 +253,15 @@ public class PlaystateController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> ReportPlaybackStopped([FromBody] PlaybackStopInfo playbackStopInfo)
     {
+        if (string.IsNullOrWhiteSpace(playbackStopInfo.PlaySessionId))
+        {
+            playbackStopInfo.PlaySessionId = _videoPlaybackHelper.ResolveLegacyPlaySession(HttpContext, playbackStopInfo.ItemId);
+        }
+
         _logger.LogDebug("ReportPlaybackStopped PlaySessionId: {0}", playbackStopInfo.PlaySessionId ?? string.Empty);
         if (!string.IsNullOrWhiteSpace(playbackStopInfo.PlaySessionId))
         {
+            _videoPlaybackHelper.VerifyEncodingControl(HttpContext, playbackStopInfo.PlaySessionId, _transcodeManager.GetTranscodingJob(playbackStopInfo.PlaySessionId));
             await _transcodeManager.KillTranscodingJobs(User.GetDeviceId()!, playbackStopInfo.PlaySessionId, s => true).ConfigureAwait(false);
         }
 
@@ -464,9 +475,15 @@ public class PlaystateController : BaseJellyfinApiController
             NextMediaType = nextMediaType
         };
 
+        if (string.IsNullOrWhiteSpace(playbackStopInfo.PlaySessionId))
+        {
+            playbackStopInfo.PlaySessionId = _videoPlaybackHelper.ResolveLegacyPlaySession(HttpContext, playbackStopInfo.ItemId);
+        }
+
         _logger.LogDebug("ReportPlaybackStopped PlaySessionId: {0}", playbackStopInfo.PlaySessionId ?? string.Empty);
         if (!string.IsNullOrWhiteSpace(playbackStopInfo.PlaySessionId))
         {
+            _videoPlaybackHelper.VerifyEncodingControl(HttpContext, playbackStopInfo.PlaySessionId, _transcodeManager.GetTranscodingJob(playbackStopInfo.PlaySessionId));
             await _transcodeManager.KillTranscodingJobs(User.GetDeviceId()!, playbackStopInfo.PlaySessionId, s => true).ConfigureAwait(false);
         }
 

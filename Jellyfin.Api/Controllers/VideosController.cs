@@ -20,7 +20,6 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Streaming;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
@@ -28,7 +27,6 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Querying;
-using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -50,7 +48,7 @@ public class VideosController : BaseJellyfinApiController
     private readonly ITranscodeManager _transcodeManager;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly EncodingHelper _encodingHelper;
-    private readonly ISessionManager _sessionManager;
+    private readonly VideoPlaybackHelper _videoPlaybackHelper;
 
     private readonly TranscodingJobType _transcodingJobType = TranscodingJobType.Progressive;
 
@@ -66,7 +64,7 @@ public class VideosController : BaseJellyfinApiController
     /// <param name="transcodeManager">Instance of the <see cref="ITranscodeManager"/> interface.</param>
     /// <param name="httpClientFactory">Instance of the <see cref="IHttpClientFactory"/> interface.</param>
     /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
-    /// <param name="sessionManager">Instance of the <see cref="ISessionManager"/> interface.</param>
+    /// <param name="videoPlaybackHelper">The video playback authorization helper.</param>
     public VideosController(
         ILibraryManager libraryManager,
         IUserManager userManager,
@@ -77,7 +75,7 @@ public class VideosController : BaseJellyfinApiController
         ITranscodeManager transcodeManager,
         IHttpClientFactory httpClientFactory,
         EncodingHelper encodingHelper,
-        ISessionManager sessionManager)
+        VideoPlaybackHelper videoPlaybackHelper)
     {
         _libraryManager = libraryManager;
         _userManager = userManager;
@@ -88,7 +86,7 @@ public class VideosController : BaseJellyfinApiController
         _transcodeManager = transcodeManager;
         _httpClientFactory = httpClientFactory;
         _encodingHelper = encodingHelper;
-        _sessionManager = sessionManager;
+        _videoPlaybackHelper = videoPlaybackHelper;
     }
 
     /// <summary>
@@ -318,6 +316,7 @@ public class VideosController : BaseJellyfinApiController
     /// <param name="enableAudioVbrEncoding">Optional. Whether to enable Audio Encoding.</param>
     /// <response code="200">Video stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
+    [Authorize]
     [HttpGet("{itemId}/stream")]
     [HttpHead("{itemId}/stream", Name = "HeadVideoStream")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -432,6 +431,9 @@ public class VideosController : BaseJellyfinApiController
             EnableAudioVbrEncoding = enableAudioVbrEncoding
         };
 
+        using var playback = _videoPlaybackHelper.Acquire(HttpContext, itemId, streamingRequest.PlaySessionId, out var resolvedPlaySessionId);
+        streamingRequest.PlaySessionId = resolvedPlaySessionId;
+
         var state = await StreamingHelpers.GetStreamingState(
                 streamingRequest,
                 HttpContext,
@@ -446,30 +448,6 @@ public class VideosController : BaseJellyfinApiController
                 cancellationTokenSource.Token)
             .ConfigureAwait(false);
 
-        // Check video stream limits before starting transcoding
-        if (state.IsOutputVideo)
-        {
-            var userId = HttpContext.User.GetUserId();
-            if (!userId.IsEmpty())
-            {
-                var user = _userManager.GetUserById(userId);
-                if (user is not null && user.MaxActiveVideoStreams > 0)
-                {
-                    var activeVideoStreams = _sessionManager.Sessions.Count(s =>
-                        s.UserId.Equals(user.Id) &&
-                        s.NowPlayingItem?.MediaType == MediaType.Video &&
-                        (s.TranscodingInfo != null ||
-                         (s.PlayState?.PlayMethod != PlayMethod.Transcode &&
-                          (DateTime.UtcNow - s.LastPlaybackCheckIn).TotalMinutes < 2)));
-
-                    if (activeVideoStreams >= user.MaxActiveVideoStreams)
-                    {
-                        throw new MediaBrowser.Controller.Net.SecurityException($"User '{user.Username}' has reached their maximum number of concurrent video streams ({user.MaxActiveVideoStreams}).");
-                    }
-                }
-            }
-        }
-
         if (@static.HasValue && @static.Value && state.DirectStreamProvider is not null)
         {
             var liveStreamInfo = _mediaSourceManager.GetLiveStreamInfo(streamingRequest.LiveStreamId);
@@ -480,14 +458,14 @@ public class VideosController : BaseJellyfinApiController
 
             var liveStream = new ProgressiveFileStream(liveStreamInfo.GetStream());
             // TODO (moved from MediaBrowser.Api): Don't hardcode contentType
-            return File(liveStream, MimeTypes.GetMimeType("file.ts"));
+            return VideoPlaybackHelper.Wrap(File(liveStream, MimeTypes.GetMimeType("file.ts")), playback);
         }
 
         // Static remote stream
         if (@static.HasValue && @static.Value && state.InputProtocol == MediaProtocol.Http)
         {
             var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
-            return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, httpClient, HttpContext).ConfigureAwait(false);
+            return VideoPlaybackHelper.Wrap(await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, httpClient, HttpContext).ConfigureAwait(false), playback);
         }
 
         if (@static.HasValue && @static.Value && state.InputProtocol != MediaProtocol.File)
@@ -503,18 +481,17 @@ public class VideosController : BaseJellyfinApiController
             if (state.MediaSource.IsInfiniteStream)
             {
                 var liveStream = new ProgressiveFileStream(state.MediaPath, null, _transcodeManager);
-                return File(liveStream, contentType);
+                return VideoPlaybackHelper.Wrap(File(liveStream, contentType), playback);
             }
 
-            return FileStreamResponseHelpers.GetStaticFileResult(
-                state.MediaPath,
-                contentType);
+            var result = FileStreamResponseHelpers.GetStaticFileResult(state.MediaPath, contentType);
+            return VideoPlaybackHelper.Wrap(result, playback);
         }
 
         // Need to start ffmpeg (because media can't be returned directly)
         var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
         var ffmpegCommandLineArguments = _encodingHelper.GetProgressiveVideoFullCommandLine(state, encodingOptions, EncoderPreset.superfast);
-        return await FileStreamResponseHelpers.GetTranscodedFile(
+        var transcodedResult = await FileStreamResponseHelpers.GetTranscodedFile(
             state,
             isHeadRequest,
             HttpContext,
@@ -522,6 +499,7 @@ public class VideosController : BaseJellyfinApiController
             ffmpegCommandLineArguments,
             _transcodingJobType,
             cancellationTokenSource).ConfigureAwait(false);
+        return VideoPlaybackHelper.Wrap(transcodedResult, playback);
     }
 
     /// <summary>
@@ -580,6 +558,7 @@ public class VideosController : BaseJellyfinApiController
     /// <param name="enableAudioVbrEncoding">Optional. Whether to enable Audio Encoding.</param>
     /// <response code="200">Video stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
+    [Authorize]
     [HttpGet("{itemId}/stream.{container}")]
     [HttpHead("{itemId}/stream.{container}", Name = "HeadVideoStreamByContainer")]
     [ProducesResponseType(StatusCodes.Status200OK)]
