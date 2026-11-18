@@ -39,5 +39,18 @@
     "Latest": "Վերջինը",
     "LyricDownloadFailureFromForItem": "Չհաջողվեց ներբեռնել {1}-ի երգի բառերը {0}-ից",
     "MixedContent": "Խառը բովանդակություն",
-    "CleanupUserDataTaskDescription": "Մաքրում է օգտատիրոջ բոլոր տվյալները (դիտման կարգավիճակ, «սիրելի» նշում և այլն) այն մեդիաֆայլերից, որոնք առնվազն 90 օր է՝ առկա չեն։"
+    "CleanupUserDataTaskDescription": "Մաքրում է օգտատիրոջ բոլոր տվյալները (դիտման կարգավիճակ, «սիրելի» նշում և այլն) այն մեդիաֆայլերից, որոնք առնվազն 90 օր է՝ առկա չեն։",
+    "MusicVideos": "երաժշտական տեսահոլովակներ",
+    "NameExtraDeletedScene": "ջնջված տեսարան",
+    "NameExtraInterview": "Հարցազրույց",
+    "NameExtraSample": "Նմուշ",
+    "NameExtraScene": "Տեսարան",
+    "NameExtraShort": "Կարճ",
+    "NameExtraThemeSong": "Թեմատիկ երգ",
+    "NameExtraThemeVideo": "Թեմատիկ տեսահոլովակ",
+    "NameExtraTrailer": "Թրեյլեր",
+    "NameExtraUnknown": "Ավելին",
+    "NameInstallFailed": "{0} տեղադրումը ձախողվեց",
+    "NameSeasonUnknown": "Անհայտ սեզոն",
+    "NewVersionIsAvailable": "Jellyfin սերվերի թարմացված տարբերակը հասանելի է տեղադրման համար"
 }
