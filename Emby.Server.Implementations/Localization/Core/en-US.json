@@ -100,6 +100,8 @@
     "TaskCleanLogsDescription": "Deletes log files that are more than {0} days old.",
     "TaskRefreshPeople": "Refresh People",
     "TaskRefreshPeopleDescription": "Updates metadata for actors and directors in your media library.",
+    "TaskRecomputeParentalRatingScores": "Recompute Parental Rating Scores",
+    "TaskRecomputeParentalRatingScoresDescription": "Recalculates parental rating scores used to filter content for restricted users. Runs automatically when the metadata country changes or a server update changes the rating data. Run it manually if filtering looks wrong.",
     "TaskRefreshTrickplayImages": "Generate Trickplay Images",
     "TaskRefreshTrickplayImagesDescription": "Creates trickplay previews for videos in enabled libraries.",
     "TaskUpdatePlugins": "Update Plugins",

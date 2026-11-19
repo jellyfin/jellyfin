@@ -1685,6 +1685,15 @@ namespace Emby.Server.Implementations.Library
             return null;
         }
 
+        /// <summary>
+        /// Gets an item from the in-memory item cache only. Unlike <see cref="GetItemById"/> it never loads the item from the database.
+        /// </summary>
+        /// <param name="id">The item id.</param>
+        /// <param name="item">The cached item, if there is one.</param>
+        /// <returns><c>true</c> if the item is cached.</returns>
+        internal bool TryGetCachedItem(Guid id, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out BaseItem? item)
+            => _cache.TryGet(id, out item);
+
         /// <inheritdoc />
         public BaseItem? GetItemById(Guid id)
         {

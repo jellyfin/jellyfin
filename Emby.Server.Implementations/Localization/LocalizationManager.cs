@@ -7,6 +7,8 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Extensions;
@@ -28,7 +30,18 @@ namespace Emby.Server.Implementations.Localization
         private const string CulturesPath = "Emby.Server.Implementations.Localization.iso6392.txt";
         private const string CountriesPath = "Emby.Server.Implementations.Localization.countries.json";
         private const string CoreResourcePrefix = "Emby.Server.Implementations.Localization.Core.";
+
+        /// <summary>
+        /// The version of the code that turns rating strings into stored scores. It is part of <see cref="RatingsDataVersion"/>.
+        /// Bump it whenever a change alters the stored score of an existing item without touching the rating
+        /// tables: the code in <see cref="GetRatingScore"/> or <c>_unratedValues</c>, and the score related members of
+        /// <c>BaseItem</c> (<c>GetParentalRatingScore</c>, the rating inheritance and the preferred metadata country).
+        /// <c>LocalizationManagerTests.GetRatingScore_GoldenValues_MatchRecordedScores</c> fails when the scores of
+        /// <see cref="GetRatingScore"/> change.
+        /// </summary>
+        private const int RatingsAlgorithmVersion = 1;
         private static readonly Assembly _assembly = typeof(LocalizationManager).Assembly;
+        private static readonly Lazy<string> _ratingsDataVersion = new(() => ComputeRatingsDataVersion(ReadRatingResources()));
         private static readonly string[] _unratedValues = ["n/a", "unrated", "not rated", "nr"];
 
         private readonly IServerConfigurationManager _configurationManager;
@@ -66,6 +79,64 @@ namespace Emby.Server.Implementations.Localization
             _logger = logger;
 
             _configurationManager.ConfigurationUpdated += OnConfigurationUpdated;
+        }
+
+        /// <summary>
+        /// Gets a fingerprint of the parental rating data: a lowercase hexadecimal SHA-256 over the embedded
+        /// rating tables and <see cref="RatingsAlgorithmVersion"/>.
+        /// </summary>
+        internal static string RatingsDataVersion => _ratingsDataVersion.Value;
+
+        /// <summary>
+        /// Computes the ratings data version of the given rating resources.
+        /// </summary>
+        /// <remarks>
+        /// The result does not depend on the order of the resources, nor on the line endings of their content.
+        /// </remarks>
+        /// <param name="resources">The resource names with their raw content.</param>
+        /// <returns>A lowercase hexadecimal SHA-256 string.</returns>
+        internal static string ComputeRatingsDataVersion(IEnumerable<KeyValuePair<string, byte[]>> resources)
+        {
+            ArgumentNullException.ThrowIfNull(resources);
+
+            using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+            foreach (var resource in resources.OrderBy(r => r.Key, StringComparer.Ordinal))
+            {
+                hash.AppendData(Encoding.UTF8.GetBytes(resource.Key));
+                hash.AppendData([0]);
+
+                // Ignore carriage returns, so that CRLF and LF checkouts of the same file hash equally.
+                hash.AppendData(resource.Value.Where(b => b != (byte)'\r').ToArray());
+                hash.AppendData([0]);
+            }
+
+            hash.AppendData(Encoding.UTF8.GetBytes("algorithm:" + RatingsAlgorithmVersion.ToString(CultureInfo.InvariantCulture)));
+
+            return Convert.ToHexStringLower(hash.GetHashAndReset());
+        }
+
+        private static List<KeyValuePair<string, byte[]>> ReadRatingResources()
+        {
+            var resources = new List<KeyValuePair<string, byte[]>>();
+            foreach (var resource in _assembly.GetManifestResourceNames())
+            {
+                if (!resource.StartsWith(RatingsPath, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                using var stream = _assembly.GetManifestResourceStream(resource);
+                if (stream is null)
+                {
+                    continue;
+                }
+
+                using var buffer = new MemoryStream();
+                stream.CopyTo(buffer);
+                resources.Add(new KeyValuePair<string, byte[]>(resource, buffer.ToArray()));
+            }
+
+            return resources;
         }
 
         /// <summary>
