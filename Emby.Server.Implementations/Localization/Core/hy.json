@@ -120,5 +120,6 @@
     "TaskExtractMediaSegmentsDescription": "Արդյունահանում է կամ ստանում է մեդիայի սեգմենտները MediaSegment միացված Փլագինից։",
     "TaskMoveTrickplayImages": "Տեղափոխել Trickplay Պատկերի Տեղադրությունը",
     "TaskMoveTrickplayImagesDescription": "Տեղափոխում է գոյություն ունեցող trickplay ֆայլերը ըստ գրադարանի կարգավորումներից։",
-    "CleanupUserDataTask": "Օգտատերի տվյալների մաքրման գործողություն"
+    "CleanupUserDataTask": "Օգտատերի տվյալների մաքրման գործողություն",
+    "NameExtraNumbered": "{0} {1}"
 }
