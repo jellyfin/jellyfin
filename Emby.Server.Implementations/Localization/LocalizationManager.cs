@@ -29,7 +29,7 @@ namespace Emby.Server.Implementations.Localization
         private const string CountriesPath = "Emby.Server.Implementations.Localization.countries.json";
         private const string CoreResourcePrefix = "Emby.Server.Implementations.Localization.Core.";
         private static readonly Assembly _assembly = typeof(LocalizationManager).Assembly;
-        private static readonly string[] _unratedValues = ["n/a", "unrated", "not rated", "nr"];
+        private static readonly string[] _unratedValues = ["n/a", "unrated", "not rated", "nr", "ur"];
 
         private readonly IServerConfigurationManager _configurationManager;
         private readonly ILogger<LocalizationManager> _logger;
