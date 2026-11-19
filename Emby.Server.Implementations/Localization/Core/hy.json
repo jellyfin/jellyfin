@@ -91,5 +91,7 @@
     "UserStartedPlayingItemWithValues": "{0}-ը նվագարկում է «{1}» {2}-ում",
     "UserStoppedPlayingItemWithValues": "{0}-ը վերջացրեց նվագարկումը «{1}» {2}-ում",
     "TaskCleanActivityLogDescription": "Ջնջում է ակտիվության մատյանի՝ սահմանված ժամկետից հին գրառումները։",
-    "TaskCleanCache": "Մաքրել քեշի պանակը"
+    "TaskCleanCache": "Մաքրել քեշի պանակը",
+    "TaskCleanCacheDescription": "Ջնջում է քեշի ֆայլերը որոնք այլևս հարկավոր չեն համակարգին:",
+    "TaskRefreshChapterImages": "Արդյունահանել Գլուխների Պատկերները"
 }
