@@ -782,7 +782,7 @@ namespace Jellyfin.LiveTv.Listings
             var root = await Request<TokenDto>(options, false, null, cancellationToken).ConfigureAwait(false);
             if (string.Equals(root?.Message, "OK", StringComparison.Ordinal))
             {
-                _logger.LogInformation("Authenticated with Schedules Direct token: {Token}", root.Token);
+                _logger.LogInformation("Authenticated with Schedules Direct. Token expires at {TokenTimestamp}", root.TokenTimestamp);
                 return root.Token;
             }
 
