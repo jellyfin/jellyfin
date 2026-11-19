@@ -52,7 +52,7 @@
     "NameExtraUnknown": "Ավելին",
     "NameInstallFailed": "{0} տեղադրումը ձախողվեց",
     "NameSeasonUnknown": "Անհայտ սեզոն",
-    "NewVersionIsAvailable": "Jellyfin սերվերի թարմացված տարբերակը հասանելի է տեղադրման համար",
+    "NewVersionIsAvailable": "Jellyfin սերվերի թարմացված տարբերակը հասանելի է տեղադրման համար:",
     "NotificationOptionApplicationUpdateAvailable": "Հավելվածի թարմացումը հասանելի է",
     "NotificationOptionApplicationUpdateInstalled": "Հավելվածը թարմացված է",
     "NotificationOptionAudioPlayback": "Աուդիոյի նվագարկումը սկսված է",
@@ -112,5 +112,13 @@
     "TaskDownloadMissingLyrics": "Ներմուծել փակասող երգի տեքստը",
     "TaskDownloadMissingLyricsDescription": "Ներմուծում է երգի տեքստի երգի համար",
     "TaskDownloadMissingSubtitlesDescription": "Հիմնված մետադատայի կարգավորման որոնում է ինտերնետում պակասող ենթագրերը։",
-    "TaskOptimizeDatabase": "Օպտիմալացնել տվյալների բազան"
+    "TaskOptimizeDatabase": "Օպտիմալացնել տվյալների բազան",
+    "TaskOptimizeDatabaseDescription": "Սեղմում է տվյալների բազան և ազատում է տեղ հիշողության մեջ։ Այս առաջադրանքի գործարկումը գրադարանի սկանավորումից կամ այլ փոփոխություններից հետո, որոնք ազդում են տվյալների բազայի վրա, կարող է բարելավել արտադրողականությունը։",
+    "TaskKeyframeExtractor": "Բանալի Կադրերի Արդյունահանիչ",
+    "TaskKeyframeExtractorDescription": "Արդյունահանում է բանալի կադրերը տեսանյութերի ֆայլերից, որպեսզի ստեղծել ավելի ճշգրիտ HLS նվագացանկ։ Այս առաջադրանքը կատարելը կարող է տևել երկար ժամանակ։",
+    "TaskExtractMediaSegments": "Մեդիայի Սեգմենտի Սկանավորում",
+    "TaskExtractMediaSegmentsDescription": "Արդյունահանում է կամ ստանում է մեդիայի սեգմենտները MediaSegment միացված Փլագինից։",
+    "TaskMoveTrickplayImages": "Տեղափոխել Trickplay Պատկերի Տեղադրությունը",
+    "TaskMoveTrickplayImagesDescription": "Տեղափոխում է գոյություն ունեցող trickplay ֆայլերը ըստ գրադարանի կարգավորումներից։",
+    "CleanupUserDataTask": "Օգտատերի տվյալների մաքրման գործողություն"
 }
