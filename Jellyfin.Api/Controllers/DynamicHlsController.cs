@@ -2032,7 +2032,7 @@ public class DynamicHlsController : BaseJellyfinApiController
 
             cancellationToken.ThrowIfCancellationRequested();
         }
-        else
+        else if (!segmentExists)
         {
             _logger.LogWarning("cannot serve {0} as it doesn't exist and no transcode is running", segmentPath);
         }
