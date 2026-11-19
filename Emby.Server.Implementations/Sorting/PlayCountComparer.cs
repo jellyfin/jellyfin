@@ -1,5 +1,7 @@
 #nullable disable
 
+using System;
+using System.Collections.Generic;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Entities;
@@ -12,13 +14,16 @@ namespace Emby.Server.Implementations.Sorting
     /// <summary>
     /// Class PlayCountComparer.
     /// </summary>
-    public class PlayCountComparer : IUserBaseItemComparer
+    public class PlayCountComparer : IUserBaseItemComparer, IUserDataBatchComparer
     {
         /// <summary>
         /// Gets or sets the user.
         /// </summary>
         /// <value>The user.</value>
         public User User { get; set; }
+
+        /// <inheritdoc />
+        public IReadOnlyDictionary<Guid, UserItemData> UserDataById { get; set; }
 
         /// <summary>
         /// Gets the name.
@@ -56,7 +61,7 @@ namespace Emby.Server.Implementations.Sorting
         /// <returns>DateTime.</returns>
         private int GetValue(BaseItem x)
         {
-            var userdata = UserDataManager.GetUserData(User, x);
+            var userdata = UserDataById?.GetValueOrDefault(x.Id) ?? UserDataManager.GetUserData(User, x);
 
             return userdata is null ? 0 : userdata.PlayCount;
         }

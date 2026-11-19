@@ -8,6 +8,7 @@ using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Querying;
 using Microsoft.EntityFrameworkCore;
@@ -59,7 +60,10 @@ public sealed partial class BaseItemRepository
         dbQuery = ApplyQueryPaging(dbQuery, filter);
         dbQuery = ApplyNavigations(dbQuery, filter);
 
-        result.Items = dbQuery.AsEnumerable().Where(e => e != null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).Where(dto => dto != null).ToArray()!;
+        result.Items = LoadCollections(
+            context,
+            filter,
+            dbQuery.AsEnumerable().Where(e => e != null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).Where(dto => dto != null).ToArray()!);
         result.StartIndex = filter.StartIndex ?? 0;
         return result;
     }
@@ -88,11 +92,14 @@ public sealed partial class BaseItemRepository
                 return Array.Empty<BaseItemDto>();
             }
 
-            var itemsById = ApplyNavigations(context.BaseItems.AsNoTracking().WhereOneOrMany(orderedIds, e => e.Id), filter)
-                .AsSplitQuery()
-                .AsEnumerable()
-                .Select(w => DeserializeBaseItem(w, filter.SkipDeserialization))
-                .Where(dto => dto != null)
+            var itemsById = LoadCollections(
+                    context,
+                    filter,
+                    ApplyNavigations(context.BaseItems.AsNoTracking().WhereOneOrMany(orderedIds, e => e.Id), filter)
+                        .AsEnumerable()
+                        .Select(w => DeserializeBaseItem(w, filter.SkipDeserialization))
+                        .Where(dto => dto != null)
+                        .ToArray()!)
                 .ToDictionary(i => i!.Id);
 
             return orderedIds.Where(itemsById.ContainsKey).Select(id => itemsById[id]).ToArray()!;
@@ -100,7 +107,10 @@ public sealed partial class BaseItemRepository
 
         dbQuery = ApplyNavigations(dbQuery, filter);
 
-        return dbQuery.AsEnumerable().Where(e => e != null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).Where(dto => dto != null).ToArray()!;
+        return LoadCollections(
+            context,
+            filter,
+            dbQuery.AsEnumerable().Where(e => e != null).Select(w => DeserializeBaseItem(w, filter.SkipDeserialization)).Where(dto => dto != null).ToArray()!);
     }
 
     /// <inheritdoc/>
@@ -190,13 +200,16 @@ public sealed partial class BaseItemRepository
             context.BaseItems.AsNoTracking().Where(e => idsQuery.Contains(e.Id)),
             filter);
 
-        return itemsQuery
-            .OrderByDescending(e => e.DateCreated)
-            .ThenByDescending(e => e.Id)
-            .AsEnumerable()
-            .Select(w => DeserializeBaseItem(w, filter.SkipDeserialization))
-            .Where(dto => dto != null)
-            .ToArray()!;
+        return LoadCollections(
+            context,
+            filter,
+            itemsQuery
+                .OrderByDescending(e => e.DateCreated)
+                .ThenByDescending(e => e.Id)
+                .AsEnumerable()
+                .Select(w => DeserializeBaseItem(w, filter.SkipDeserialization))
+                .Where(dto => dto != null)
+                .ToArray()!);
     }
 
     private IReadOnlyList<BaseItemDto> LoadLatestByIds(
@@ -213,13 +226,16 @@ public sealed partial class BaseItemRepository
             context.BaseItems.AsNoTracking().WhereOneOrMany(ids, e => e.Id),
             filter);
 
-        return itemsQuery
-            .OrderByDescending(e => e.DateCreated)
-            .ThenByDescending(e => e.Id)
-            .AsEnumerable()
-            .Select(w => DeserializeBaseItem(w, filter.SkipDeserialization))
-            .Where(dto => dto != null)
-            .ToArray()!;
+        return LoadCollections(
+            context,
+            filter,
+            itemsQuery
+                .OrderByDescending(e => e.DateCreated)
+                .ThenByDescending(e => e.Id)
+                .AsEnumerable()
+                .Select(w => DeserializeBaseItem(w, filter.SkipDeserialization))
+                .Where(dto => dto != null)
+                .ToArray()!);
     }
 
     /// <summary>
@@ -533,10 +549,13 @@ public sealed partial class BaseItemRepository
             .ThenByDescending(r => r.Entity.Id);
         }
 
-        return finalResults
-            .Select(r => DeserializeBaseItem(r.Entity, filter.SkipDeserialization))
-            .Where(dto => dto is not null)
-            .ToArray()!;
+        return LoadCollections(
+            context,
+            filter,
+            finalResults
+                .Select(r => DeserializeBaseItem(r.Entity, filter.SkipDeserialization))
+                .Where(dto => dto is not null)
+                .ToArray()!);
     }
 
     /// <inheritdoc/>
@@ -557,20 +576,13 @@ public sealed partial class BaseItemRepository
             throw new ArgumentException("Guid can't be empty", nameof(id));
         }
 
+        // This is what LibraryManager.GetItemById goes through, and callers of that expect a whole
+        // item, so it asks for everything rather than taking a caller's narrower options.
+        var filter = new InternalItemsQuery { DtoOptions = new DtoOptions() };
+
         using var context = _dbProvider.CreateDbContext();
-        var dbQuery = PrepareItemQuery(context, new()
-        {
-            DtoOptions = new()
-            {
-                EnableImages = true
-            }
-        });
-        dbQuery = dbQuery.Include(e => e.TrailerTypes)
-            .Include(e => e.Provider)
-            .Include(e => e.LockedFields)
-            .Include(e => e.UserData)
-            .Include(e => e.Images)
-            .Include(e => e.LinkedChildEntities)
+        var dbQuery = PrepareItemQuery(context, filter)
+            .Include(e => e.TrailerTypes)
             .AsSingleQuery();
 
         var item = dbQuery.FirstOrDefault(e => e.Id == id);
@@ -579,7 +591,8 @@ public sealed partial class BaseItemRepository
             return null;
         }
 
-        return DeserializeBaseItem(item);
+        var dto = DeserializeBaseItem(item);
+        return dto is null ? null : LoadCollections(context, filter, [dto])[0];
     }
 
     /// <inheritdoc />

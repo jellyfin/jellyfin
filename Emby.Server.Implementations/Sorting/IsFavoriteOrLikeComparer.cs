@@ -1,6 +1,8 @@
 #nullable disable
 #pragma warning disable CS1591
 
+using System;
+using System.Collections.Generic;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Entities;
@@ -9,13 +11,16 @@ using MediaBrowser.Controller.Sorting;
 
 namespace Emby.Server.Implementations.Sorting
 {
-    public class IsFavoriteOrLikeComparer : IUserBaseItemComparer
+    public class IsFavoriteOrLikeComparer : IUserBaseItemComparer, IUserDataBatchComparer
     {
         /// <summary>
         /// Gets or sets the user.
         /// </summary>
         /// <value>The user.</value>
         public User User { get; set; }
+
+        /// <inheritdoc />
+        public IReadOnlyDictionary<Guid, UserItemData> UserDataById { get; set; }
 
         /// <summary>
         /// Gets the name.
@@ -53,7 +58,7 @@ namespace Emby.Server.Implementations.Sorting
         /// <returns>DateTime.</returns>
         private int GetValue(BaseItem x)
         {
-            return x.IsFavoriteOrLiked(User, userItemData: null) ? 0 : 1;
+            return x.IsFavoriteOrLiked(User, UserDataById?.GetValueOrDefault(x.Id)) ? 0 : 1;
         }
     }
 }
