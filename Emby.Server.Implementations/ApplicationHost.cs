@@ -545,6 +545,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton(ApplicationPaths);
 
             serviceCollection.AddSingleton<ILocalizationManager, LocalizationManager>();
+            serviceCollection.AddSingleton<RatingsStateStore>();
 
             serviceCollection.AddSingleton<IBlurayExaminer, BdInfoExaminer>();
 

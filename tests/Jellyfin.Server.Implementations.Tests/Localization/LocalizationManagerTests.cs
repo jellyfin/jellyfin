@@ -609,6 +609,41 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
         }
 
         [Fact]
+        public async Task GetRatingScore_GoldenValues_MatchRecordedScores()
+        {
+            // Stored parental rating scores are only recomputed when the rating tables or RatingsAlgorithmVersion
+            // change. If this test fails because GetRatingScore now returns other scores, or because BaseItem
+            // derives scores differently, bump RatingsAlgorithmVersion in LocalizationManager and update the values.
+            var localizationManager = Setup(new ServerConfiguration { MetadataCountryCode = "US" });
+            await localizationManager.LoadAll();
+
+            (string Rating, string? Country, int? Score, int? SubScore)[] golden =
+            [
+                ("PG", "US", 10, 0),
+                ("PG", "GB", 8, 0),
+                ("TV-MA", "US", 17, 1),
+                ("PG-13", "US", 13, 0),
+                ("Rated R", "US", 17, 0),
+                ("US-PG-13", "US", 13, 0),
+                ("R", null, 17, 0),
+                ("16", "DE", 16, null),
+                ("FSK-18", "DE", 18, null),
+                ("n/a", "US", null, null),
+                ("Unrated", "US", null, null),
+                ("Not Rated", "GB", null, null),
+                ("NoSuchRating", "US", null, null)
+            ];
+
+            foreach (var (rating, country, score, subScore) in golden)
+            {
+                var actual = localizationManager.GetRatingScore(rating, country);
+                Assert.True(
+                    actual?.Score == score && actual?.SubScore == subScore,
+                    $"GetRatingScore(\"{rating}\", {country ?? "null"}) returned {actual?.Score}/{actual?.SubScore}, expected {score}/{subScore}. If this is intended, bump RatingsAlgorithmVersion.");
+            }
+        }
+
+        [Fact]
         public void GetSupportedUICultures_IncludesCommonCultures()
         {
             var supported = LocalizationManager.GetSupportedUICultures();
