@@ -2,6 +2,7 @@
 #pragma warning disable CA5394
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -88,6 +89,15 @@ namespace Emby.Server.Implementations.Library
         private readonly ILocalizationManager _localization;
         private readonly IDirectoryService _directoryService;
         private readonly FastConcurrentLru<Guid, BaseItem> _cache;
+
+        // The by-name item each clean name resolves to. A scan asks for the same handful of genres and
+        // studios on every chunk it saves, and each miss is a query.
+        private readonly ConcurrentDictionary<(BaseItemKind Kind, string CleanName), Guid> _byNameCache = new();
+
+        // Held while a by-name item is created, because its id comes from its path rather than being
+        // generated: two scan threads reaching the same new genre would otherwise both insert it.
+        private readonly object _byNameCreationLock = new();
+
         private readonly DotIgnoreIgnoreRule _dotIgnoreIgnoreRule;
         private readonly IMediaStreamRepository _mediaStreamRepository;
         private readonly Lazy<IExternalDataManager> _externalDataManagerFactory;
@@ -410,6 +420,8 @@ namespace Emby.Server.Implementations.Library
 
             _persistenceService.DeleteItem([.. pathMaps.Select(f => f.Item.Id)]);
 
+            InvalidateByNameCache(pathMaps.Select(f => f.Item));
+
             // Evict the deleted items from the cache and announce each removal.
             foreach (var (item, _, _) in pathMaps)
             {
@@ -603,6 +615,7 @@ namespace Emby.Server.Implementations.Library
             }
 
             _persistenceService.DeleteItem([item.Id, .. children.Select(f => f.Id)]);
+            InvalidateByNameCache([item, .. children]);
             _cache.TryRemove(item.Id, out _);
             foreach (var child in children)
             {
@@ -1218,12 +1231,6 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
-        public Guid GetPersonId(string name)
-        {
-            return GetItemByNameId<Person>(Person.GetPath(name));
-        }
-
-        /// <inheritdoc />
         public Person? GetPerson(string name)
         {
             var path = Person.GetPath(name);
@@ -1233,34 +1240,17 @@ namespace Emby.Server.Implementations.Library
                 return item;
             }
 
-            return null;
-        }
-
-        /// <inheritdoc />
-        public Person GetOrCreatePerson(string name)
-        {
-            var existing = GetPerson(name);
-            if (existing is not null)
+            // The id hashes the name as written, so a different spelling hashes elsewhere. Only the id
+            // is read here, and the full item is loaded by it.
+            var spellingId = GetItemIds(new InternalItemsQuery
             {
-                return existing;
-            }
-
-            var path = Person.GetPath(name);
-            var info = Directory.CreateDirectory(path);
-            var item = new Person
-            {
+                IncludeItemTypes = [BaseItemKind.Person],
                 Name = name,
-                Id = GetItemByNameId<Person>(path),
-                DateCreated = info.CreationTimeUtc,
-                DateModified = info.LastWriteTimeUtc,
-                Path = path
-            };
+                OrderBy = [(ItemSortBy.DateCreated, SortOrder.Ascending)],
+                Limit = 1
+            }).FirstOrDefault();
 
-            item.PresentationUniqueKey = item.CreatePresentationUniqueKey();
-
-            CreateItem(item, null);
-
-            return item;
+            return spellingId.IsEmpty() ? null : GetItemById(spellingId) as Person;
         }
 
         /// <summary>
@@ -1345,10 +1335,366 @@ namespace Emby.Server.Implementations.Library
             return CreateItemByName<MusicArtist>(MusicArtist.GetPath, name, options);
         }
 
-        private T CreateItemByName<T>(Func<string, string> getPathFn, string name, DtoOptions options)
+        /// <inheritdoc />
+        public IReadOnlyDictionary<Guid, ItemByNameLinks> GetItemByNameLinks(IReadOnlyList<Guid> itemIds)
+        {
+            return _itemRepository.GetItemByNameLinks(itemIds);
+        }
+
+        /// <inheritdoc />
+        public void ResolveItemByNameLinks(IReadOnlyList<BaseItem> items)
+        {
+            ArgumentNullException.ThrowIfNull(items);
+
+            // Keyed on the clean name, so two spellings stay one genre. Holds the item rather than its
+            // id, because every mention gets to teach it the ids its provider knows it by.
+            var resolved = new Dictionary<(BaseItemKind Kind, string CleanName), BaseItem?>();
+            var learned = new List<BaseItem>();
+
+            BaseItem? Resolve(BaseItemKind kind, string name, ItemByNameInfo? info)
+            {
+                BaseItem? item;
+                var key = (kind, name.GetCleanValue());
+                if (!resolved.TryGetValue(key, out var memoised))
+                {
+                    item = ResolveByNameItem(kind, name, info);
+                    resolved[key] = item;
+                }
+                else if (memoised is null || memoised.FindConflictingProvider(info?.ProviderIds) is null)
+                {
+                    item = memoised;
+                }
+                else
+                {
+                    // The ids this one carries belong to something else, so it does not get what the
+                    // name resolved to before. Left out of the memo, which the plain name still owns.
+                    item = ResolveByNameItem(kind, name, info);
+                }
+
+                // Every mention, not only the one that resolved it: the first may have carried no ids
+                // at all, and then nothing would ever be learned from the ones that follow.
+                if (item is not null && LearnProviderIds(item, info))
+                {
+                    learned.Add(item);
+                }
+
+                return item;
+            }
+
+            // The infos are never stored, so an item read back from the library carries none. Resolving its
+            // names afresh would move a link a provider id once decided onto the oldest item of that name.
+            var currentLinks = _itemRepository.GetItemByNameLinks(items.Select(e => e.Id).ToList());
+
+            Guid ResolveName(BaseItemKind kind, string name, ItemByNameInfo? info, IReadOnlyList<NameGuidPair>? current)
+            {
+                var cleanName = name.GetCleanValue();
+                var linked = current?.FirstOrDefault(e => string.Equals(e.Name?.GetCleanValue(), cleanName, StringComparison.Ordinal));
+                if (linked is not null
+                    && (info is null || info.ProviderIds.Count == 0 || GetItemById(linked.Id)?.FindConflictingProvider(info.ProviderIds) is null))
+                {
+                    return linked.Id;
+                }
+
+                return Resolve(kind, name, info)?.Id ?? Guid.Empty;
+            }
+
+            foreach (var item in items)
+            {
+                var genreKind = item is IHasMusicGenres ? BaseItemKind.MusicGenre : BaseItemKind.Genre;
+                var genreInfos = ByName(item.GenreInfos);
+                var studioInfos = ByName(item.StudioInfos);
+                var current = currentLinks.GetValueOrDefault(item.Id);
+
+                item.GenreItemIds = ResolveByNameIds(
+                    item.Genres,
+                    name => ResolveName(genreKind, name, genreInfos.GetValueOrDefault(name), current?.Genres));
+
+                item.StudioItemIds = ResolveByNameIds(
+                    item.Studios,
+                    name => ResolveName(BaseItemKind.Studio, name, studioInfos.GetValueOrDefault(name), current?.Studios));
+            }
+
+            // Saved directly, because CreateItems raises ItemAdded for an item that already exists.
+            if (learned.Count > 0)
+            {
+                _persistenceService.SaveItems(learned, CancellationToken.None);
+            }
+        }
+
+        private static Dictionary<string, ItemByNameInfo> ByName(IReadOnlyList<ItemByNameInfo> infos)
+        {
+            if (infos is null || infos.Count == 0)
+            {
+                return [];
+            }
+
+            var byName = new Dictionary<string, ItemByNameInfo>(infos.Count, StringComparer.OrdinalIgnoreCase);
+            foreach (var info in infos)
+            {
+                if (info?.Name is not null)
+                {
+                    byName[info.Name] = info;
+                }
+            }
+
+            return byName;
+        }
+
+        private static IReadOnlyList<Guid> ResolveByNameIds(string[] names, Func<string, Guid> resolve)
+        {
+            if (names is null || names.Length == 0)
+            {
+                return [];
+            }
+
+            var ids = new List<Guid>(names.Length);
+            foreach (var name in names)
+            {
+                if (string.IsNullOrWhiteSpace(name))
+                {
+                    continue;
+                }
+
+                var id = resolve(name);
+                if (!id.IsEmpty() && !ids.Contains(id))
+                {
+                    ids.Add(id);
+                }
+            }
+
+            return ids;
+        }
+
+        private BaseItem? ResolveByNameItem(BaseItemKind kind, string name, ItemByNameInfo? info)
+        {
+            try
+            {
+                // Not for genres: their ids are the same in every language and the names are not, so an
+                // id would merge a French library's genre into an English one. For them it only tells
+                // apart two items of one name, below.
+                if (kind == BaseItemKind.Studio)
+                {
+                    var byProvider = FindByProviderIds(info?.ProviderIds, kind);
+                    if (byProvider is not null)
+                    {
+                        return byProvider;
+                    }
+                }
+
+                // Clean name before creating one: a new item takes its id from the spelling and would
+                // split a genre the library already holds.
+
+                var cleanName = name.GetCleanValue();
+                var cached = CachedByNameItem(kind, cleanName);
+                if (cached is not null && cached.FindConflictingProvider(info?.ProviderIds) is null)
+                {
+                    return cached;
+                }
+
+                var named = FindByCleanName(kind, name);
+                var item = named.FirstOrDefault(e => e.FindConflictingProvider(info?.ProviderIds) is null);
+                if (item is null && named.Count > 0)
+                {
+                    // Every item of this name belongs to something else, so file this one under its own
+                    // id. Not cached: the plain name still belongs to the one that was there first.
+                    var conflict = named[0].FindConflictingProvider(info!.ProviderIds);
+                    if (conflict is not null)
+                    {
+                        return GetOrCreateByNameItem(kind, name, GetIdentitySuffix(conflict, info!.ProviderIds[conflict]));
+                    }
+                }
+
+                item ??= GetOrCreateByNameItem(kind, name, null);
+                _byNameCache[(kind, cleanName)] = item.Id;
+
+                return item;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to get or create {Kind} {Name}", kind, name);
+                return null;
+            }
+        }
+
+        // The by-name item a clean name last resolved to, so a scan does not re-query for the same
+        // handful of genres on every chunk of items it saves.
+        private BaseItem? CachedByNameItem(BaseItemKind kind, string cleanName)
+        {
+            if (!_byNameCache.TryGetValue((kind, cleanName), out var id))
+            {
+                return null;
+            }
+
+            // Verified rather than trusted: the entry outlives a rename or a delete that went around
+            // the invalidation, and handing back the wrong item would move links onto it.
+            var item = GetItemById(id);
+            if (item is not null && string.Equals(item.Name?.GetCleanValue(), cleanName, StringComparison.Ordinal))
+            {
+                return item;
+            }
+
+            _byNameCache.TryRemove((kind, cleanName), out _);
+            return null;
+        }
+
+        private static bool IsByNameLinkItem(BaseItem item)
+        {
+            return item is Genre or MusicGenre or Studio;
+        }
+
+        private static BaseItemKind? ByNameLinkKind(BaseItem item)
+        {
+            return item switch
+            {
+                Genre => BaseItemKind.Genre,
+                MusicGenre => BaseItemKind.MusicGenre,
+                Studio => BaseItemKind.Studio,
+                _ => null
+            };
+        }
+
+        // A renamed genre or studio keeps the items it is on, but each of those still carries the old
+        // spelling in its own name list: the DTO would report both, a filter by the new name would miss
+        // them, and the next save of one would resolve the old spelling to a second by-name item.
+        // Anything that goes wrong is left to the caller: a rename is asked for, so it either lands or
+        // the request fails, rather than half of it being written and reported as done.
+        private void PropagateByNameRenames(IReadOnlyList<BaseItem> items)
+        {
+            foreach (var item in items)
+            {
+                var kind = ByNameLinkKind(item);
+                if (kind is null || string.IsNullOrEmpty(item.Name))
+                {
+                    continue;
+                }
+
+                var rename = _itemRepository.RenameByNameLinks(item.Id, kind.Value, item.Name);
+                if (rename.PreviousName is null)
+                {
+                    continue;
+                }
+
+                _logger.LogInformation(
+                    "Renamed {Kind} {PreviousName} to {Name} on the {Count} items carrying it",
+                    kind.Value,
+                    rename.PreviousName,
+                    item.Name,
+                    rename.ItemIds.Count);
+
+                // The rows are rewritten behind whatever is holding these items, so a copy kept in
+                // memory would write the name back out the next time anything saves it.
+                foreach (var id in rename.ItemIds)
+                {
+                    _cache.TryRemove(id, out _);
+                }
+
+                // Including the ones about to be saved from memory in this same batch, which would
+                // otherwise be written back carrying the name that was just replaced.
+                CarryRenameInMemory(items, kind.Value, rename.PreviousName, item.Name!);
+            }
+        }
+
+        private static void CarryRenameInMemory(IReadOnlyList<BaseItem> items, BaseItemKind kind, string previousName, string newName)
+        {
+            var isStudio = kind == BaseItemKind.Studio;
+
+            foreach (var item in items)
+            {
+                var names = isStudio ? item.Studios : item.Genres;
+                if (names.Length == 0)
+                {
+                    continue;
+                }
+
+                // Every spelling that resolved to the item, not only the one it is named by.
+                var previousCleanName = previousName.GetCleanValue();
+                var changed = false;
+                for (var i = 0; i < names.Length; i++)
+                {
+                    if (string.Equals(names[i].GetCleanValue(), previousCleanName, StringComparison.Ordinal))
+                    {
+                        names[i] = newName;
+                        changed = true;
+                    }
+                }
+
+                if (!changed)
+                {
+                    continue;
+                }
+
+                var deduplicated = names.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+                if (isStudio)
+                {
+                    item.Studios = deduplicated;
+                }
+                else
+                {
+                    item.Genres = deduplicated;
+                }
+            }
+        }
+
+        // Dropped whole rather than entry by entry: a rename moves an item between two keys, and these
+        // items change rarely enough that rebuilding lazily costs less than tracking the moves.
+        private void InvalidateByNameCache(IEnumerable<BaseItem> items)
+        {
+            foreach (var item in items)
+            {
+                if (IsByNameLinkItem(item))
+                {
+                    _byNameCache.Clear();
+                    return;
+                }
+            }
+        }
+
+        private BaseItem GetOrCreateByNameItem(BaseItemKind kind, string name, string? identitySuffix)
+        {
+            var options = new DtoOptions(true);
+            return kind switch
+            {
+                BaseItemKind.Studio => CreateItemByName<Studio>(Studio.GetPath, name, options, identitySuffix),
+                BaseItemKind.MusicGenre => CreateItemByName<MusicGenre>(MusicGenre.GetPath, name, options, identitySuffix),
+                _ => CreateItemByName<Genre>(Genre.GetPath, name, options, identitySuffix)
+            };
+        }
+
+        private static bool LearnProviderIds(BaseItem item, ItemByNameInfo? info)
+        {
+            if (info is null || info.ProviderIds.Count == 0)
+            {
+                return false;
+            }
+
+            var learned = false;
+            foreach (var (provider, value) in info.ProviderIds)
+            {
+                // Only ids the item lacks: overwriting a disagreeing one hands it another entity's identity.
+                if (string.IsNullOrWhiteSpace(provider)
+                    || string.IsNullOrWhiteSpace(value)
+                    || !string.IsNullOrEmpty(item.GetProviderId(provider)))
+                {
+                    continue;
+                }
+
+                item.SetProviderId(provider, value);
+                learned = true;
+            }
+
+            if (learned)
+            {
+                item.DateLastSaved = DateTime.UtcNow;
+            }
+
+            return learned;
+        }
+
+        private T CreateItemByName<T>(Func<string, string> getPathFn, string name, DtoOptions options, string? identitySuffix = null)
             where T : BaseItem, new()
         {
-            if (typeof(T) == typeof(MusicArtist))
+            // With a suffix every artist of this name belongs to somebody else, so none of them will do.
+            if (typeof(T) == typeof(MusicArtist) && identitySuffix is null)
             {
                 var existing = GetItemList(new InternalItemsQuery
                 {
@@ -1366,13 +1712,25 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            var path = getPathFn(name);
+            // Into the path only: the name stays what the entity is called, and the id follows the folder.
+            var path = getPathFn(name + identitySuffix);
             var id = GetItemByNameId<T>(path);
-            var item = GetItemById(id) as T;
-            if (item is null)
+            if (GetItemById(id) is T existingItem)
             {
+                return existingItem;
+            }
+
+            // Looked up again under the lock: a parallel scan reaching the same new name would insert
+            // the same id twice, and the writer decides insert against update from a read of its own.
+            lock (_byNameCreationLock)
+            {
+                if (GetItemById(id) is T raced)
+                {
+                    return raced;
+                }
+
                 var info = Directory.CreateDirectory(path);
-                item = new T
+                var item = new T
                 {
                     Name = name,
                     Id = id,
@@ -1382,9 +1740,9 @@ namespace Emby.Server.Implementations.Library
                 };
 
                 CreateItem(item, null);
-            }
 
-            return item;
+                return item;
+            }
         }
 
         private Guid GetItemByNameId<T>(string path)
@@ -1593,8 +1951,6 @@ namespace Emby.Server.Implementations.Library
                 "All post-scan tasks completed after {Minutes} minute(s) and {Seconds} seconds",
                 Math.Truncate(phaseElapsed.TotalMinutes),
                 phaseElapsed.Seconds);
-
-            _persistenceService.UpdateInheritedValues();
 
             progress.Report(100);
         }
@@ -2488,6 +2844,8 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
+            ResolveItemByNameLinks(allItems);
+
             _persistenceService.SaveItems(allItems, cancellationToken);
 
             foreach (var item in allItems)
@@ -2713,7 +3071,14 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
+            ResolveItemByNameLinks(allItems);
+
+            // Before the write, because the spelling it replaces is the one still on the row.
+            PropagateByNameRenames(allItems);
+
             _persistenceService.SaveItems(allItems, cancellationToken);
+
+            InvalidateByNameCache(allItems);
 
             foreach (var item in allItems)
             {
@@ -3682,11 +4047,11 @@ namespace Emby.Server.Implementations.Library
                 {
                     try
                     {
-                        return GetPerson(i.Name);
+                        return i.PersonItemId.IsEmpty() ? null : GetItemById(i.PersonItemId) as Person;
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "error retrieving BaseItem for person: {0}", i.Name);
+                        _logger.LogError(ex, "Error retrieving the item for person {Name}", i.Name);
                         return null;
                     }
                 })
@@ -3742,10 +4107,200 @@ namespace Emby.Server.Implementations.Library
 
             if (people is not null)
             {
-                people = people.Where(e => e is not null).ToArray();
+                people = WithArtistCredits(item, people.Where(e => e is not null).ToList());
+
+                var personEntities = ResolvePeople(people);
                 _peopleRepository.UpdatePeople(item.Id, people);
-                await SavePeopleMetadataAsync(people, cancellationToken).ConfigureAwait(false);
+                await SavePeopleMetadataAsync(personEntities, people, cancellationToken).ConfigureAwait(false);
             }
+        }
+
+        // The artist lists are what the editor, the NFO readers, ffprobe and channels write, and the
+        // credits are all a query reads, so every name on them needs a credit of its own.
+        private static List<PersonInfo> WithArtistCredits(BaseItem item, List<PersonInfo> people)
+        {
+            AddArtistCredits(people, (item as IHasAlbumArtist)?.AlbumArtists, PersonKind.AlbumArtist);
+            AddArtistCredits(people, (item as IHasArtist)?.Artists, PersonKind.Artist);
+            return people;
+        }
+
+        private static void AddArtistCredits(List<PersonInfo> people, IReadOnlyList<string>? names, PersonKind kind)
+        {
+            if (names is null)
+            {
+                return;
+            }
+
+            foreach (var name in names)
+            {
+                if (string.IsNullOrWhiteSpace(name))
+                {
+                    continue;
+                }
+
+                // A credit the caller already has keeps its provider ids.
+                var cleanName = name.GetCleanValue();
+                if (!people.Any(p => p.Type == kind && string.Equals(p.Name.GetCleanValue(), cleanName, StringComparison.Ordinal)))
+                {
+                    people.Add(new PersonInfo { Name = name.Trim(), Type = kind });
+                }
+            }
+        }
+
+        private Dictionary<Guid, BaseItem> ResolvePeople(IReadOnlyList<PersonInfo> people)
+        {
+            // Keyed by kind as well as name: an Artist and a Composer credit resolve to different items.
+            // The ids are part of the key, because one name can be two humans on the same release.
+            var byCredit = new Dictionary<(string CleanName, bool IsArtist, string Ids), BaseItem>();
+            var attempted = new HashSet<(string CleanName, bool IsArtist, string Ids)>();
+            var resolved = new Dictionary<Guid, BaseItem>();
+
+            foreach (var person in people)
+            {
+                if (string.IsNullOrEmpty(person.Name))
+                {
+                    continue;
+                }
+
+                var isArtist = IsMusicArtistCredit(person.Type);
+
+                // Already linked: resolving again by name could pick another human of that name.
+                if (!person.PersonItemId.IsEmpty()
+                    && GetItemById(person.PersonItemId) is { } linked
+                    && (linked is MusicArtist) == isArtist
+                    && linked.FindConflictingProvider(person.ProviderIds) is null)
+                {
+                    resolved[linked.Id] = linked;
+                    continue;
+                }
+
+                var key = (person.Name.GetCleanValue(), isArtist, GetProviderIdSignature(person.ProviderIds));
+
+                if (attempted.Add(key))
+                {
+                    // The id identifies the human, the spelling only how this release wrote it down.
+                    var entity = FindByProviderIds(person, isArtist ? BaseItemKind.MusicArtist : BaseItemKind.Person)
+                        ?? GetOrCreateCreditItem(person.Name, person.Type, person.ProviderIds);
+                    if (entity is not null)
+                    {
+                        byCredit[key] = entity;
+                        resolved[entity.Id] = entity;
+                    }
+                }
+
+                if (byCredit.TryGetValue(key, out var creditEntity))
+                {
+                    person.PersonItemId = creditEntity.Id;
+                }
+            }
+
+            return resolved;
+        }
+
+        private static string GetProviderIdSignature(IReadOnlyDictionary<string, string>? providerIds)
+        {
+            if (providerIds is null || providerIds.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            return string.Join(
+                '|',
+                providerIds.OrderBy(e => e.Key, StringComparer.Ordinal).Select(e => e.Key + '=' + e.Value));
+        }
+
+        // What a second entity of one name is filed under; the by-name types read it back off the path.
+        internal static string GetIdentitySuffix(string provider, string value)
+        {
+            return " [" + provider + "-" + value + "]";
+        }
+
+        // All of them, oldest first, because the first may belong to another entity.
+        private IReadOnlyList<BaseItem> FindByCleanName(BaseItemKind kind, string name)
+        {
+            return GetItemList(new InternalItemsQuery
+            {
+                IncludeItemTypes = [kind],
+                Name = name,
+                OrderBy = [(ItemSortBy.DateCreated, SortOrder.Ascending)],
+                DtoOptions = new DtoOptions(true)
+            });
+        }
+
+        // Null unless every entity of this name belongs to somebody else.
+        private string? GetCreditIdentitySuffix(BaseItemKind kind, string name, IReadOnlyDictionary<string, string>? providerIds)
+        {
+            if (providerIds is null || providerIds.Count == 0)
+            {
+                return null;
+            }
+
+            var named = FindByCleanName(kind, name);
+            if (named.Count == 0 || named.Any(e => e.FindConflictingProvider(providerIds) is null))
+            {
+                return null;
+            }
+
+            var conflict = named[0].FindConflictingProvider(providerIds);
+            return conflict is null ? null : GetIdentitySuffix(conflict, providerIds[conflict]);
+        }
+
+        private static bool IsMusicArtistCredit(PersonKind kind)
+            => kind is PersonKind.Artist or PersonKind.AlbumArtist;
+
+        private MusicArtist? GetOrCreateArtist(string name, IReadOnlyDictionary<string, string>? providerIds)
+        {
+            try
+            {
+                return CreateItemByName<MusicArtist>(
+                    MusicArtist.GetPath,
+                    name,
+                    new DtoOptions(true),
+                    GetCreditIdentitySuffix(BaseItemKind.MusicArtist, name, providerIds));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to get or create artist {Name}", name);
+                return null;
+            }
+        }
+
+        private BaseItem? FindByProviderIds(PersonInfo person, BaseItemKind kind)
+        {
+            return FindByProviderIds(person.ProviderIds, kind);
+        }
+
+        private BaseItem? FindByProviderIds(IReadOnlyDictionary<string, string>? ids, BaseItemKind kind)
+        {
+            if (ids is null || ids.Count == 0)
+            {
+                return null;
+            }
+
+            var providerIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var (provider, value) in ids)
+            {
+                if (!string.IsNullOrWhiteSpace(provider) && !string.IsNullOrWhiteSpace(value))
+                {
+                    providerIds[provider] = value;
+                }
+            }
+
+            if (providerIds.Count == 0)
+            {
+                return null;
+            }
+
+            // Scoped to the kind, because a provider key is not unique across types. Oldest first, so a
+            // library holding two entries for one human resolves to a stable one.
+            return GetItemList(new InternalItemsQuery
+            {
+                IncludeItemTypes = [kind],
+                HasAnyProviderId = providerIds,
+                OrderBy = [(ItemSortBy.DateCreated, SortOrder.Ascending)],
+                Limit = 1,
+                DtoOptions = new DtoOptions(true)
+            }).FirstOrDefault();
         }
 
         public async Task<ItemImageInfo> ConvertImageToLocal(BaseItem item, ItemImageInfo image, int imageIndex, bool removeOnFailure)
@@ -3879,51 +4434,124 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        private async Task SavePeopleMetadataAsync(IEnumerable<PersonInfo> people, CancellationToken cancellationToken)
+        /// <inheritdoc />
+        public Person? GetOrCreatePerson(string name)
         {
-            foreach (var person in people)
+            return GetOrCreatePerson(name, null);
+        }
+
+        private Person? GetOrCreatePerson(string name, IReadOnlyDictionary<string, string>? providerIds)
+        {
+            var suffix = GetCreditIdentitySuffix(BaseItemKind.Person, name, providerIds);
+            var personEntity = suffix is null ? GetPerson(name) : null;
+            if (personEntity is not null)
+            {
+                return personEntity;
+            }
+
+            personEntity = CreatePerson(name, suffix);
+            if (personEntity is not null)
+            {
+                CreateItems([personEntity], null, CancellationToken.None);
+            }
+
+            return personEntity;
+        }
+
+        /// <inheritdoc />
+        public IReadOnlyList<PersonInfo> GetUnlinkedCredits()
+        {
+            return _peopleRepository.GetUnlinkedCredits();
+        }
+
+        /// <inheritdoc />
+        public int LinkCreditsToItem(string name, PersonKind kind, Guid itemId)
+        {
+            return _peopleRepository.LinkCreditsToItem(name, kind, itemId);
+        }
+
+        /// <inheritdoc />
+        public BaseItem? GetOrCreateCreditItem(string name, PersonKind kind)
+        {
+            return GetOrCreateCreditItem(name, kind, null);
+        }
+
+        private BaseItem? GetOrCreateCreditItem(string name, PersonKind kind, IReadOnlyDictionary<string, string>? providerIds)
+        {
+            return IsMusicArtistCredit(kind)
+                ? GetOrCreateArtist(name, providerIds)
+                : GetOrCreatePerson(name, providerIds);
+        }
+
+        // Null when the person's folder cannot be created.
+        private Person? CreatePerson(string name, string? identitySuffix)
+        {
+            try
+            {
+                // Into the path only: the name stays what the entity is called, and the id follows the folder.
+                var path = Person.GetPath(name + identitySuffix);
+                var info = Directory.CreateDirectory(path);
+                var personEntity = new Person()
+                {
+                    Name = name,
+                    Id = GetItemByNameId<Person>(path),
+                    DateCreated = info.CreationTimeUtc,
+                    DateModified = info.LastWriteTimeUtc,
+                    Path = path
+                };
+
+                personEntity.PresentationUniqueKey = personEntity.CreatePresentationUniqueKey();
+                return personEntity;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to create person {Name}", name);
+                return null;
+            }
+        }
+
+        private async Task SavePeopleMetadataAsync(
+            IReadOnlyDictionary<Guid, BaseItem> personEntities,
+            IReadOnlyList<PersonInfo> people,
+            CancellationToken cancellationToken)
+        {
+            // One person can hold several credits on the same item.
+            foreach (var credits in people.GroupBy(e => e.PersonItemId))
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
+                if (!personEntities.TryGetValue(credits.Key, out var personEntity))
+                {
+                    continue;
+                }
+
                 var itemUpdateType = ItemUpdateType.MetadataDownload;
                 var saveEntity = false;
-                var personEntity = GetPerson(person.Name);
 
-                if (personEntity is null)
+                foreach (var person in credits)
                 {
-                    try
+                    foreach (var id in person.ProviderIds)
                     {
-                        personEntity = GetOrCreatePerson(person.Name);
-                        saveEntity = true;
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogWarning(ex, "Failed to create person {Name}", person.Name);
-                        continue;
-                    }
-                }
-
-                foreach (var id in person.ProviderIds)
-                {
-                    if (!string.Equals(personEntity.GetProviderId(id.Key), id.Value, StringComparison.OrdinalIgnoreCase))
-                    {
-                        personEntity.SetProviderId(id.Key, id.Value);
-                        saveEntity = true;
-                    }
-                }
-
-                if (!string.IsNullOrWhiteSpace(person.ImageUrl) && !personEntity.HasImage(ImageType.Primary))
-                {
-                    personEntity.SetImage(
-                        new ItemImageInfo
+                        if (!string.Equals(personEntity.GetProviderId(id.Key), id.Value, StringComparison.OrdinalIgnoreCase))
                         {
-                            Path = person.ImageUrl,
-                            Type = ImageType.Primary
-                        },
-                        0);
+                            personEntity.SetProviderId(id.Key, id.Value);
+                            saveEntity = true;
+                        }
+                    }
 
-                    saveEntity = true;
-                    itemUpdateType = ItemUpdateType.ImageUpdate;
+                    if (!string.IsNullOrWhiteSpace(person.ImageUrl) && !personEntity.HasImage(ImageType.Primary))
+                    {
+                        personEntity.SetImage(
+                            new ItemImageInfo
+                            {
+                                Path = person.ImageUrl,
+                                Type = ImageType.Primary
+                            },
+                            0);
+
+                        saveEntity = true;
+                        itemUpdateType = ItemUpdateType.ImageUpdate;
+                    }
                 }
 
                 if (saveEntity)

@@ -116,9 +116,7 @@ public class VideosController : BaseJellyfinApiController
         BaseItemDto[] items;
         if (item is Video video)
         {
-            items = video.GetAdditionalParts(user)
-                .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, video))
-                .ToArray();
+            items = _dtoService.GetBaseItemDtos([.. video.GetAdditionalParts(user)], dtoOptions, user, video, skipVisibilityCheck: true).ToArray();
         }
         else
         {

@@ -119,14 +119,19 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
     public DbSet<Chapter> Chapters => Set<Chapter>();
 
     /// <summary>
-    /// Gets the <see cref="DbSet{TEntity}"/>.
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the tags items carry.
     /// </summary>
-    public DbSet<ItemValue> ItemValues => Set<ItemValue>();
+    public DbSet<BaseItemTag> BaseItemTags => Set<BaseItemTag>();
 
     /// <summary>
-    /// Gets the <see cref="DbSet{TEntity}"/>.
+    /// Gets the <see cref="DbSet{TEntity}"/> linking items to the genre items they carry.
     /// </summary>
-    public DbSet<ItemValueMap> ItemValuesMap => Set<ItemValueMap>();
+    public DbSet<BaseItemGenre> BaseItemGenres => Set<BaseItemGenre>();
+
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> linking items to the studio items they carry.
+    /// </summary>
+    public DbSet<BaseItemStudio> BaseItemStudios => Set<BaseItemStudio>();
 
     /// <summary>
     /// Gets the <see cref="DbSet{TEntity}"/>.

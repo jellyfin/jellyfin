@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Querying;
 
@@ -38,6 +39,21 @@ public interface IPeopleRepository
     /// </summary>
     /// <returns>The number of credits that were deleted.</returns>
     int DeleteOrphanedCredits();
+
+    /// <summary>
+    /// Gets the credits that are not linked to an item yet, by name and kind.
+    /// </summary>
+    /// <returns>The list of credits whose item is still unknown.</returns>
+    IReadOnlyList<PersonInfo> GetUnlinkedCredits();
+
+    /// <summary>
+    /// Links the credits of a name and kind that have no item yet to the given one.
+    /// </summary>
+    /// <param name="name">The credited name.</param>
+    /// <param name="kind">The kind of credit, which decides what it belongs to.</param>
+    /// <param name="itemId">The item to link the credits to.</param>
+    /// <returns>The number of credits that were linked.</returns>
+    int LinkCreditsToItem(string name, PersonKind kind, Guid itemId);
 
     /// <summary>
     /// Gets the distinct people names per item for multiple items efficiently by querying from the mapping table.

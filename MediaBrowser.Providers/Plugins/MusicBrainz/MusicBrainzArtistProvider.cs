@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Extensions;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -163,11 +165,10 @@ public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, Ar
 
         if (artist.Genres is not null && artist.Genres.Count > 0)
         {
-            result.Item.Genres = artist.Genres
+            result.Item.SetGenres(artist.Genres
                 .OrderByDescending(genre => genre.VoteCount)
-                .Select(genre => genre.Name)
-                .Where(name => !string.IsNullOrWhiteSpace(name))
-                .ToArray();
+                .Where(genre => !string.IsNullOrWhiteSpace(genre.Name))
+                .Select(genre => ToItemByNameInfo(genre.Name!, genre.Id, MetadataProvider.MusicBrainzGenre)));
         }
 
         if (artist.Tags is not null && artist.Tags.Count > 0)
@@ -186,5 +187,16 @@ public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, Ar
     public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
+    }
+
+    private static ItemByNameInfo ToItemByNameInfo(string name, Guid mbid, MetadataProvider provider)
+    {
+        var info = new ItemByNameInfo(name.Trim());
+        if (!mbid.Equals(Guid.Empty))
+        {
+            info.SetProviderId(provider, mbid.ToString("D", CultureInfo.InvariantCulture));
+        }
+
+        return info;
     }
 }

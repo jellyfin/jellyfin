@@ -624,7 +624,7 @@ public sealed class ItemCountServiceTests : IDisposable
     }
 
     /// <summary>
-    /// Seeds one artist and a single album tagged with it as both artist and album artist.
+    /// Seeds one artist and a single album crediting it as both artist and album artist.
     /// </summary>
     /// <returns>The id of the seeded artist.</returns>
     private Guid SeedArtistWithAlbum()
@@ -646,24 +646,19 @@ public sealed class ItemCountServiceTests : IDisposable
         context.BaseItems.Add(album);
         context.SaveChanges();
 
-        foreach (var type in new[] { ItemValueType.Artist, ItemValueType.AlbumArtist })
+        foreach (var kind in new[] { PersonKind.Artist, PersonKind.AlbumArtist })
         {
-            var itemValue = new ItemValue
-            {
-                ItemValueId = Guid.NewGuid(),
-                Type = type,
-                Value = Name,
-                CleanValue = Name
-            };
-            context.ItemValues.Add(itemValue);
+            var credit = new People { Id = Guid.NewGuid(), Name = Name, CleanName = Name, PersonType = kind.ToString(), ItemId = artistId };
+            context.Peoples.Add(credit);
             context.SaveChanges();
 
-            context.ItemValuesMap.Add(new ItemValueMap
+            context.PeopleBaseItemMap.Add(new PeopleBaseItemMap
             {
                 ItemId = albumId,
-                ItemValueId = itemValue.ItemValueId,
+                PeopleId = credit.Id,
                 Item = null!,
-                ItemValue = null!
+                People = null!,
+                Role = string.Empty
             });
         }
 
@@ -737,7 +732,7 @@ public sealed class ItemCountServiceTests : IDisposable
         var ids = new List<Guid>(count);
         using var context = CreateDbContext();
 
-        ItemValue? taggedValue = null;
+        People? credit = null;
         taggedArtistId = Guid.Empty;
 
         for (var i = 0; i < count; i++)
@@ -755,14 +750,8 @@ public sealed class ItemCountServiceTests : IDisposable
             if (i == 0)
             {
                 taggedArtistId = artistId;
-                taggedValue = new ItemValue
-                {
-                    ItemValueId = Guid.NewGuid(),
-                    Type = ItemValueType.Artist,
-                    Value = name,
-                    CleanValue = name
-                };
-                context.ItemValues.Add(taggedValue);
+                credit = new People { Id = Guid.NewGuid(), Name = name, CleanName = name, PersonType = nameof(PersonKind.Artist), ItemId = artistId };
+                context.Peoples.Add(credit);
             }
         }
 
@@ -774,7 +763,7 @@ public sealed class ItemCountServiceTests : IDisposable
         context.BaseItems.Add(album);
         context.SaveChanges();
 
-        Tag(context, albumId, taggedValue!.ItemValueId);
+        context.PeopleBaseItemMap.Add(new PeopleBaseItemMap { ItemId = albumId, PeopleId = credit!.Id, Item = null!, People = null!, Role = string.Empty });
         context.SaveChanges();
 
         return ids;
@@ -868,7 +857,7 @@ public sealed class ItemCountServiceTests : IDisposable
             person.CleanName = personName;
             context.BaseItems.Add(person);
 
-            var people = new People { Id = Guid.NewGuid(), Name = personName };
+            var people = new People { Id = Guid.NewGuid(), Name = personName, CleanName = personName, ItemId = personId };
             context.Peoples.Add(people);
 
             var year = 2000 + i;
@@ -994,15 +983,7 @@ public sealed class ItemCountServiceTests : IDisposable
                 genre.CleanName = name;
                 context.BaseItems.Add(genre);
 
-                var itemValue = new ItemValue
-                {
-                    ItemValueId = Guid.NewGuid(),
-                    Type = ItemValueType.Genre,
-                    Value = name,
-                    CleanValue = name
-                };
-                context.ItemValues.Add(itemValue);
-                values[name] = itemValue.ItemValueId;
+                values[name] = genreId;
             }
 
             var series = CreateItem(seriesId);
@@ -1038,10 +1019,9 @@ public sealed class ItemCountServiceTests : IDisposable
     }
 
     [Fact]
-    public void GetItemCountsForNameItems_TwoNameItemsSharingACleanName_BothGetTheCounts()
+    public void GetItemCountsForNameItems_TwoNameItemsSharingACleanName_EachCountsItsOwnLinks()
     {
-        // Distinct rows cleaning down to one name are what the batch keys on; the unique index
-        // permits them, so two genre items can legitimately share a clean name.
+        // Two genre items can share a clean name; each is counted through its own links.
         var firstId = Guid.NewGuid();
         var secondId = Guid.NewGuid();
         var movieId = Guid.NewGuid();
@@ -1063,19 +1043,8 @@ public sealed class ItemCountServiceTests : IDisposable
             context.BaseItems.Add(movie);
             context.SaveChanges();
 
-            foreach (var name in new[] { "Sci-Fi", "SCI-FI" })
-            {
-                var itemValue = new ItemValue
-                {
-                    ItemValueId = Guid.NewGuid(),
-                    Type = ItemValueType.Genre,
-                    Value = name,
-                    CleanValue = "sci-fi"
-                };
-                context.ItemValues.Add(itemValue);
-                context.SaveChanges();
-                Tag(context, movieId, itemValue.ItemValueId);
-            }
+            Tag(context, movieId, firstId);
+            Tag(context, movieId, secondId);
 
             context.SaveChanges();
         }
@@ -1085,7 +1054,7 @@ public sealed class ItemCountServiceTests : IDisposable
 
         var batch = _service.GetItemCountsForNameItems(BaseItemKind.Genre, [firstId, secondId], related, filter);
 
-        // One movie, reached through two value rows: counted once for each genre item, not twice.
+        // One movie linked to both: counted once for each genre item, not twice.
         Assert.Equal(1, batch[firstId].MovieCount);
         Assert.Equal(1, batch[secondId].MovieCount);
 
@@ -1120,15 +1089,7 @@ public sealed class ItemCountServiceTests : IDisposable
             genre.CleanName = name;
             context.BaseItems.Add(genre);
 
-            var itemValue = new ItemValue
-            {
-                ItemValueId = Guid.NewGuid(),
-                Type = ItemValueType.Genre,
-                Value = name,
-                CleanValue = name
-            };
-            context.ItemValues.Add(itemValue);
-            values[name] = itemValue.ItemValueId;
+            values[name] = genreId;
         }
 
         context.SaveChanges();
@@ -1173,14 +1134,13 @@ public sealed class ItemCountServiceTests : IDisposable
         return genreIds;
     }
 
-    private static void Tag(JellyfinDbContext context, Guid itemId, Guid itemValueId)
+    private static void Tag(JellyfinDbContext context, Guid itemId, Guid genreItemId)
     {
-        context.ItemValuesMap.Add(new ItemValueMap
+        context.BaseItemGenres.Add(new BaseItemGenre
         {
             ItemId = itemId,
-            ItemValueId = itemValueId,
             Item = null!,
-            ItemValue = null!
+            GenreItemId = genreItemId
         });
     }
 
@@ -1219,14 +1179,6 @@ public sealed class ItemCountServiceTests : IDisposable
             genre.CleanName = name;
             context.BaseItems.Add(genre);
 
-            var itemValue = new ItemValue
-            {
-                ItemValueId = Guid.NewGuid(),
-                Type = ItemValueType.Genre,
-                Value = name,
-                CleanValue = name
-            };
-            context.ItemValues.Add(itemValue);
             context.SaveChanges();
 
             // 3 movies for the first genre, 2 for the second, 1 for the third, none for the last.
@@ -1239,13 +1191,7 @@ public sealed class ItemCountServiceTests : IDisposable
                 context.BaseItems.Add(movie);
                 context.SaveChanges();
 
-                context.ItemValuesMap.Add(new ItemValueMap
-                {
-                    ItemId = movieId,
-                    ItemValueId = itemValue.ItemValueId,
-                    Item = null!,
-                    ItemValue = null!
-                });
+                Tag(context, movieId, genreId);
             }
 
             context.SaveChanges();

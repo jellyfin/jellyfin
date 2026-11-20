@@ -95,63 +95,6 @@ public static class JellyfinQueryHelperExtensions
     }
 
     /// <summary>
-    /// Builds a query that checks referenced ItemValues for a cross BaseItem lookup.
-    /// </summary>
-    /// <param name="baseQuery">The source query.</param>
-    /// <param name="context">The database context.</param>
-    /// <param name="itemValueType">The type of item value to reference.</param>
-    /// <param name="referenceIds">The list of BaseItem ids to check matches.</param>
-    /// <param name="invert">If set an exclusion check is performed instead.</param>
-    /// <returns>A Query.</returns>
-    public static IQueryable<BaseItemEntity> WhereReferencedItem(
-        this IQueryable<BaseItemEntity> baseQuery,
-        JellyfinDbContext context,
-        ItemValueType itemValueType,
-        IReadOnlyList<Guid> referenceIds,
-        bool invert = false)
-    {
-        return baseQuery.WhereReferencedItem(context, [itemValueType], referenceIds, invert);
-    }
-
-    /// <summary>
-    /// Builds a query that checks referenced ItemValues of any of the given types for a cross BaseItem lookup.
-    /// </summary>
-    /// <param name="baseQuery">The source query.</param>
-    /// <param name="context">The database context.</param>
-    /// <param name="itemValueTypes">The types of item value to reference.</param>
-    /// <param name="referenceIds">The list of BaseItem ids to check matches.</param>
-    /// <param name="invert">If set an exclusion check is performed instead.</param>
-    /// <returns>A Query.</returns>
-    /// <remarks>
-    /// Matching is on CleanName alone. Genre/artist/album etc items do not set an ItemValue of their own
-    /// type, so the referenced item's Type is never consulted and ids whose names clean to the same value
-    /// are interchangeable across types.
-    /// </remarks>
-    public static IQueryable<BaseItemEntity> WhereReferencedItem(
-        this IQueryable<BaseItemEntity> baseQuery,
-        JellyfinDbContext context,
-        IReadOnlyList<ItemValueType> itemValueTypes,
-        IReadOnlyList<Guid> referenceIds,
-        bool invert = false)
-    {
-        ArgumentNullException.ThrowIfNull(context);
-
-        // Flat sub-selects rather than a correlated .Any(...Any(...)).
-        var referencedCleanValues = context.BaseItems
-            .Where(OneOrManyExpressionBuilder<BaseItemEntity, Guid>(referenceIds, e => e.Id))
-            .Select(e => e.CleanName);
-
-        var matchingItemIds = context.ItemValuesMap
-            .Where(OneOrManyExpressionBuilder<ItemValueMap, ItemValueType>(itemValueTypes, m => m.ItemValue.Type))
-            .Where(m => referencedCleanValues.Contains(m.ItemValue.CleanValue))
-            .Select(m => m.ItemId);
-
-        return invert
-            ? baseQuery.Where(e => !matchingItemIds.Contains(e.Id))
-            : baseQuery.Where(e => matchingItemIds.Contains(e.Id));
-    }
-
-    /// <summary>
     /// Filters items that have any of the specified providers, optionally restricted to given values.
     /// </summary>
     /// <param name="baseQuery">The source query.</param>

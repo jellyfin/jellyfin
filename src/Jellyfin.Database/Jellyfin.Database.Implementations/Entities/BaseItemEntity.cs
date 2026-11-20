@@ -168,7 +168,7 @@ public class BaseItemEntity
 
     public ICollection<UserData>? UserData { get; set; }
 
-    public ICollection<ItemValueMap>? ItemValues { get; set; }
+    public ICollection<BaseItemTag>? ItemTags { get; set; }
 
     public ICollection<MediaStreamInfo>? MediaStreams { get; set; }
 

@@ -150,8 +150,8 @@ public sealed class MovieSimilarItemsProviderTests : SqliteDbTestFixture
     private void Seed(JellyfinDbContext context)
     {
         // One shared genre, so every movie but the unrelated one scores against the source.
-        var shared = CreateItemValue("Action", "action");
-        var other = CreateItemValue("Comedy", "comedy");
+        var shared = Guid.NewGuid();
+        var other = Guid.NewGuid();
 
         var source = AddMovie(context, _source, "Source", primaryVersionId: null);
         var sourceAlternate = AddMovie(context, _sourceAlternate, "Source 4K", primaryVersionId: _source);
@@ -160,7 +160,7 @@ public sealed class MovieSimilarItemsProviderTests : SqliteDbTestFixture
         var unrelated = AddMovie(context, _unrelated, "Unrelated", primaryVersionId: null);
 
         // The second scenario scores on a genre of its own, so it stays out of the results above.
-        var crossLibrary = CreateItemValue("Science Fiction", "science fiction");
+        var crossLibrary = Guid.NewGuid();
 
         AddLibrary(context, _movieLibraryId, "Movies");
         AddLibrary(context, _movie4KLibraryId, "Movies-4K");
@@ -176,8 +176,7 @@ public sealed class MovieSimilarItemsProviderTests : SqliteDbTestFixture
         var sameLibraryVersion = AddMovie(context, _sameLibraryVersion, "Up", primaryVersionId: _sameLibraryPrimary, libraryId: _movieLibraryId);
 
         context.Users.Add(_user);
-        context.ItemValues.AddRange(shared, other, crossLibrary);
-        context.ItemValuesMap.AddRange(
+        context.BaseItemGenres.AddRange(
             CreateMap(source, shared),
             CreateMap(sourceAlternate, shared),
             CreateMap(similar, shared),
@@ -227,21 +226,11 @@ public sealed class MovieSimilarItemsProviderTests : SqliteDbTestFixture
         return item;
     }
 
-    private static ItemValue CreateItemValue(string value, string cleanValue)
-        => new()
-        {
-            ItemValueId = Guid.NewGuid(),
-            Type = ItemValueType.Genre,
-            Value = value,
-            CleanValue = cleanValue
-        };
-
-    private static ItemValueMap CreateMap(BaseItemEntity item, ItemValue itemValue)
+    private static BaseItemGenre CreateMap(BaseItemEntity item, Guid genreItemId)
         => new()
         {
             ItemId = item.Id,
-            ItemValueId = itemValue.ItemValueId,
             Item = item,
-            ItemValue = itemValue
+            GenreItemId = genreItemId
         };
 }
