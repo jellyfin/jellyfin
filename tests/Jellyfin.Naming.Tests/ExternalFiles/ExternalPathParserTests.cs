@@ -18,6 +18,8 @@ public class ExternalPathParserTests
         var englishCultureDto = new CultureDto("English", "English", "en", new[] { "eng" });
         var frenchCultureDto = new CultureDto("French", "French", "fr", new[] { "fre", "fra" });
         var hindiCultureDto = new CultureDto("Hindi", "Hindi", "hi", new[] { "hin" });
+        var greekCultureDto = new CultureDto("Greek, Modern (1453-)", "Greek, Modern (1453-)", "el", new[] { "ell", "gre" });
+        var brazilianPortugueseCultureDto = new CultureDto("pt-br", "Portuguese (Brazil)", "pt-br", new[] { "por" });
 
         var localizationManager = new Mock<ILocalizationManager>(MockBehavior.Loose);
         localizationManager.Setup(lm => lm.FindLanguageInfo(It.IsRegex("en.*", RegexOptions.IgnoreCase)))
@@ -26,6 +28,10 @@ public class ExternalPathParserTests
             .Returns(frenchCultureDto);
         localizationManager.Setup(lm => lm.FindLanguageInfo(It.IsRegex("hi.*", RegexOptions.IgnoreCase)))
             .Returns(hindiCultureDto);
+        localizationManager.Setup(lm => lm.FindLanguageInfo(It.IsRegex("^(el|ell|gre)$", RegexOptions.IgnoreCase)))
+            .Returns(greekCultureDto);
+        localizationManager.Setup(lm => lm.FindLanguageInfo(It.IsRegex("^pt-br$", RegexOptions.IgnoreCase)))
+            .Returns(brazilianPortugueseCultureDto);
 
         _audioPathParser = new ExternalPathParser(new NamingOptions(), localizationManager.Object, DlnaProfileType.Audio);
         _subtitlePathParser = new ExternalPathParser(new NamingOptions(), localizationManager.Object, DlnaProfileType.Subtitle);
@@ -93,6 +99,9 @@ public class ExternalPathParserTests
     [InlineData(".en", null, "eng")]
     [InlineData(".EN", null, "eng")]
     [InlineData(".hi", null, "hin")]
+    [InlineData(".el", null, "ell")]
+    [InlineData(".gre", null, "ell")]
+    [InlineData(".pt-br", null, "pt-br")]
     [InlineData(".fr.en", "fr", "eng")]
     [InlineData(".en.fr", "en", "fre")]
     [InlineData(".title.en.fr", "title.en", "fre")]

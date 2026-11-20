@@ -104,7 +104,7 @@ namespace Emby.Naming.ExternalFiles
 
                     if (culture is not null && pathInfo.Language is null)
                     {
-                        pathInfo.Language = culture.Name.Contains('-', StringComparison.OrdinalIgnoreCase)
+                        pathInfo.Language = culture.TwoLetterISOLanguageName.Contains('-', StringComparison.OrdinalIgnoreCase)
                                           ? culture.Name
                                           : culture.ThreeLetterISOLanguageName;
                         extraString = extraString.Replace(currentSlice, string.Empty, StringComparison.OrdinalIgnoreCase);
@@ -113,7 +113,7 @@ namespace Emby.Naming.ExternalFiles
                     {
                         // Hindi language code "hi" collides with a hearing impaired flag - use as Hindi only if no other language is set
                         pathInfo.IsHearingImpaired = true;
-                        pathInfo.Language = culture.Name.Contains('-', StringComparison.OrdinalIgnoreCase)
+                        pathInfo.Language = culture.TwoLetterISOLanguageName.Contains('-', StringComparison.OrdinalIgnoreCase)
                                           ? culture.Name
                                           : culture.ThreeLetterISOLanguageName;
                         extraString = extraString.Replace(currentSlice, string.Empty, StringComparison.OrdinalIgnoreCase);
