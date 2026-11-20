@@ -900,7 +900,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 VideoStream = imageStream,
                 BaseRequest = baseRequest,  // GetVideoProcessingFilterParam errors if null
                 MediaPath = inputFile,
-                OutputVideoCodec = "mjpeg"
+                OutputVideoCodec = "mjpeg",
+                NormalizeInputTimestamps = !enableKeyFrameOnlyExtraction
             };
             var vidEncoder = enableHwEncoding ? encodingHelper.GetVideoEncoder(jobState, options) : jobState.OutputVideoCodec;
 
@@ -931,29 +932,15 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             inputArg += " -map 0:" + streamIndex;
 
+            if (!encodingHelper.GetFramerateParam(jobState).HasValue)
+            {
+                throw new InvalidOperationException("Unable to determine a frame rate filter for trickplay extraction.");
+            }
+
             var filterParam = encodingHelper.GetVideoProcessingFilterParam(jobState, options, vidEncoder).Trim();
             if (string.IsNullOrWhiteSpace(filterParam))
             {
                 throw new InvalidOperationException("EncodingHelper returned empty or invalid filter parameters.");
-            }
-
-            // Normalize invalid PTS from containers for non keyframe only mode
-            if (!enableKeyFrameOnlyExtraction)
-            {
-                var fpsFilterIndex = filterParam.IndexOf("fps=", StringComparison.Ordinal);
-                if (fpsFilterIndex >= 0)
-                {
-                    var inputFrameRate = (imageStream.ReferenceFrameRate.HasValue && imageStream.ReferenceFrameRate > 0)
-                        ? imageStream.ReferenceFrameRate.Value : 30;
-
-                    var setPtsFilter = string.Create(CultureInfo.InvariantCulture, $"setpts=N/{inputFrameRate:F3}/TB,");
-
-                    filterParam = filterParam.Insert(fpsFilterIndex, setPtsFilter);
-                }
-                else
-                {
-                    throw new InvalidOperationException("EncodingHelper returned invalid filter parameters.");
-                }
             }
 
             try

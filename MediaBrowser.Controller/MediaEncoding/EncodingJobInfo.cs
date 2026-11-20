@@ -136,6 +136,8 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public bool IsVideoRequest { get; set; }
 
+        public bool NormalizeInputTimestamps { get; set; }
+
         public TranscodingJobType TranscodingType { get; set; }
 
         public long? StartTimeTicks => BaseRequest.StartTimeTicks;
