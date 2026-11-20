@@ -320,7 +320,7 @@ namespace Emby.Server.Implementations.Playlists
 
             var user = _userManager.GetUserById(callingUserId);
             var children = playlist.GetManageableItems().ToList();
-            var accessibleChildren = children.Where(c => c.Item2.IsVisible(user)).ToArray();
+            var accessibleChildren = children.Where(c => c.Item2.IsVisibleStandalone(user)).ToArray();
 
             var oldIndexAll = children.FindIndex(i => string.Equals(entryId, i.Item1.ItemId?.ToString("N", CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase));
             var oldIndexAccessible = accessibleChildren.FindIndex(i => string.Equals(entryId, i.Item1.ItemId?.ToString("N", CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase));
@@ -330,9 +330,16 @@ namespace Emby.Server.Implementations.Playlists
                 return;
             }
 
-            var newPriorItemIndex = Math.Max(newIndex - 1, 0);
+            var movingDown = oldIndexAccessible >= 0 && newIndex > oldIndexAccessible;
+            var newPriorItemIndex = movingDown ? Math.Min(newIndex, accessibleChildren.Length - 1) : Math.Max(newIndex - 1, 0);
             var newPriorItemId = accessibleChildren[newPriorItemIndex].Item1.ItemId;
             var newPriorItemIndexOnAllChildren = children.FindIndex(c => c.Item1.ItemId.Equals(newPriorItemId));
+            if (oldIndexAll >= 0 && oldIndexAll < newPriorItemIndexOnAllChildren)
+            {
+                // Removing the moved item shifts its new prior item down by one.
+                newPriorItemIndexOnAllChildren--;
+            }
+
             var adjustedNewIndex = DetermineAdjustedIndex(newPriorItemIndexOnAllChildren, newIndex);
 
             var item = playlist.LinkedChildren.FirstOrDefault(i => string.Equals(entryId, i.ItemId?.ToString("N", CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase));
