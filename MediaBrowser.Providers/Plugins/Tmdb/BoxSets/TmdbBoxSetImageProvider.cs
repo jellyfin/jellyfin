@@ -62,9 +62,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
             }
 
             var language = item.GetPreferredMetadataLanguage();
+            var countryCode = item.GetPreferredMetadataCountryCode();
 
-            // TODO use image languages if All Languages isn't toggled, but there's currently no way to get that value in here
-            var collection = await _tmdbClientManager.GetCollectionAsync(tmdbId, null, null, null, cancellationToken).ConfigureAwait(false);
+            var collection = await _tmdbClientManager.GetCollectionAsync(tmdbId, language, TmdbUtils.GetImageLanguagesParam(language, countryCode), countryCode, cancellationToken).ConfigureAwait(false);
 
             if (collection?.Images is null)
             {
