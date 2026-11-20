@@ -262,6 +262,8 @@ namespace MediaBrowser.Model.Entities
 
         public string LocalizedOriginal { get; set; }
 
+        public string LocalizedCommentary { get; set; }
+
         public string DisplayTitle
         {
             get
@@ -310,6 +312,11 @@ namespace MediaBrowser.Model.Entities
                             if (IsOriginal)
                             {
                                 attributes.Add(string.IsNullOrEmpty(LocalizedOriginal) ? "Original" : LocalizedOriginal);
+                            }
+
+                            if (IsCommentary)
+                            {
+                                attributes.Add(string.IsNullOrEmpty(LocalizedCommentary) ? "Commentary" : LocalizedCommentary);
                             }
 
                             if (!string.IsNullOrEmpty(Title))
@@ -511,6 +518,12 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value><c>true</c> if this instance is original; otherwise, <c>false</c>.</value>
         public bool IsOriginal { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is a commentary track.
+        /// </summary>
+        /// <value><c>true</c> if this instance is a commentary track; otherwise, <c>false</c>.</value>
+        public bool IsCommentary { get; set; }
 
         /// <summary>
         /// Gets or sets the height.

@@ -52,6 +52,96 @@ public class MediaStreamSelectorTests
         Assert.Equal(expectedIndex, MediaStreamSelector.GetDefaultAudioStreamIndex(streams, preferredLanguages, preferDefaultTrack));
     }
 
+    [Theory]
+    [InlineData(new string[0], false, 1)]
+    [InlineData(new string[0], true, 1)]
+    [InlineData(new[] { "eng" }, false, 1)]
+    [InlineData(new[] { "eng" }, true, 1)]
+    [InlineData(new[] { "ger" }, false, 1)]
+    [InlineData(new[] { "eng", "ger" }, false, 1)]
+    public void GetDefaultAudioStreamIndex_CommentaryOnlyMatchesLanguage_SelectsNonCommentary(string[] preferredLanguages, bool preferDefaultTrack, int expectedIndex)
+    {
+        // Foreign language film whose only track in the preferred language is a commentary.
+        var streams = new MediaStream[]
+        {
+            new()
+            {
+                Index = 0,
+                Type = MediaStreamType.Video,
+                IsDefault = true
+            },
+            new()
+            {
+                Index = 1,
+                Type = MediaStreamType.Audio,
+                Language = "ger",
+                IsDefault = true,
+                IsOriginal = true
+            },
+            new()
+            {
+                Index = 2,
+                Type = MediaStreamType.Audio,
+                Language = "eng",
+                IsCommentary = true
+            }
+        };
+
+        Assert.Equal(expectedIndex, MediaStreamSelector.GetDefaultAudioStreamIndex(streams, preferredLanguages, preferDefaultTrack));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void GetDefaultAudioStreamIndex_DefaultTrackIsCommentary_SelectsNonCommentary(bool preferDefaultTrack)
+    {
+        var streams = new MediaStream[]
+        {
+            new()
+            {
+                Index = 0,
+                Type = MediaStreamType.Audio,
+                Language = "eng",
+                IsDefault = true,
+                IsCommentary = true
+            },
+            new()
+            {
+                Index = 1,
+                Type = MediaStreamType.Audio,
+                Language = "eng"
+            }
+        };
+
+        Assert.Equal(1, MediaStreamSelector.GetDefaultAudioStreamIndex(streams, new[] { "eng" }, preferDefaultTrack));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void GetDefaultAudioStreamIndex_OnlyCommentaryTracks_SelectsBestCommentary(bool preferDefaultTrack)
+    {
+        var streams = new MediaStream[]
+        {
+            new()
+            {
+                Index = 0,
+                Type = MediaStreamType.Audio,
+                Language = "fre",
+                IsCommentary = true
+            },
+            new()
+            {
+                Index = 1,
+                Type = MediaStreamType.Audio,
+                Language = "eng",
+                IsCommentary = true
+            }
+        };
+
+        Assert.Equal(1, MediaStreamSelector.GetDefaultAudioStreamIndex(streams, new[] { "eng" }, preferDefaultTrack));
+    }
+
     public static TheoryData<MediaStream, int> GetStreamScore_MediaStream_TestData()
     {
         var data = new TheoryData<MediaStream, int>();

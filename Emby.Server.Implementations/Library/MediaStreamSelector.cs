@@ -13,11 +13,17 @@ namespace Emby.Server.Implementations.Library
     {
         public static int? GetDefaultAudioStreamIndex(IReadOnlyList<MediaStream> streams, IReadOnlyList<string> preferredLanguages, bool preferDefaultTrack)
         {
-            var sortedStreams = GetSortedStreams(streams, MediaStreamType.Audio, preferredLanguages).ToList();
+            // A commentary track is never the actual soundtrack, so rank those last regardless of
+            // language or flags. They are only picked when there is nothing else to play.
+            var sortedStreams = streams
+                .Where(i => i.Type == MediaStreamType.Audio)
+                .OrderBy(i => i.IsCommentary)
+                .ThenByDescending(i => GetStreamScore(i, preferredLanguages))
+                .ToList();
 
             if (preferDefaultTrack)
             {
-                var defaultStream = sortedStreams.FirstOrDefault(i => i.IsDefault);
+                var defaultStream = sortedStreams.FirstOrDefault(i => i.IsDefault && !i.IsCommentary);
 
                 if (defaultStream is not null)
                 {
