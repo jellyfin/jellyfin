@@ -16,7 +16,7 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// four ways - on the item, on its series, on an ancestor and on its library - and each of them has to
 /// keep answering the same after the ancestor check moved off a per-row correlated subquery.
 /// </summary>
-public sealed class BaseItemRepositoryInheritedTagTests : SqliteDbTestFixture
+public abstract class BaseItemRepositoryInheritedTagTests : DbTestFixture
 {
     private const string FolderType = "MediaBrowser.Controller.Entities.Folder";
     private const string SeriesType = "MediaBrowser.Controller.Entities.TV.Series";
@@ -47,7 +47,8 @@ public sealed class BaseItemRepositoryInheritedTagTests : SqliteDbTestFixture
     private readonly Guid _untaggedSeries = Guid.NewGuid();
     private readonly Guid _untaggedEpisode = Guid.NewGuid();
 
-    public BaseItemRepositoryInheritedTagTests()
+    protected BaseItemRepositoryInheritedTagTests(TestDatabase database)
+        : base(database)
     {
         using (var ctx = CreateDbContext())
         {
@@ -172,4 +173,6 @@ public sealed class BaseItemRepositoryInheritedTagTests : SqliteDbTestFixture
             });
         }
     }
+
+    public sealed class Sqlite() : BaseItemRepositoryInheritedTagTests(new SqliteTestDatabase());
 }

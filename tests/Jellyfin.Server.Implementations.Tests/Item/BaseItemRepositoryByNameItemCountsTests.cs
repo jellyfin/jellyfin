@@ -15,12 +15,13 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// BaseItems. One item can reach the same clean value through more than one value row, so the
 /// join has to be counted per distinct item; counting rows reports a multiple of the truth.
 /// </summary>
-public sealed class BaseItemRepositoryByNameItemCountsTests : SqliteDbTestFixture
+public abstract class BaseItemRepositoryByNameItemCountsTests : DbTestFixture
 {
     private readonly BaseItemRepository _repository;
     private readonly ItemTypeLookup _itemTypeLookup;
 
-    public BaseItemRepositoryByNameItemCountsTests()
+    protected BaseItemRepositoryByNameItemCountsTests(TestDatabase database)
+        : base(database)
     {
         _itemTypeLookup = new ItemTypeLookup();
         _repository = CreateBaseItemRepository(_itemTypeLookup);
@@ -212,4 +213,6 @@ public sealed class BaseItemRepositoryByNameItemCountsTests : SqliteDbTestFixtur
 
         ctx.SaveChanges();
     }
+
+    public sealed class Sqlite() : BaseItemRepositoryByNameItemCountsTests(new SqliteTestDatabase());
 }

@@ -10,11 +10,12 @@ using Xunit;
 
 namespace Jellyfin.Server.Implementations.Tests.Item;
 
-public sealed class ItemPersistencePeopleCleanupTests : SqliteDbTestFixture
+public abstract class ItemPersistencePeopleCleanupTests : DbTestFixture
 {
     private readonly ItemPersistenceService _service;
 
-    public ItemPersistencePeopleCleanupTests()
+    protected ItemPersistencePeopleCleanupTests(TestDatabase database)
+        : base(database)
     {
         _service = new ItemPersistenceService(
             CreateDbContextFactory(),
@@ -82,4 +83,6 @@ public sealed class ItemPersistencePeopleCleanupTests : SqliteDbTestFixture
         People = person,
         Role = string.Empty
     };
+
+    public sealed class Sqlite() : ItemPersistencePeopleCleanupTests(new SqliteTestDatabase());
 }

@@ -8,13 +8,14 @@ using BaseItemKind = Jellyfin.Data.Enums.BaseItemKind;
 
 namespace Jellyfin.Server.Implementations.Tests.Item;
 
-public sealed class BaseItemRepositoryItemValueTests : SqliteDbTestFixture
+public abstract class BaseItemRepositoryItemValueTests : DbTestFixture
 {
     private readonly BaseItemRepository _repository;
     private readonly string _audioTypeName;
     private readonly string _movieTypeName;
 
-    public BaseItemRepositoryItemValueTests()
+    protected BaseItemRepositoryItemValueTests(TestDatabase database)
+        : base(database)
     {
         var itemTypeLookup = new ItemTypeLookup();
         _audioTypeName = itemTypeLookup.BaseItemKindNames[BaseItemKind.Audio];
@@ -215,4 +216,6 @@ public sealed class BaseItemRepositoryItemValueTests : SqliteDbTestFixture
             CleanValue = cleanValue
         };
     }
+
+    public sealed class Sqlite() : BaseItemRepositoryItemValueTests(new SqliteTestDatabase());
 }

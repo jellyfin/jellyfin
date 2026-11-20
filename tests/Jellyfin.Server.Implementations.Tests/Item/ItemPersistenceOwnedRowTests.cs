@@ -20,7 +20,7 @@ using Xunit;
 
 namespace Jellyfin.Server.Implementations.Tests.Item;
 
-public sealed class ItemPersistenceOwnedRowTests : SqliteDbTestFixture
+public abstract class ItemPersistenceOwnedRowTests : DbTestFixture
 {
     private readonly ItemPersistenceService _service;
     private readonly ILibraryManager? _previousLibraryManager;
@@ -28,7 +28,8 @@ public sealed class ItemPersistenceOwnedRowTests : SqliteDbTestFixture
     private readonly IRecordingsManager? _previousRecordingsManager;
     private readonly Guid _userId = Guid.Parse("11111111-1111-1111-1111-111111111111");
 
-    public ItemPersistenceOwnedRowTests()
+    protected ItemPersistenceOwnedRowTests(TestDatabase database)
+        : base(database)
     {
         // BaseItem resolves these through process-wide statics; restored in Dispose.
         _previousLibraryManager = BaseItem.LibraryManager;
@@ -274,4 +275,6 @@ public sealed class ItemPersistenceOwnedRowTests : SqliteDbTestFixture
             Played = played
         };
     }
+
+    public sealed class Sqlite() : ItemPersistenceOwnedRowTests(new SqliteTestDatabase());
 }

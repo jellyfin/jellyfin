@@ -12,8 +12,13 @@ using Xunit;
 
 namespace Jellyfin.Server.Implementations.Tests.Trickplay;
 
-public sealed class TrickplayManagerTests : SqliteDbTestFixture
+public abstract class TrickplayManagerTests : DbTestFixture
 {
+    protected TrickplayManagerTests(TestDatabase database)
+        : base(database)
+    {
+    }
+
     [Fact]
     public async Task DeleteTrickplayDataAsync_DisposesDbContext()
     {
@@ -44,4 +49,6 @@ public sealed class TrickplayManagerTests : SqliteDbTestFixture
         var context = Assert.Single(contexts);
         Assert.Throws<ObjectDisposedException>(() => context.Model);
     }
+
+    public sealed class Sqlite() : TrickplayManagerTests(new SqliteTestDatabase());
 }
