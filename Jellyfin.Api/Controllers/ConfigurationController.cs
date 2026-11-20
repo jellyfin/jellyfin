@@ -1,7 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json;
 using Jellyfin.Api.Helpers;
-using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
@@ -26,8 +24,6 @@ public class ConfigurationController : BaseJellyfinApiController
 {
     private readonly IServerConfigurationManager _configurationManager;
     private readonly IMediaEncoder _mediaEncoder;
-
-    private readonly JsonSerializerOptions _serializerOptions = JsonDefaults.Options;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ConfigurationController"/> class.
@@ -119,19 +115,17 @@ public class ConfigurationController : BaseJellyfinApiController
     [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public ActionResult<EncodingOptions> GetRecommendedEncodingOptions()
+    public ActionResult<EncodingOptionsDto> GetRecommendedEncodingOptions()
     {
         // Work on a copy, the stored options only change when the administrator saves them
-        var options = JsonSerializer.Deserialize<EncodingOptions>(
-            JsonSerializer.SerializeToUtf8Bytes(_configurationManager.GetEncodingOptions(), _serializerOptions),
-            _serializerOptions);
+        var options = ConfigurationMapper.MapToInternal(ConfigurationMapper.MapToDto(_configurationManager.GetEncodingOptions()));
 
-        if (options is null || !_mediaEncoder.ApplyRecommendedHardwareAcceleration(options))
+        if (!_mediaEncoder.ApplyRecommendedHardwareAcceleration(options))
         {
             return NotFound();
         }
 
-        return options;
+        return ConfigurationMapper.MapToDto(options);
     }
 
     /// <summary>
