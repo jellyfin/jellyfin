@@ -253,6 +253,7 @@
  - [klizas](https://github.com/klizas)
  - [p27ZuH6CNAdzr](https://github.com/p27ZuH6CNAdzr)
  - [arcusbuilds](https://github.com/arcusbuilds)
+ - [mysticalsoap](https://github.com/mysticalsoap)
 
 # Emby Contributors
 

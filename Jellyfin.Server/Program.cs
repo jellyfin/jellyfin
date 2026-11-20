@@ -271,6 +271,12 @@ namespace Jellyfin.Server
             {
                 _restartOnShutdown = false;
                 _logger.LogCritical(ex, "Error while starting server");
+                if (options.StartupMode is not (null or Configuration.StartupMode.MediaServer))
+                {
+                    // A MigrateSystem or SeedSystem run is started from a script, which can only tell that it failed by the exit code.
+                    Environment.ExitCode = 1;
+                }
+
                 if (_setupServer!.IsAlive && !configurationCompleted)
                 {
                     _setupServer!.SoftStop();

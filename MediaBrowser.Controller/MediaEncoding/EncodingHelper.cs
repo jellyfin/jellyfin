@@ -3116,6 +3116,16 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
 
                 seekParam += string.Format(CultureInfo.InvariantCulture, "-ss {0}", _mediaEncoder.GetTimeParameter(seekTick));
+
+                // Retain audio from the preceding keyframe to match copied video's start time.
+                if (isHlsRemuxing
+                    && state.AudioStream is not null
+                    && !string.IsNullOrEmpty(state.OutputAudioCodec)
+                    && !IsCopyCodec(state.OutputAudioCodec)
+                    && !string.Equals(state.InputContainer, "wtv", StringComparison.OrdinalIgnoreCase))
+                {
+                    seekParam += " -noaccurate_seek";
+                }
             }
 
             return seekParam;

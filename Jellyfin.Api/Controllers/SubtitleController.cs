@@ -227,7 +227,7 @@ public class SubtitleController : BaseJellyfinApiController
         [FromQuery] long? endPositionTicks,
         [FromQuery] bool copyTimestamps = false,
         [FromQuery] bool addVttTimeMap = false,
-        [FromQuery][Range(typeof(long), "0", "9223372036854775807")] long vttTimestampMapMpegts = DefaultVttTimestampMapMpegts,
+        [FromQuery] long vttTimestampMapMpegts = DefaultVttTimestampMapMpegts,
         [FromQuery] long startPositionTicks = 0)
     {
         // Set parameters to route value if not provided via query.
@@ -317,7 +317,7 @@ public class SubtitleController : BaseJellyfinApiController
         [FromQuery] long? endPositionTicks,
         [FromQuery] bool copyTimestamps = false,
         [FromQuery] bool addVttTimeMap = false,
-        [FromQuery][Range(typeof(long), "0", "9223372036854775807")] long vttTimestampMapMpegts = DefaultVttTimestampMapMpegts)
+        [FromQuery] long vttTimestampMapMpegts = DefaultVttTimestampMapMpegts)
     {
         return GetSubtitle(
             routeItemId,
@@ -357,7 +357,7 @@ public class SubtitleController : BaseJellyfinApiController
         [FromRoute, Required] int index,
         [FromRoute, Required] string mediaSourceId,
         [FromQuery, Required] int segmentLength,
-        [FromQuery][Range(typeof(long), "0", "9223372036854775807")] long vttTimestampMapMpegts = DefaultVttTimestampMapMpegts)
+        [FromQuery] long vttTimestampMapMpegts = DefaultVttTimestampMapMpegts)
     {
         var item = _libraryManager.GetItemById<Video>(itemId, User.GetUserId());
         if (item is null)

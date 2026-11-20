@@ -108,5 +108,18 @@
     "TaskDownloadMissingLyrics": "Unduh Lirik yang Hilang",
     "CleanupUserDataTask": "Tugas Pembersihan Data Pengguna",
     "LyricDownloadFailureFromForItem": "Lirik gagal di download dari {0} untuk {1}",
-    "Original": "Asli"
+    "Original": "Asli",
+    "NameExtraBehindTheScenes": "Dibalik Layar",
+    "NameExtraClip": "klip",
+    "NameExtraDeletedScene": "adegan yang dihapus",
+    "NameExtraFeaturette": "film pendek",
+    "NameExtraInterview": "wawancara",
+    "NameExtraSample": "contoh",
+    "NameExtraScene": "adegan",
+    "NameExtraShort": "pendek",
+    "NameExtraThemeSong": "lagu tema",
+    "NameExtraThemeVideo": "Tema video",
+    "NameExtraTrailer": "cuplikan",
+    "NameExtraUnknown": "tambahan",
+    "NameExtraNumbered": "{0} {1}"
 }

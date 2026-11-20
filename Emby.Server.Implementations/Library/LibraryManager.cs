@@ -184,6 +184,7 @@ namespace Emby.Server.Implementations.Library
             _peopleRepository = peopleRepository;
             _pathManager = pathManager;
             _dotIgnoreIgnoreRule = dotIgnoreIgnoreRule;
+            _dotIgnoreIgnoreRule.SetLibraryRootsProvider(GetLibraryRootPaths);
             _localization = localization;
             _directoryService = directoryService;
             _extraResolver = new ExtraResolver(loggerFactory.CreateLogger<ExtraResolver>(), namingOptions, directoryService);
@@ -1627,23 +1628,7 @@ namespace Emby.Server.Implementations.Library
             {
                 Name = Path.GetFileName(dir),
 
-                Locations = _fileSystem.GetFilePaths(dir, false)
-                .Where(i => Path.GetExtension(i.AsSpan()).Equals(ShortcutFileExtension, StringComparison.OrdinalIgnoreCase))
-                    .Select(i =>
-                    {
-                        try
-                        {
-                            return _appHost.ExpandVirtualPath(_fileSystem.ResolveShortcut(i));
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Error resolving shortcut file {File}", i);
-                            return null;
-                        }
-                    })
-                    .Where(i => i is not null)
-                    .Order()
-                    .ToArray(),
+                Locations = GetVirtualFolderLocations(dir).Order().ToArray(),
 
                 CollectionType = GetCollectionType(dir)
             };
@@ -1669,6 +1654,40 @@ namespace Emby.Server.Implementations.Library
             }
 
             return info;
+        }
+
+        private IEnumerable<string> GetVirtualFolderLocations(string dir)
+        {
+            return _fileSystem.GetFilePaths(dir, false)
+                .Where(i => Path.GetExtension(i.AsSpan()).Equals(ShortcutFileExtension, StringComparison.OrdinalIgnoreCase))
+                .Select(i =>
+                {
+                    try
+                    {
+                        return _appHost.ExpandVirtualPath(_fileSystem.ResolveShortcut(i));
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error resolving shortcut file {File}", i);
+                        return null;
+                    }
+                })
+                .OfType<string>();
+        }
+
+        // Reads the .mblink files directly; going through RootFolder.Children would re-enter the resolver.
+        private IEnumerable<string> GetLibraryRootPaths()
+        {
+            // root/default only exists once the user root folder or a library has been created
+            var userViewsPath = _configurationManager.ApplicationPaths.DefaultUserViewsPath;
+            if (!_fileSystem.DirectoryExists(userViewsPath))
+            {
+                return [];
+            }
+
+            return _fileSystem.GetDirectoryPaths(userViewsPath)
+                .SelectMany(GetVirtualFolderLocations)
+                .ToList();
         }
 
         private CollectionTypeOptions? GetCollectionType(string path)
@@ -3750,6 +3769,7 @@ namespace Emby.Server.Implementations.Library
 
         public async Task<ItemImageInfo> ConvertImageToLocal(BaseItem item, ItemImageInfo image, int imageIndex, bool removeOnFailure)
         {
+            HttpRequestException? lastHttpException = null;
             foreach (var url in image.Path.Split('|'))
             {
                 try
@@ -3781,6 +3801,7 @@ namespace Emby.Server.Implementations.Library
                         && (ex.StatusCode.Value == HttpStatusCode.NotFound || ex.StatusCode.Value == HttpStatusCode.Forbidden))
                     {
                         _logger.LogDebug(ex, "Error downloading image {Url}", url);
+                        lastHttpException = ex;
                         continue;
                     }
 
@@ -3795,13 +3816,17 @@ namespace Emby.Server.Implementations.Library
                 await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
             }
 
-            throw new InvalidOperationException(string.Format(
-                CultureInfo.InvariantCulture,
-                "Unable to convert any {0} image url in \"{1}\" to a local file for {2} ({3})",
-                image.Type,
-                image.Path,
-                item.Name,
-                item.Id));
+            // Keep the rejection as the inner exception: callers such as the Live TV guide need the
+            // status code to tell a missing image from a provider that is refusing us.
+            throw new InvalidOperationException(
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    "Unable to convert any {0} image url in \"{1}\" to a local file for {2} ({3})",
+                    image.Type,
+                    image.Path,
+                    item.Name,
+                    item.Id),
+                lastHttpException);
         }
 
         public async Task AddVirtualFolder(string name, CollectionTypeOptions? collectionType, LibraryOptions options, bool refreshLibrary)
@@ -4197,6 +4222,30 @@ namespace Emby.Server.Implementations.Library
 
             SetTopParentOrAncestorIds(query);
             return _itemRepository.GetQueryFiltersLegacy(query);
+        }
+
+        /// <inheritdoc />
+        public IReadOnlyList<int> GetYears(InternalItemsQuery query)
+        {
+            if (query.User is not null)
+            {
+                AddUserToQuery(query, query.User);
+            }
+
+            SetTopParentOrAncestorIds(query);
+            return _itemRepository.GetYears(query);
+        }
+
+        /// <inheritdoc />
+        public IReadOnlyList<string> GetOfficialRatings(InternalItemsQuery query)
+        {
+            if (query.User is not null)
+            {
+                AddUserToQuery(query, query.User);
+            }
+
+            SetTopParentOrAncestorIds(query);
+            return _itemRepository.GetOfficialRatings(query);
         }
 
         /// <inheritdoc />

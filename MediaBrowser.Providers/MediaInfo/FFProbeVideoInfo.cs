@@ -442,11 +442,20 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            if (useContainerDates && data.PremiereDate is not null)
+            if (useContainerDates)
             {
-                if (video.PremiereDate is null || replaceData)
+                // creation_time is the mux time, so it only stands in where the tags gave no date
+                // and it cannot contradict a year we already know, which in practice is home video.
+                var containerDate = data.PremiereDate;
+                if (containerDate is null
+                    && (video.ProductionYear is null || data.ContainerCreationDate?.ToLocalTime().Year == video.ProductionYear))
                 {
-                    video.PremiereDate = data.PremiereDate;
+                    containerDate = data.ContainerCreationDate;
+                }
+
+                if (containerDate is not null && (video.PremiereDate is null || replaceData))
+                {
+                    video.PremiereDate = containerDate;
                 }
             }
 
@@ -553,7 +562,8 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 var downloadedLanguages = await new SubtitleDownloader(
                     _logger,
-                    _subtitleManager).DownloadSubtitles(
+                    _subtitleManager,
+                    _localization).DownloadSubtitles(
                         video,
                         currentStreams.Concat(externalSubtitleStreams).ToList(),
                         libraryOptions.SkipSubtitlesIfEmbeddedSubtitlesPresent,
