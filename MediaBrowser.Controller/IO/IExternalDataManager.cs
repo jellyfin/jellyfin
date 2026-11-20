@@ -22,5 +22,6 @@ public interface IExternalDataManager
     /// Use this when DB-side cleanup is already handled by another code path (e.g. <c>IItemPersistenceService.DeleteItem</c>).
     /// </summary>
     /// <param name="item">The item.</param>
-    void DeleteExternalItemFiles(BaseItem item);
+    /// <param name="deleteMediaTrickplay">Whether to delete trickplay images stored alongside media files.</param>
+    void DeleteExternalItemFiles(BaseItem item, bool deleteMediaTrickplay = true);
 }
