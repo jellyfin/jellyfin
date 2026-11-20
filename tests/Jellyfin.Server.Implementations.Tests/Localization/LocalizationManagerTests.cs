@@ -6,6 +6,7 @@ using BitFaster.Caching;
 using Emby.Server.Implementations.Localization;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Globalization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -99,6 +100,80 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
             Assert.Equal("German", germany.Name);
             Assert.Contains("deu", germany.ThreeLetterISOLanguageNames);
             Assert.Contains("ger", germany.ThreeLetterISOLanguageNames);
+        }
+
+        [Theory]
+        // Region qualified variants must stay distinguishable by ThreeLetterISOLanguageName,
+        // which is what clients use as the value of their language pickers.
+        [InlineData("pt", "por", "Portuguese")]
+        [InlineData("pt-br", "pt-br", "Portuguese (Brazil)")]
+        [InlineData("pob", "pt-br", "Portuguese (Brazil)")]
+        [InlineData("pt-pt", "pt-pt", "Portuguese (Portugal)")]
+        [InlineData("pop", "pt-pt", "Portuguese (Portugal)")]
+        [InlineData("es", "spa", "Spanish; Castilian")]
+        [InlineData("spa", "spa", "Spanish; Castilian")]
+        [InlineData("es-419", "es-419", "Spanish; Latin")]
+        [InlineData("es-mx", "es-419", "Spanish; Latin")]
+        [InlineData("zh", "zho", "Chinese")]
+        [InlineData("ze", "ze", "Chinese (Bilingual)")]
+        [InlineData("zh-cn", "zh-cn", "Chinese (Simplified)")]
+        [InlineData("zh-tw", "zh-tw", "Chinese (Traditional)")]
+        public async Task FindLanguageInfo_RegionalVariant_KeepsDistinctCode(string identifier, string expectedCode, string expectedDisplayName)
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                UICulture = "en-US"
+            });
+            await localizationManager.LoadAll();
+
+            var culture = localizationManager.FindLanguageInfo(identifier);
+            Assert.NotNull(culture);
+            Assert.Equal(expectedCode, culture.ThreeLetterISOLanguageName);
+            Assert.Equal(expectedDisplayName, culture.DisplayName);
+        }
+
+        [Theory]
+        // Stream tags carry either the variant's own tag (movie.pt-br.srt) or the base code ffprobe reports.
+        [InlineData("pt-br", new[] { "pt-br", "por" })]
+        [InlineData("por", new[] { "por" })]
+        [InlineData("ger", new[] { "deu", "ger" })]
+        [InlineData("zh-tw", new[] { "zh-tw", "zho", "chi" })]
+        [InlineData("fr-ca", new[] { "fr-ca", "frc", "fra", "fre" })]
+        // Streams scanned before 12.0 keep their legacy code until the item is refreshed.
+        [InlineData("pob", new[] { "pt-br", "por", "pob" })]
+        // A display name with a hyphen does not make a culture a variant.
+        [InlineData("ell", new[] { "ell", "gre" })]
+        [InlineData("UND", new[] { "und" })]
+        [InlineData("xyz", new[] { "xyz" })]
+        public async Task GetMediaStreamLanguageCodes_Variant_IncludesBaseCode(string identifier, string[] expected)
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                UICulture = "en-US"
+            });
+            await localizationManager.LoadAll();
+
+            Assert.Equal(expected, localizationManager.GetMediaStreamLanguageCodes(identifier));
+        }
+
+        [Fact]
+        public async Task GetCultures_RegionalVariants_HaveUniqueThreeLetterCodes()
+        {
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                UICulture = "en-US"
+            });
+            await localizationManager.LoadAll();
+
+            // Mirrors what LocalizationController serves and what clients use as picker values.
+            var duplicates = localizationManager.GetCultures()
+                .DistinctBy(c => c.DisplayName, StringComparer.OrdinalIgnoreCase)
+                .GroupBy(c => c.ThreeLetterISOLanguageName, StringComparer.OrdinalIgnoreCase)
+                .Where(g => g.Count() > 1)
+                .Select(g => $"{g.Key}: {string.Join(", ", g.Select(c => c.DisplayName))}")
+                .ToList();
+
+            Assert.Empty(duplicates);
         }
 
         [Theory]
