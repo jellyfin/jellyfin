@@ -53,6 +53,16 @@ namespace Emby.Server.Implementations.Localization
 
         private FrozenDictionary<string, string> _iso6392BtoT = null!;
 
+        // Jellyfin's own pre-12.0 codes for region qualified languages and the legacy OpenSubtitles
+        // ones, still stored in existing configuration and common in file names (movie.pob.srt).
+        private static readonly FrozenDictionary<string, string> _legacyLanguageAliases = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "pob", "pt-br" },
+            { "pb", "pt-br" },
+            { "pop", "pt-pt" },
+            { "es-mx", "es-419" },
+        }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
+
         /// <summary>
         /// Initializes a new instance of the <see cref="LocalizationManager" /> class.
         /// </summary>
@@ -170,6 +180,7 @@ namespace Emby.Server.Implementations.Localization
         {
             List<CultureDto> list = [];
             Dictionary<string, string> iso6392BtoTdict = new Dictionary<string, string>();
+            HashSet<string> claimedCodes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             using var stream = _assembly.GetManifestResourceStream(CulturesPath);
             if (stream is null)
@@ -223,6 +234,16 @@ namespace Emby.Server.Implementations.Localization
                         iso6392BtoTdict.TryAdd(parts[1], parts[0]);
                     }
 
+                    // Variants (pt-br, es-419, zh-cn, ze, ...) share the ISO 639-2 code of their base
+                    // language, but clients key their language pickers on ThreeLetterISOLanguageName and
+                    // would collapse them onto one option. The first entry to claim a code keeps it, which
+                    // is the same one FindLanguageInfo resolves that code to; the rest fall back to their
+                    // own tag.
+                    if (!claimedCodes.Add(parts[0]) && !string.IsNullOrEmpty(twoCharName))
+                    {
+                        threeLetterNames = [twoCharName, .. threeLetterNames];
+                    }
+
                     list.Add(new CultureDto(name, displayname, twoCharName, threeLetterNames));
                 }
 
@@ -244,6 +265,11 @@ namespace Emby.Server.Implementations.Localization
                 language,
                 static (lang, cultures) =>
                 {
+                    if (_legacyLanguageAliases.TryGetValue(lang, out var alias))
+                    {
+                        lang = alias;
+                    }
+
                     // TODO language should ideally be a ReadOnlySpan but moq cannot mock ref structs
                     for (var i = 0; i < cultures.Count; i++)
                     {
