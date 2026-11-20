@@ -13,6 +13,11 @@ namespace Jellyfin.Database.Implementations.ModelConfiguration
         public void Configure(EntityTypeBuilder<TrickplayInfo> builder)
         {
             builder.HasKey(info => new { info.ItemId, info.Width });
+
+            builder.HasOne<BaseItemEntity>()
+                .WithMany()
+                .HasForeignKey(info => info.ItemId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
