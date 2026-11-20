@@ -30,5 +30,21 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
         }
+
+        public static void RemoveTag(this BaseItem item, string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            name = name.Trim();
+            var current = item.Tags;
+
+            if (current.Contains(name, StringComparison.OrdinalIgnoreCase))
+            {
+                item.Tags = current.Where(tag => !string.Equals(tag, name, StringComparison.OrdinalIgnoreCase)).ToArray();
+            }
+        }
     }
 }

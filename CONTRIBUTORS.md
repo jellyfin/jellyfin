@@ -70,6 +70,7 @@
  - [jmshrv](https://github.com/jmshrv)
  - [joern-h](https://github.com/joern-h)
  - [joshuaboniface](https://github.com/joshuaboniface)
+ - [JosiahGibbs](https://github.com/JosiahGibbs)
  - [JustAMan](https://github.com/JustAMan)
  - [justinfenn](https://github.com/justinfenn)
  - [JPVenson](https://github.com/JPVenson)

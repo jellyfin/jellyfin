@@ -314,6 +314,10 @@ public class GuideManager : IGuideManager
                 {
                     currentChannel.AddTag("Kids");
                 }
+                else
+                {
+                    currentChannel.RemoveTag("Kids");
+                }
 
                 await currentChannel.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
                 await currentChannel.RefreshMetadata(
