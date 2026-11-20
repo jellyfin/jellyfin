@@ -16,6 +16,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace Jellyfin.LiveTv.TunerHosts
 {
@@ -54,9 +55,15 @@ namespace Jellyfin.LiveTv.TunerHosts
             var typeName = GetType().Name;
             Logger.LogInformation("Opening {StreamType} Live stream from {Url}", typeName, url);
 
+            using var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+            if (mediaSource.RequiredHttpHeaders.TryGetValue(HeaderNames.UserAgent, out var userAgent))
+            {
+                requestMessage.Headers.TryAddWithoutValidation(HeaderNames.UserAgent, userAgent);
+            }
+
             // Response stream is disposed manually.
             var response = await _httpClientFactory.CreateClient(NamedClient.Default)
-                .GetAsync(url, HttpCompletionOption.ResponseHeadersRead, CancellationToken.None)
+                .SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, CancellationToken.None)
                 .ConfigureAwait(false);
 
             var taskCompletionSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
