@@ -481,13 +481,7 @@ namespace Emby.Server.Implementations.Library
                 return [];
             }
 
-            var culture = _localizationManager.FindLanguageInfo(language);
-            if (culture is not null)
-            {
-                return culture.TwoLetterISOLanguageName.Contains('-', StringComparison.OrdinalIgnoreCase) ? [culture.Name] : culture.ThreeLetterISOLanguageNames;
-            }
-
-            return [language];
+            return _localizationManager.GetMediaStreamLanguageCodes(language);
         }
 
         private void SetDefaultSubtitleStreamIndex(MediaSourceInfo source, UserItemData userData, User user, bool allowRememberingSelection)

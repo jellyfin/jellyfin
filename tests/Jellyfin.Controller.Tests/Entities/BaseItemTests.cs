@@ -91,6 +91,28 @@ public class BaseItemTests
         Assert.Equal(video.Id.ToString("N", CultureInfo.InvariantCulture), video.PresentationUniqueKey);
     }
 
+    [Theory]
+    [InlineData(float.NaN, null)]
+    [InlineData(float.PositiveInfinity, null)]
+    [InlineData(float.NegativeInfinity, null)]
+    [InlineData(-3.5f, -3.5f)]
+    [InlineData(null, null)]
+    public void RatingsAndGains_KeepOnlyFiniteValues(float? value, float? expected)
+    {
+        var item = new Video
+        {
+            CommunityRating = value,
+            CriticRating = value,
+            LUFS = value,
+            NormalizationGain = value
+        };
+
+        Assert.Equal(expected, item.CommunityRating);
+        Assert.Equal(expected, item.CriticRating);
+        Assert.Equal(expected, item.LUFS);
+        Assert.Equal(expected, item.NormalizationGain);
+    }
+
     [Fact]
     public void GetItemByNameFolderName_ShortName_IsKeptAsIs()
     {

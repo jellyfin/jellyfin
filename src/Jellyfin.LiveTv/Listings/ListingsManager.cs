@@ -124,6 +124,8 @@ public class ListingsManager : IListingsManager
     {
         ArgumentNullException.ThrowIfNull(channel);
 
+        Exception? failure = null;
+
         foreach (var (provider, providerInfo) in GetListingProviders())
         {
             if (!IsListingProviderEnabledForTuner(providerInfo, channel.TunerHostId))
@@ -144,18 +146,41 @@ public class ListingsManager : IListingsManager
                 provider.Name,
                 providerInfo.ListingsId ?? string.Empty);
 
-            var epgChannels = await GetEpgChannels(provider, providerInfo, true, cancellationToken).ConfigureAwait(false);
-
-            var epgChannel = GetEpgChannelFromTunerChannel(providerInfo.ChannelMappings, channel, epgChannels);
-            if (epgChannel is null)
+            List<ProgramInfo> programs;
+            try
             {
-                _logger.LogDebug("EPG channel not found for tuner channel {0}-{1} from {2}-{3}", channel.Number, channel.Name, provider.Name, providerInfo.ListingsId ?? string.Empty);
+                // Listing the provider's channels can fail as well, and that must not stop the
+                // fallback to the next provider either.
+                var epgChannels = await GetEpgChannels(provider, providerInfo, true, cancellationToken).ConfigureAwait(false);
+
+                var epgChannel = GetEpgChannelFromTunerChannel(providerInfo.ChannelMappings, channel, epgChannels);
+                if (epgChannel is null)
+                {
+                    _logger.LogDebug("EPG channel not found for tuner channel {0}-{1} from {2}-{3}", channel.Number, channel.Name, provider.Name, providerInfo.ListingsId ?? string.Empty);
+                    continue;
+                }
+
+                programs = (await provider
+                    .GetProgramsAsync(providerInfo, epgChannel.Id, startDateUtc, endDateUtc, cancellationToken).ConfigureAwait(false))
+                    .ToList();
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                // Another provider may still be able to serve this channel, so the failure is
+                // held back rather than thrown, and only surfaces if nothing else answers.
+                _logger.LogError(
+                    ex,
+                    "Error getting programs for channel {Number}-{Name} from {Provider}",
+                    channel.Number,
+                    channel.Name,
+                    provider.Name);
+                failure ??= ex;
                 continue;
             }
-
-            var programs = (await provider
-                .GetProgramsAsync(providerInfo, epgChannel.Id, startDateUtc, endDateUtc, cancellationToken).ConfigureAwait(false))
-                .ToList();
 
             // Replace the value that came from the provider with a normalized value
             foreach (var program in programs)
@@ -170,7 +195,16 @@ public class ListingsManager : IListingsManager
             }
         }
 
-        return Enumerable.Empty<ProgramInfo>();
+        // Reporting no programs would have the guide refresh delete the ones this channel already
+        // has, so a channel nothing could be fetched for has to fail instead.
+        if (failure is not null)
+        {
+            throw new InvalidOperationException(
+                $"No listings provider could supply programs for channel {channel.Number}-{channel.Name}",
+                failure);
+        }
+
+        return [];
     }
 
     /// <inheritdoc />

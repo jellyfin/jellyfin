@@ -46,6 +46,7 @@ namespace Emby.Server.Implementations.Library
                 .ThenByDescending(x => x.IsDefault)
                 .ThenByDescending(x => !x.IsForced && MatchesPreferredLanguage(x.Language, preferredLanguages))
                 .ThenByDescending(x => x.IsForced && MatchesPreferredLanguage(x.Language, preferredLanguages))
+                .ThenBy(x => GetLanguageRank(x.Language, preferredLanguages))
                 .ThenByDescending(x => x.IsForced && IsLanguageUndefined(x.Language))
                 .ThenByDescending(x => x.IsForced)
                 .ToList();
@@ -156,6 +157,13 @@ namespace Emby.Server.Implementations.Library
             // If preferredLanguages is empty, treat it as "any language" (wildcard)
             return preferredLanguages.Count == 0 ||
                 preferredLanguages.Contains(language, StringComparison.OrdinalIgnoreCase);
+        }
+
+        // Earlier preferences win among matches: a pt-br preference lists [pt-br, por] and must pick the pt-br track.
+        private static int GetLanguageRank(string language, IReadOnlyList<string> preferredLanguages)
+        {
+            var index = preferredLanguages.FindIndex(x => string.Equals(x, language, StringComparison.OrdinalIgnoreCase));
+            return index == -1 ? int.MaxValue : index;
         }
 
         private static bool IsLanguageUndefined(string language)

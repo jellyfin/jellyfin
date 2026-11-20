@@ -102,6 +102,14 @@ namespace MediaBrowser.Controller.Entities
 
         private string _originalLanguage;
 
+        private float? _lufs;
+
+        private float? _normalizationGain;
+
+        private float? _criticRating;
+
+        private float? _communityRating;
+
         public const char SlugChar = '-';
 
         protected BaseItem()
@@ -154,14 +162,22 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The LUFS Value.</value>
         [JsonIgnore]
-        public float? LUFS { get; set; }
+        public float? LUFS
+        {
+            get => _lufs;
+            set => _lufs = FiniteOrNull(value);
+        }
 
         /// <summary>
         /// Gets or sets the gain required for audio normalization.
         /// </summary>
         /// <value>The gain required for audio normalization.</value>
         [JsonIgnore]
-        public float? NormalizationGain { get; set; }
+        public float? NormalizationGain
+        {
+            get => _normalizationGain;
+            set => _normalizationGain = FiniteOrNull(value);
+        }
 
         /// <summary>
         /// Gets or sets the channel identifier.
@@ -610,7 +626,11 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The critic rating.</value>
         [JsonIgnore]
-        public float? CriticRating { get; set; }
+        public float? CriticRating
+        {
+            get => _criticRating;
+            set => _criticRating = FiniteOrNull(value);
+        }
 
         /// <summary>
         /// Gets or sets the custom rating.
@@ -662,7 +682,11 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The community rating.</value>
         [JsonIgnore]
-        public float? CommunityRating { get; set; }
+        public float? CommunityRating
+        {
+            get => _communityRating;
+            set => _communityRating = FiniteOrNull(value);
+        }
 
         /// <summary>
         /// Gets or sets the run time ticks.
@@ -1021,20 +1045,41 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
+            return ModifySortChunks(ApplySortCharacterRules(sortable, configuration));
+        }
+
+        private static string ApplySortCharacterRules(string name, ServerConfiguration configuration)
+        {
             foreach (var removeChar in configuration.SortRemoveCharacters)
             {
-                sortable = sortable.Replace(removeChar, string.Empty, StringComparison.Ordinal);
+                name = name.Replace(removeChar, string.Empty, StringComparison.Ordinal);
             }
 
             foreach (var replaceChar in configuration.SortReplaceCharacters)
             {
-                sortable = sortable.Replace(replaceChar, " ", StringComparison.Ordinal);
+                name = name.Replace(replaceChar, " ", StringComparison.Ordinal);
             }
 
-            return ModifySortChunks(sortable);
+            return name;
         }
 
-        internal static string ModifySortChunks(ReadOnlySpan<char> name)
+        /// <summary>
+        /// Normalizes a user-provided name filter value to match against <see cref="SortName"/>.
+        /// Applies the same character removal/replacement, zero-padding, diacritics removal, and transliteration
+        /// as sort name generation, but not <c>SortRemoveWords</c> since stripping articles from a prefix is unsafe.
+        /// </summary>
+        /// <param name="input">The raw filter value from the API.</param>
+        /// <returns>The normalized value suitable for comparison against SortName. Casing is preserved; callers requiring case-sensitive matching must handle it themselves.</returns>
+        public static string NormalizeSortNameFilter(string input)
+            => ModifySortChunks(ApplySortCharacterRules(input, ConfigurationManager.Configuration));
+
+        /// <summary>
+        /// Processes a name by zero-padding numeric chunks to 10 digits for natural sort order,
+        /// removing diacritics, and transliterating non-ASCII characters.
+        /// </summary>
+        /// <param name="name">The input name to process.</param>
+        /// <returns>The processed string with padded numeric chunks.</returns>
+        public static string ModifySortChunks(ReadOnlySpan<char> name)
         {
             static void AppendChunk(StringBuilder builder, bool isDigitChunk, ReadOnlySpan<char> chunk)
             {
@@ -1374,6 +1419,15 @@ namespace MediaBrowser.Controller.Entities
 
             return string.Join('/', terms);
         }
+
+        /// <summary>
+        /// Treats a rating or gain that is not a finite number as no value, since NaN and infinity
+        /// cannot be stored by every database or written as JSON.
+        /// </summary>
+        /// <param name="value">The value to check.</param>
+        /// <returns><paramref name="value"/> when it is finite or has no value, otherwise <see langword="null"/>.</returns>
+        private static float? FiniteOrNull(float? value)
+            => value.HasValue && !float.IsFinite(value.Value) ? null : value;
 
         /// <summary>
         /// Derives the prefix shared by the supplied media source items' file names, used to strip the

@@ -374,7 +374,8 @@ public class ItemPersistenceService : IItemPersistenceService
         var allListedItemValuesSet = allListedItemValues.ToHashSet();
 
         var existingValues = context.ItemValues
-            .Where(e => types.Contains(e.Type) && values.Contains(e.Value))
+            .WhereOneOrMany(types, e => e.Type)
+            .WhereOneOrMany(values, e => e.Value)
             .AsEnumerable()
             .Where(e => allListedItemValuesSet.Contains((e.Type, e.Value)))
             .ToArray();
@@ -428,7 +429,7 @@ public class ItemPersistenceService : IItemPersistenceService
 
         var allExistingAncestorIds = itemsWithAncestors.Count > 0
             ? context.AncestorIds
-                .Where(e => itemsWithAncestors.Contains(e.ItemId))
+                .WhereOneOrMany(itemsWithAncestors, e => e.ItemId)
                 .ToList()
                 .GroupBy(e => e.ItemId)
                 .ToDictionary(g => g.Key, g => g.ToList())
@@ -442,7 +443,7 @@ public class ItemPersistenceService : IItemPersistenceService
 
         var validAncestorIdsSet = allRequestedAncestorIds.Count > 0
             ? context.BaseItems
-                .Where(e => allRequestedAncestorIds.Contains(e.Id))
+                .WhereOneOrMany(allRequestedAncestorIds, e => e.Id)
                 .Select(f => f.Id)
                 .ToHashSet()
             : new HashSet<Guid>();
@@ -502,7 +503,7 @@ public class ItemPersistenceService : IItemPersistenceService
         {
             var allParentIds = folderIds.Concat(videoIds).Distinct().ToList();
             var allLinkedChildren = context.LinkedChildren
-                .Where(e => allParentIds.Contains(e.ParentId))
+                .WhereOneOrMany(allParentIds, e => e.ParentId)
                 .ToList();
 
             allLinkedChildrenByParent = allLinkedChildren
@@ -572,7 +573,7 @@ public class ItemPersistenceService : IItemPersistenceService
 
                 var pathToIdMap = pathsToResolve.Count > 0
                     ? context.BaseItems
-                        .Where(e => e.Path != null && pathsToResolve.Contains(e.Path))
+                        .WhereOneOrMany(pathsToResolve, e => e.Path!)
                         .Select(e => new { e.Path, e.Id })
                         .GroupBy(e => e.Path!)
                         .ToDictionary(g => g.Key, g => g.First().Id)
