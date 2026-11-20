@@ -270,12 +270,33 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
             result.Item.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, releaseGroupId.Value.ToString());
         }
 
-        Populate(result.Item, release, releaseGroup);
+        var taggedAlbumArtists = info.SongInfos
+            .SelectMany(song => song.AlbumArtists)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        Populate(result.Item, release, releaseGroup, taggedAlbumArtists);
 
         return result;
     }
 
-    private static void Populate(MusicAlbum item, IRelease? release, IReleaseGroup? releaseGroup)
+    /// <summary>
+    /// Gets the name to use for a credited artist: the credited name when the file tags use it, otherwise the artist's own name.
+    /// Album artists are merged by name, so this keeps an artist from being added again under another name.
+    /// </summary>
+    /// <param name="credit">The artist credit.</param>
+    /// <param name="taggedAlbumArtists">The album artists in the file tags.</param>
+    /// <returns>The name of the album artist.</returns>
+    internal static string? GetAlbumArtistName(INameCredit credit, IReadOnlySet<string> taggedAlbumArtists)
+    {
+        if (credit.Name is not null && taggedAlbumArtists.Contains(credit.Name))
+        {
+            return credit.Name;
+        }
+
+        return credit.Artist?.Name ?? credit.Name;
+    }
+
+    private static void Populate(MusicAlbum item, IRelease? release, IReleaseGroup? releaseGroup, IReadOnlySet<string> taggedAlbumArtists)
     {
         // Prefer the release group (album-level) data, falling back to the specific release.
         // The release group's first release date is the original album date.
@@ -290,7 +311,7 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
         if (artistCredit is not null && artistCredit.Count > 0)
         {
             item.AlbumArtists = artistCredit
-                .Select(credit => credit.Artist?.Name ?? credit.Name)
+                .Select(credit => GetAlbumArtistName(credit, taggedAlbumArtists))
                 .Where(name => !string.IsNullOrWhiteSpace(name))
                 .ToArray();
         }
