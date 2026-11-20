@@ -168,4 +168,39 @@ public class UserViewsController : BaseJellyfinApiController
     public ActionResult<IEnumerable<SpecialViewOptionDto>> GetGroupingOptionsLegacy(
         [FromRoute, Required] Guid userId)
         => GetGroupingOptions(userId);
+
+    /// <summary>
+    /// Get user view original title preference options.
+    /// </summary>
+    /// <param name="userId">User id.</param>
+    /// <response code="200">User view original title preference options returned.</response>
+    /// <response code="404">User not found.</response>
+    /// <returns>
+    /// An <see cref="OkResult"/> containing the user view original title preference options
+    /// or a <see cref="NotFoundResult"/> if user not found.
+    /// </returns>
+    [HttpGet("UserViews/OriginalTitlePreferenceOptions")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public ActionResult<IEnumerable<SpecialViewOptionDto>> GetOriginalTitlePreferenceOptions([FromQuery] Guid? userId)
+    {
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = _userManager.GetUserById(userId.Value);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(_libraryManager.GetUserRootFolder()
+            .GetChildren(user, true)
+            .OfType<CollectionFolder>()
+            .Where(UserView.IsEligibleForOriginalTitlePreference)
+            .Select(i => new SpecialViewOptionDto
+            {
+                Name = i.Name,
+                Id = i.Id.ToString("N", CultureInfo.InvariantCulture)
+            })
+            .OrderBy(i => i.Name)
+            .AsEnumerable());
+    }
 }

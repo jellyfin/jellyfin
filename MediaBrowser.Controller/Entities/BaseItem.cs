@@ -504,6 +504,9 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public Guid ParentId { get; set; }
 
+        [JsonIgnore]
+        public Guid TopParentId { get; set; }
+
         /// <summary>
         /// Gets or sets the logger.
         /// </summary>

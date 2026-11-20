@@ -474,10 +474,14 @@ namespace Jellyfin.Server.Implementations.Users
                     EnableNextEpisodeAutoPlay = user.EnableNextEpisodeAutoPlay,
                     RememberSubtitleSelections = user.RememberSubtitleSelections,
                     SubtitleLanguagePreference = user.SubtitleLanguagePreference ?? string.Empty,
+                    OriginalTitlePreference = user.OriginalTitlePreference,
                     OrderedViews = user.GetPreferenceValues<Guid>(PreferenceKind.OrderedViews),
                     GroupedFolders = user.GetPreferenceValues<Guid>(PreferenceKind.GroupedFolders),
                     MyMediaExcludes = user.GetPreferenceValues<Guid>(PreferenceKind.MyMediaExcludes),
                     LatestItemsExcludes = user.GetPreferenceValues<Guid>(PreferenceKind.LatestItemExcludes),
+                    OriginalTitlePreferenceLibraryIncludes = user.GetPreferenceValues<Guid>(PreferenceKind.OriginalTitlePreferenceFolderIncludes),
+                    OriginalTitlePreferenceLanguageScriptIncludes = user.GetPreferenceValues<string>(PreferenceKind.OriginalTitlePreferenceLanguageScriptIncludes),
+                    OriginalTitlePreferenceLanguageScriptExcludes = user.GetPreferenceValues<string>(PreferenceKind.OriginalTitlePreferenceLanguageScriptExcludes),
                     CastReceiverId = string.IsNullOrEmpty(user.CastReceiverId)
                         ? castReceiverApplications.FirstOrDefault()?.Id
                         : castReceiverApplications.FirstOrDefault(c => string.Equals(c.Id, user.CastReceiverId, StringComparison.Ordinal))?.Id
@@ -825,6 +829,7 @@ namespace Jellyfin.Server.Implementations.Users
                     user.EnableNextEpisodeAutoPlay = config.EnableNextEpisodeAutoPlay;
                     user.RememberSubtitleSelections = config.RememberSubtitleSelections;
                     user.SubtitleLanguagePreference = config.SubtitleLanguagePreference;
+                    user.OriginalTitlePreference = config.OriginalTitlePreference;
 
                     // Only set cast receiver id if it is passed in and it exists in the server config.
                     if (!string.IsNullOrEmpty(config.CastReceiverId)
@@ -837,6 +842,9 @@ namespace Jellyfin.Server.Implementations.Users
                     user.SetPreference(PreferenceKind.GroupedFolders, config.GroupedFolders);
                     user.SetPreference(PreferenceKind.MyMediaExcludes, config.MyMediaExcludes);
                     user.SetPreference(PreferenceKind.LatestItemExcludes, config.LatestItemsExcludes);
+                    user.SetPreference(PreferenceKind.OriginalTitlePreferenceFolderIncludes, config.OriginalTitlePreferenceLibraryIncludes);
+                    user.SetPreference(PreferenceKind.OriginalTitlePreferenceLanguageScriptIncludes, config.OriginalTitlePreferenceLanguageScriptIncludes);
+                    user.SetPreference(PreferenceKind.OriginalTitlePreferenceLanguageScriptExcludes, config.OriginalTitlePreferenceLanguageScriptExcludes);
 
                     dbContext.Update(user);
                     await dbContext.SaveChangesAsync().ConfigureAwait(false);
