@@ -851,6 +851,20 @@ namespace MediaBrowser.Controller.Library
         QueryFiltersLegacy GetQueryFiltersLegacy(InternalItemsQuery query);
 
         /// <summary>
+        /// Gets the distinct, sorted production years of the matching items.
+        /// </summary>
+        /// <param name="query">The query filter.</param>
+        /// <returns>The production years.</returns>
+        IReadOnlyList<int> GetYears(InternalItemsQuery query);
+
+        /// <summary>
+        /// Gets the distinct, sorted official ratings of the matching items.
+        /// </summary>
+        /// <param name="query">The query filter.</param>
+        /// <returns>The official ratings.</returns>
+        IReadOnlyList<string> GetOfficialRatings(InternalItemsQuery query);
+
+        /// <summary>
         /// Gets a list of all distinct tags of the matching items.
         /// </summary>
         /// <param name="query">The query filter.</param>
