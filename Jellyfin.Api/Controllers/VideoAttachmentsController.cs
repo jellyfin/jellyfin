@@ -24,18 +24,22 @@ public class VideoAttachmentsController : BaseJellyfinApiController
 {
     private readonly ILibraryManager _libraryManager;
     private readonly IAttachmentExtractor _attachmentExtractor;
+    private readonly UploadHelper _uploadHelper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VideoAttachmentsController"/> class.
     /// </summary>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="attachmentExtractor">Instance of the <see cref="IAttachmentExtractor"/> interface.</param>
+    /// <param name="uploadHelper">The <see cref="UploadHelper"/> instance.</param>
     public VideoAttachmentsController(
         ILibraryManager libraryManager,
-        IAttachmentExtractor attachmentExtractor)
+        IAttachmentExtractor attachmentExtractor,
+        UploadHelper uploadHelper)
     {
         _libraryManager = libraryManager;
         _attachmentExtractor = attachmentExtractor;
+        _uploadHelper = uploadHelper;
     }
 
     /// <summary>
@@ -64,18 +68,20 @@ public class VideoAttachmentsController : BaseJellyfinApiController
                 return NotFound();
             }
 
-            var (attachment, stream) = await _attachmentExtractor.GetAttachment(
+            var (_, stream) = await _attachmentExtractor.GetAttachment(
                     item,
                     mediaSourceId,
                     index,
                     CancellationToken.None)
                 .ConfigureAwait(false);
 
-            var contentType = string.IsNullOrWhiteSpace(attachment.MimeType)
-                ? MediaTypeNames.Application.Octet
-                : attachment.MimeType;
+            // The MIME type the media file declares for the attachment is chosen by whoever created that
+            // file, so serving it would let an attachment claim to be e.g. HTML and run scripts on our origin.
+            // Detect the format from the content instead and ignore what the attachment claims to be.
+            Response.Headers.ContentDisposition = "attachment";
+            Response.Headers.XContentTypeOptions = "nosniff";
 
-            return new FileStreamResult(stream, contentType);
+            return new FileStreamResult(stream, _uploadHelper.GetAttachmentMimeType(stream));
         }
         catch (ResourceNotFoundException e)
         {
