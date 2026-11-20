@@ -10,6 +10,19 @@ public class FileSystemHelperTests
     private static readonly string _parentPath = Path.Combine(Path.GetTempPath(), "jellyfin-test", "root", "default");
 
     [Theory]
+    [InlineData(".jellyfin-transcode", true)]
+    [InlineData("/cache/transcodes/.jellyfin-cache", true)]
+    [InlineData("CACHEDIR.TAG", true)]
+    [InlineData("/cache/CACHEDIR.TAG", true)]
+    [InlineData("segment0.ts", false)]
+    [InlineData("/cache/transcodes/movie.mkv", false)]
+    [InlineData("jellyfin-transcode", false)]
+    public void IsProtectedCacheFile_ReturnsExpected(string path, bool expected)
+    {
+        Assert.Equal(expected, FileSystemHelper.IsProtectedCacheFile(path));
+    }
+
+    [Theory]
     [InlineData("Movies")]
     [InlineData("My Movies")]
     [InlineData("..2")]

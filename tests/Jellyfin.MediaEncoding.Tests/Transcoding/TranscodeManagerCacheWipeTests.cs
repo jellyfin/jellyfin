@@ -48,6 +48,30 @@ public sealed class TranscodeManagerCacheWipeTests : IDisposable
         var foreignFile = Path.Combine(_transcodePath, "livetv-buffer.ts");
         File.WriteAllText(foreignFile, "already being written by SharedHttpStream");
 
+        _ = CreateManager();
+
+        Assert.True(File.Exists(foreignFile));
+    }
+
+    [Fact]
+    public void DeleteEncodedMediaCache_KeepsMarkerAndCacheTag_DeletesOtherFiles()
+    {
+        var marker = Path.Combine(_transcodePath, ".jellyfin-transcode");
+        var cacheTag = Path.Combine(_transcodePath, "CACHEDIR.TAG");
+        var segment = Path.Combine(_transcodePath, "segment0.ts");
+        File.WriteAllText(marker, string.Empty);
+        File.WriteAllText(cacheTag, "Signature");
+        File.WriteAllText(segment, "data");
+
+        CreateManager().DeleteEncodedMediaCache();
+
+        Assert.True(File.Exists(marker));
+        Assert.True(File.Exists(cacheTag));
+        Assert.False(File.Exists(segment));
+    }
+
+    private TranscodeManager CreateManager()
+    {
         var config = new Mock<IServerConfigurationManager>();
         config.Setup(c => c.GetConfiguration("encoding"))
             .Returns(new EncodingOptions { TranscodingTempPath = _transcodePath });
@@ -67,7 +91,7 @@ public sealed class TranscodeManagerCacheWipeTests : IDisposable
             Mock.Of<MediaBrowser.Common.Configuration.IConfigurationManager>(),
             Mock.Of<IPathManager>());
 
-        _ = new TranscodeManager(
+        return new TranscodeManager(
             NullLoggerFactory.Instance,
             fileSystem.Object,
             Mock.Of<IApplicationPaths>(),
@@ -78,7 +102,5 @@ public sealed class TranscodeManagerCacheWipeTests : IDisposable
             Mock.Of<IMediaEncoder>(),
             Mock.Of<IMediaSourceManager>(),
             Mock.Of<IAttachmentExtractor>());
-
-        Assert.True(File.Exists(foreignFile));
     }
 }
