@@ -464,8 +464,12 @@ public class VideosController : BaseJellyfinApiController
             return BadRequest($"Input protocol {state.InputProtocol} cannot be streamed statically");
         }
 
+        var isIso = state.MediaSource.VideoType == VideoType.Iso;
+        var isUnpackedDvdBluray = state.MediaSource.VideoType == VideoType.BluRay || state.MediaSource.VideoType == VideoType.Dvd;
+        var isIsoDvdOrBluRay = isIso && (state.MediaSource.IsoType == IsoType.Dvd || state.MediaSource.IsoType == IsoType.BluRay);
+
         // Static stream
-        if (@static.HasValue && @static.Value && !(state.MediaSource.VideoType == VideoType.BluRay || state.MediaSource.VideoType == VideoType.Dvd))
+        if (@static.HasValue && @static.Value && !isUnpackedDvdBluray)
         {
             var contentType = state.GetMimeType("." + state.OutputContainer, false) ?? state.GetMimeType(state.MediaPath);
 

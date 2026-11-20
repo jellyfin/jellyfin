@@ -859,6 +859,19 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     case "durationinseconds":
                         video.RunTimeTicks = new TimeSpan(0, 0, reader.ReadElementContentAsInt()).Ticks;
                         break;
+                    case "isoplaybacktitle":
+                        {
+                            var titleText = reader.ReadElementContentAsString();
+                            // Accept title numbers in the range 1–999 (covers DVD titles 1–99 and BD playlists).
+                            if (int.TryParse(titleText, NumberStyles.Integer, CultureInfo.InvariantCulture, out var titleNum)
+                                && titleNum is > 0 and <= 999)
+                            {
+                                video.IsoPlaybackTitle = titleNum;
+                            }
+
+                            break;
+                        }
+
                     default:
                         reader.Skip();
                         break;

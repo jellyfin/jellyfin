@@ -3314,7 +3314,7 @@ namespace Emby.Server.Implementations.Library
 
             var resolver = new EpisodeResolver(_namingOptions);
 
-            var isFolder = episode.VideoType == VideoType.BluRay || episode.VideoType == VideoType.Dvd;
+            var isFolder = (episode.VideoType == VideoType.BluRay || episode.VideoType == VideoType.Dvd) && !episode.IsDiscReference;
 
             EpisodeInfo? episodeInfo = null;
             if (episode.IsFileProtocol)
@@ -3443,7 +3443,8 @@ namespace Emby.Server.Implementations.Library
         {
             // Apply .ignore rules
             var filtered = fileSystemChildren.Where(c => !_dotIgnoreIgnoreRule.ShouldIgnore(c, owner)).ToList();
-            var isFolder = owner.IsFolder || (owner is Video video && (video.VideoType == VideoType.BluRay || video.VideoType == VideoType.Dvd));
+            var isFolder = owner.IsFolder
+                || (owner is Video video && (video.VideoType == VideoType.BluRay || video.VideoType == VideoType.Dvd) && !video.IsDiscReference);
             var ownerVideoInfo = VideoResolver.Resolve(owner.Path, isFolder, _namingOptions, libraryRoot: owner.ContainingFolderPath);
             if (ownerVideoInfo is null)
             {

@@ -18,7 +18,8 @@ namespace MediaBrowser.Controller.Providers
 
             if (item is Video video)
             {
-                VideoType = video.VideoType;
+                // A disc reference file is laid out like a video file, whatever it points at.
+                VideoType = video.IsDiscReference ? VideoType.VideoFile : video.VideoType;
                 IsPlaceHolder = video.IsPlaceHolder;
             }
 

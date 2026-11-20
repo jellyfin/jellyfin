@@ -82,6 +82,18 @@ namespace MediaBrowser.Controller.MediaEncoding
         bool IsVideoToolboxAv1DecodeAvailable { get; }
 
         /// <summary>
+        /// Gets a value indicating whether the <c>dvdvideo</c> demuxer is available in ffmpeg.
+        /// When <c>false</c>, DVD title selection and per-title probing are not available.
+        /// </summary>
+        bool SupportsDvdVideo { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the <c>bluray</c> input protocol (libbluray) is available in ffmpeg.
+        /// When <c>false</c>, Blu-ray title selection and per-title probing are not available.
+        /// </summary>
+        bool SupportsLibBluray { get; }
+
+        /// <summary>
         /// Whether given encoder codec is supported.
         /// </summary>
         /// <param name="encoder">The encoder.</param>
@@ -259,6 +271,16 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="path">The to the .m2ts files.</param>
         /// <returns>A playlist.</returns>
         IReadOnlyList<string> GetPrimaryPlaylistM2tsFiles(string path);
+
+        /// <summary>
+        /// Gets all available playback titles from a DVD or Blu-ray ISO file or directory.
+        /// For DVD ISOs/directories the title count is read directly from the Video Manager IFO (VIDEO_TS.IFO);
+        /// for Blu-ray ISOs/directories they come from BDInfo playlist analysis.
+        /// </summary>
+        /// <param name="path">The path to the ISO file.</param>
+        /// <param name="isoType">The type of ISO (DVD or Blu-ray).</param>
+        /// <returns>A list of <see cref="IsoTitleInfo"/> ordered by title number.</returns>
+        IReadOnlyList<IsoTitleInfo> GetIsoTitles(string path, IsoType isoType);
 
         /// <summary>
         /// Gets the input path argument from <see cref="EncodingJobInfo"/>.

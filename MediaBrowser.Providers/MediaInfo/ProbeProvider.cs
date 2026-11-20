@@ -127,7 +127,7 @@ namespace MediaBrowser.Providers.MediaInfo
         public bool HasChanged(BaseItem item, IDirectoryService directoryService)
         {
             var video = item as Video;
-            if (video is null || video.VideoType == VideoType.VideoFile || video.VideoType == VideoType.Iso)
+            if (video is null || video.VideoType == VideoType.VideoFile || video.VideoType == VideoType.Iso || video.IsDiscReference)
             {
                 var path = item.Path;
 
@@ -304,9 +304,19 @@ namespace MediaBrowser.Providers.MediaInfo
         public Task<ItemUpdateType> FetchVideoInfo<T>(T item, MetadataRefreshOptions options, CancellationToken cancellationToken)
             where T : Video
         {
+            // Pick up edits to a .strm disc reference (dvd:// or bluray://); an invalid one turns the item into a
+            // placeholder, and one that no longer uses those schemes becomes an ordinary .strm item again.
+            var discReferenceChanged = false;
+            if (DiscReference.IsStrmPath(item.Path))
+            {
+                discReferenceChanged = DiscReference.TryRead(item.Path, DiscReference.GetLibraryRoots(BaseItem.LibraryManager), _logger, out var discReference)
+                    ? item.ApplyDiscReference(discReference)
+                    : item.ClearDiscReference();
+            }
+
             if (item.IsPlaceHolder)
             {
-                return _cachedTask;
+                return discReferenceChanged ? Task.FromResult(ItemUpdateType.MetadataImport) : _cachedTask;
             }
 
             if (!item.IsCompleteMedia)

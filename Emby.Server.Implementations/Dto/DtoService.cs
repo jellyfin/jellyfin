@@ -1406,9 +1406,21 @@ namespace Emby.Server.Implementations.Dto
             // Add video info
             if (item is Video video)
             {
-                dto.VideoType = video.VideoType;
                 dto.Video3DFormat = video.Video3DFormat;
-                dto.IsoType = video.IsoType;
+
+                if (video.IsDiscReference)
+                {
+                    // A .strm disc reference is presented as a plain video: its file decides the title, so
+                    // clients shouldn't offer disc title selection. Its media sources still carry the disc type
+                    // and title, which is what playback uses.
+                    dto.VideoType = VideoType.VideoFile;
+                }
+                else
+                {
+                    dto.VideoType = video.VideoType;
+                    dto.IsoType = video.IsoType;
+                    dto.IsoPlaybackTitle = video.IsoPlaybackTitle;
+                }
 
                 if (video.HasSubtitles)
                 {

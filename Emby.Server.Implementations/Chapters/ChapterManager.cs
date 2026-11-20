@@ -164,7 +164,7 @@ public class ChapterManager : IChapterManager
                         // Add some time for the first chapter to make sure we don't end up with a black image
                         var time = chapter.StartPositionTicks == 0 ? TimeSpan.FromTicks(Math.Min(_firstChapterTicks, video.RunTimeTicks ?? 0)) : TimeSpan.FromTicks(chapter.StartPositionTicks);
 
-                        var inputPath = video.Path;
+                        var inputPath = video.MediaPath;
                         var directoryPath = Path.GetDirectoryName(path);
                         if (!string.IsNullOrEmpty(directoryPath))
                         {
@@ -176,6 +176,7 @@ public class ChapterManager : IChapterManager
                         {
                             VideoType = video.VideoType,
                             IsoType = video.IsoType,
+                            IsoPlaybackTitle = video.DiscReferenceIndex ?? video.IsoPlaybackTitle,
                             Protocol = video.PathProtocol ?? MediaProtocol.File,
                         };
 

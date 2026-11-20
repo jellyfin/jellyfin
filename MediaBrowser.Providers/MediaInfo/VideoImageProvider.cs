@@ -80,6 +80,7 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 VideoType = item.VideoType,
                 IsoType = item.IsoType,
+                IsoPlaybackTitle = item.DiscReferenceIndex ?? item.IsoPlaybackTitle,
                 Protocol = item.PathProtocol ?? MediaProtocol.File,
             };
 
@@ -104,7 +105,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 return new DynamicImageResponse { HasImage = false };
             }
 
-            string extractedImagePath = await _mediaEncoder.ExtractVideoImage(item.Path, item.Container, mediaSource, videoStream, item.Video3DFormat, imageOffset, cancellationToken).ConfigureAwait(false);
+            string extractedImagePath = await _mediaEncoder.ExtractVideoImage(item.MediaPath, item.Container, mediaSource, videoStream, item.Video3DFormat, imageOffset, cancellationToken).ConfigureAwait(false);
 
             return new DynamicImageResponse
             {
