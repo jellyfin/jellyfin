@@ -2,6 +2,7 @@
 
 #pragma warning disable CS1591
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -19,7 +20,7 @@ using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Providers.Plugins.Omdb
 {
-    public class OmdbImageProvider : IRemoteImageProvider, IHasOrder
+    public class OmdbImageProvider : IRemoteImageProvider, IHasOrder, IDisposable
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly OmdbProvider _omdbProvider;
@@ -75,6 +76,25 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         public bool Supports(BaseItem item)
         {
             return item is Movie || item is Trailer || item is Episode;
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _omdbProvider.Dispose();
+            }
         }
     }
 }
