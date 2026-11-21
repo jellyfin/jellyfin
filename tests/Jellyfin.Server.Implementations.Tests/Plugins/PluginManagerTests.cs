@@ -371,6 +371,50 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
             Assert.Equal(PluginStatus.Disabled, pluginManager.LoadManifest(newDir).Manifest.Status);
         }
 
+        [Fact]
+        public void Constructor_OlderVersionWithDifferentName_IsDeleted()
+        {
+            var pluginRoot = Path.Combine(_tempPath, "plugins");
+            var id = Guid.NewGuid();
+            var oldDir = CreateTestPlugin(pluginRoot, "Renamed_1.0", PluginStatus.Active, new Version(1, 0), id, "Code Name");
+            var newDir = CreateTestPlugin(pluginRoot, "Renamed_2.0", PluginStatus.Active, new Version(2, 0), id, "Catalog Name");
+
+            var pluginManager = new PluginManager(new NullLogger<PluginManager>(), null!, null!, pluginRoot, new Version(1, 0));
+
+            Assert.False(Directory.Exists(oldDir));
+            Assert.True(Directory.Exists(newDir));
+            var plugin = Assert.Single(pluginManager.Plugins);
+            Assert.Equal(new Version(2, 0), plugin.Version);
+        }
+
+        [Fact]
+        public void Constructor_OlderVersionWithDifferentName_NewestDisabled_IsNotDeleted()
+        {
+            var pluginRoot = Path.Combine(_tempPath, "plugins");
+            var id = Guid.NewGuid();
+            var oldDir = CreateTestPlugin(pluginRoot, "Renamed_1.0", PluginStatus.Active, new Version(1, 0), id, "Code Name");
+            var newDir = CreateTestPlugin(pluginRoot, "Renamed_2.0", PluginStatus.Disabled, new Version(2, 0), id, "Catalog Name");
+
+            _ = new PluginManager(new NullLogger<PluginManager>(), null!, null!, pluginRoot, new Version(1, 0));
+
+            Assert.True(Directory.Exists(oldDir));
+            Assert.True(Directory.Exists(newDir));
+        }
+
+        [Fact]
+        public void Constructor_DifferentPluginsWithoutId_AreNotDeleted()
+        {
+            var pluginRoot = Path.Combine(_tempPath, "plugins");
+            var firstDir = CreateTestPlugin(pluginRoot, "First", PluginStatus.Active, new Version(1, 0), Guid.Empty);
+            var secondDir = CreateTestPlugin(pluginRoot, "Second", PluginStatus.Active, new Version(2, 0), Guid.Empty);
+
+            var pluginManager = new PluginManager(new NullLogger<PluginManager>(), null!, null!, pluginRoot, new Version(1, 0));
+
+            Assert.True(Directory.Exists(firstDir));
+            Assert.True(Directory.Exists(secondDir));
+            Assert.Equal(2, pluginManager.Plugins.Count);
+        }
+
         private string CreateTestPlugin(string root, string folderName, PluginStatus status, Version? version = null, Guid? id = null, string? name = null)
         {
             var dir = Path.Combine(root, folderName);
