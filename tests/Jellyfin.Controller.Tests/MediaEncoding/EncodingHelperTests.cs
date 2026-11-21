@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Configuration;
@@ -382,10 +383,30 @@ public class EncodingHelperTests
         };
     }
 
-    private static EncodingHelper CreateHelper()
+    [Theory]
+    [InlineData(600_000_000L, 1_800_000_000L, false, "-ss 605000000")] // mid-file: 0.5 s past the segment start, so ffmpeg lands on the segment's own keyframe
+    [InlineData(1_780_000_000L, 1_800_000_000L, false, "-ss 1750000000")] // inside the final 5 s: clamped to runtime - 5 s
+    [InlineData(600_000_000L, 1_800_000_000L, true, "-ss 600000000")] // start from the keyframe data: the keyframe's own time
+    public void GetFastSeekCommandLineParameter_HlsRemux_OffsetsAndClampsSeek(long startTimeTicks, long runTimeTicks, bool startsOnKnownKeyframe, string expected)
+    {
+        var state = BuildState(subtitle: null, deliveryMethod: null);
+        state.TranscodingType = TranscodingJobType.Hls;
+        state.OutputVideoCodec = "copy";
+        state.RunTimeTicks = runTimeTicks;
+        state.BaseRequest.StartTimeTicks = startTimeTicks;
+        state.HlsRemuxStartsOnKnownKeyframe = startsOnKnownKeyframe;
+        var mediaEncoder = new Mock<IMediaEncoder>();
+        mediaEncoder.Setup(e => e.GetTimeParameter(It.IsAny<long>())).Returns<long>(ticks => ticks.ToString(CultureInfo.InvariantCulture));
+
+        var args = CreateHelper(mediaEncoder).GetFastSeekCommandLineParameter(state, new EncodingOptions(), "mp4");
+
+        Assert.Equal(expected, args);
+    }
+
+    private static EncodingHelper CreateHelper(Mock<IMediaEncoder>? mediaEncoder = null)
     {
         var appPaths = Mock.Of<IApplicationPaths>();
-        var mediaEncoder = new Mock<IMediaEncoder>();
+        mediaEncoder ??= new Mock<IMediaEncoder>();
         var subtitleEncoder = new Mock<ISubtitleEncoder>();
         var config = new Mock<IConfiguration>();
         var configurationManager = new Mock<IConfigurationManager>();

@@ -136,6 +136,12 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public bool IsVideoRequest { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether an HLS remux starts on a keyframe taken from the file's keyframe data.
+        /// The seek then goes to that keyframe's own time, without the offset of <see cref="EncodingHelper.HlsRemuxSeekOffsetTicks"/>.
+        /// </summary>
+        public bool HlsRemuxStartsOnKnownKeyframe { get; set; }
+
         public TranscodingJobType TranscodingType { get; set; }
 
         public long? StartTimeTicks => BaseRequest.StartTimeTicks;

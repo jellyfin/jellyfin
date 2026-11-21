@@ -1,10 +1,20 @@
 using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Controllers;
+using Jellyfin.MediaEncoding.Hls.Extractors;
+using Jellyfin.MediaEncoding.Hls.Playlist;
+using Jellyfin.MediaEncoding.Keyframes;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging.Abstractions;
+using Moq;
 using Xunit;
 
 namespace Jellyfin.Api.Tests.Controllers
@@ -73,6 +83,136 @@ namespace Jellyfin.Api.Tests.Controllers
                 new double[] { 6, 3.3333333 });
 
             return data;
+        }
+
+        [Theory]
+        [InlineData(2, 2)] // mid-file: the run starts on the requested segment
+        [InlineData(3, 3)] // starts 0.2 s before runtime - 5 s
+        [InlineData(4, 4)] // starts exactly at runtime - 5 s: the seek still reaches it
+        [InlineData(5, 4)] // starts inside the final 5 s: the clamped seek lands before it
+        public void GetSeekableSegment_ClampedSeek_StartsOnReachableSegment(int segmentId, int expected)
+        {
+            // Segment starts at 0, 60, 120, 174.8, 175 and 178 s of a 180 s file
+            long[] segmentStarts = [0, 600_000_000, 1_200_000_000, 1_748_000_000, 1_750_000_000, 1_780_000_000];
+
+            Assert.Equal(expected, DynamicHlsController.GetSeekableSegment(segmentStarts, segmentId, 1_800_000_000));
+        }
+
+        [Theory]
+        [InlineData(0, 0L, true)] // the first segment, and the fMP4 init request that starts a run from it
+        [InlineData(2, 125_590_000L, true)] // a segment where this playlist has it
+        [InlineData(2, 120_000_000L, false)] // the client's playlist is an even 6 s grid: made without keyframe data
+        [InlineData(4, 240_000_000L, false)] // past the end: the client's playlist is from a longer file
+        public void IsPlaylistSegment_RequestFromAnotherPlaylist_IsRejected(int segmentId, long runtimeTicks, bool expected)
+        {
+            // Segment starts at 0, 6.123, 12.559 and 18.4 s
+            long[] segmentStarts = [0, 61_230_000, 125_590_000, 184_000_000];
+
+            Assert.Equal(expected, DynamicHlsController.IsPlaylistSegment(segmentStarts, segmentId, runtimeTicks));
+        }
+
+        [Theory]
+        [InlineData("mp4", "copy", "ac3", false)] // the mp4 muxer needs an AC-3 packet to write the init segment
+        [InlineData("mp4", "copy", "EAC3", false)]
+        [InlineData("mp4", "copy", "truehd", false)]
+        [InlineData("mp4", "copy", "aac", true)] // described by the stream's extradata
+        [InlineData("mp4", "aac", "ac3", true)] // transcoded: the encoder provides the description
+        [InlineData("ts", "copy", "ac3", true)] // MPEG-TS has no init segment
+        [InlineData(null, "copy", "eac3", true)] // no segment container means MPEG-TS
+        [InlineData("mp4", null, null, true)] // no audio
+        public void CanWriteInitSegmentBeforePackets_CopiedAudioInFmp4_DependsOnCodec(string? segmentContainer, string? outputAudioCodec, string? audioCodec, bool expected)
+        {
+            Assert.Equal(expected, DynamicHlsController.CanWriteInitSegmentBeforePackets(segmentContainer, outputAudioCodec, audioCodec));
+        }
+
+        [Fact]
+        public void GetSeekableSegment_UnknownRuntime_StartsOnRequestedSegment()
+        {
+            // The seek is not clamped when the runtime is unknown, so every segment stays reachable
+            long[] segmentStarts = [0, 600_000_000, 1_200_000_000, 1_750_000_000, 1_780_000_000];
+
+            Assert.Equal(4, DynamicHlsController.GetSeekableSegment(segmentStarts, 4, 0));
+        }
+
+        [Fact]
+        public void GetSegmentCutArguments_RelativeToStart_FormatsInvariantly()
+        {
+            // Segment starts at 0, 165.415, 175.592 and 180 s; the run starts at the second one
+            long[] segmentStarts = [0, 1_654_150_000, 1_755_920_000, 1_800_000_000];
+            var culture = CultureInfo.CurrentCulture;
+            CultureInfo.CurrentCulture = new CultureInfo("de-DE");
+            try
+            {
+                Assert.Equal("-segment_times 10.177,14.585 -segment_time_delta 0.001", DynamicHlsController.GetSegmentCutArguments(segmentStarts, 1));
+            }
+            finally
+            {
+                CultureInfo.CurrentCulture = culture;
+            }
+        }
+
+        [Theory]
+        [InlineData(true, true)] // a run that seeks drops the packets before the keyframe it seeks to
+        [InlineData(false, false)] // a run from the start of the file copies everything
+        public void GetSegmentMuxerArguments_SeekingRun_DropsPacketsBeforeStart(bool isSeeking, bool expected)
+        {
+            var args = DynamicHlsController.GetSegmentMuxerArguments(17, isSeeking, "-segment_time 86400", "/transcodes/abc", ".ts");
+
+            Assert.Equal(expected, args.StartsWith("-copypriorss 0 -f segment ", StringComparison.Ordinal));
+            Assert.Contains("-f segment -segment_format mpegts -segment_start_number 17 -segment_time 86400 -y", args, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void GetSegmentCutArguments_NothingLeftToCut_UsesSegmentTime()
+        {
+            long[] segmentStarts = [0, 1_654_150_000, 1_755_920_000];
+
+            Assert.Equal("-segment_time 86400", DynamicHlsController.GetSegmentCutArguments(segmentStarts, 2));
+        }
+
+        [Fact]
+        public void GetSegmentCutArguments_SeveralHours_LongerThanWindowsCommandLine()
+        {
+            // A 6 hour file with 6.123 s segments: the list from the first segment does not fit in a Windows command line, the one for its last hour does
+            var segmentStarts = Enumerable.Range(0, 3528).Select(i => i * 61_234_567L).ToArray();
+
+            Assert.True(DynamicHlsController.GetSegmentCutArguments(segmentStarts, 0).Length > 24_000);
+            Assert.True(DynamicHlsController.GetSegmentCutArguments(segmentStarts, 2940).Length <= 24_000);
+            Assert.True(DynamicHlsController.MaxSegmentCutArgumentsLength >= 24_000);
+        }
+
+        [Fact]
+        public void GetSegmentStartTicks_MatchesPlaylistRuntimeTicks()
+        {
+            // Uneven keyframe gaps with odd tick counts, so the segment lengths have fractional ticks that must round the way the playlist does
+            long[] gaps = [23_560_001, 34_560_002, 13_780_004, 28_140_002, 17_960_002, 27_330_002];
+            var keyframeTicks = new List<long>();
+            for (long tick = 0, i = 0; tick < 1_800_000_000; tick += gaps[i++ % gaps.Length])
+            {
+                keyframeTicks.Add(tick);
+            }
+
+            KeyframeData? keyframes = new KeyframeData(1_800_000_000, keyframeTicks);
+            var extractor = new Mock<IKeyframeExtractor>();
+            extractor.SetupGet(e => e.IsMetadataBased).Returns(true);
+            extractor.Setup(e => e.TryExtractKeyframes(It.IsAny<Guid>(), It.IsAny<string>(), out keyframes)).Returns(true);
+            var config = new Mock<IServerConfigurationManager>();
+            config.Setup(c => c.GetConfiguration("encoding"))
+                .Returns(new EncodingOptions { AllowOnDemandMetadataBasedKeyframeExtractionForExtensions = ["mkv"] });
+            var generator = new DynamicHlsPlaylistGenerator(config.Object, [extractor.Object]);
+            var request = new CreateMainPlaylistRequest(Guid.NewGuid(), "/media/film.mkv", 6000, 1_800_000_000, "mp4", "hls1/main/", "?a=b", true);
+
+            var advertised = generator.CreateMainPlaylist(request)
+                .Split('\n')
+                .Where(line => line.Length > 0 && line[0] != '#')
+                .Select(line => long.Parse(Regex.Match(line, @"runtimeTicks=(\d+)").Groups[1].Value, CultureInfo.InvariantCulture))
+                .ToArray();
+            Assert.True(generator.TryGetKeyframeSegmentLengths(request, out var lengths));
+            var computed = DynamicHlsController.GetSegmentStartTicks(lengths);
+
+            // The keyframe path, not the even 6 s grid, is what makes the rounding matter
+            Assert.Contains(lengths, length => Math.Abs(length - 6) > 0.001);
+            Assert.Equal(advertised, computed);
         }
 
         [Fact]

@@ -40,6 +40,9 @@ namespace Jellyfin.Api.Controllers;
 [ApiExplorerSettings(IgnoreApi = true)]
 public class DynamicHlsController : BaseJellyfinApiController
 {
+    // Windows allows 32,767 characters for the whole command line, Linux 128 KiB per argument
+    internal static readonly int MaxSegmentCutArgumentsLength = OperatingSystem.IsWindows() ? 24_000 : 120_000;
+
     private const EncoderPreset DefaultVodEncoderPreset = EncoderPreset.veryfast;
     private const EncoderPreset DefaultEventEncoderPreset = EncoderPreset.superfast;
     private const TranscodingJobType TranscodingJobType = MediaBrowser.Controller.MediaEncoding.TranscodingJobType.Hls;
@@ -47,6 +50,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     private readonly Version _minFFmpegFlacInMp4 = new Version(6, 0);
     private readonly Version _minFFmpegX265BframeInFmp4 = new Version(7, 0, 1);
     private readonly Version _minFFmpegHlsSegmentOptions = new Version(5, 0);
+    private readonly Version _minFFmpegSegmentTimesFromFirstPacket = new Version(6, 0);
 
     private readonly ILibraryManager _libraryManager;
     private readonly IUserManager _userManager;
@@ -1399,26 +1403,7 @@ public class DynamicHlsController : BaseJellyfinApiController
                 TranscodingJobType,
                 cancellationTokenSource.Token)
             .ConfigureAwait(false);
-        var mediaSourceId = state.BaseRequest.MediaSourceId;
-        double fps = state.TargetFramerate ?? 0.0f;
-        int segmentLength = state.SegmentLength * 1000;
-
-        // If video is transcoded and framerate is fractional (i.e. 23.976), we need to slightly adjust segment length
-        if (!EncodingHelper.IsCopyCodec(state.OutputVideoCodec) && Math.Abs(fps - Math.Floor(fps + 0.001f)) > 0.001)
-        {
-            double nearestIntFramerate = Math.Ceiling(fps);
-            segmentLength = (int)Math.Ceiling(segmentLength * (nearestIntFramerate / fps));
-        }
-
-        var request = new CreateMainPlaylistRequest(
-            mediaSourceId is null ? null : Guid.Parse(mediaSourceId),
-            state.MediaPath,
-            segmentLength,
-            state.RunTimeTicks ?? 0,
-            state.Request.SegmentContainer ?? string.Empty,
-            "hls1/main/",
-            Request.QueryString.ToString(),
-            EncodingHelper.IsCopyCodec(state.OutputVideoCodec));
+        var request = GetMainPlaylistRequest(state, "hls1/main/", Request.QueryString.ToString());
         var playlist = _dynamicHlsPlaylistGenerator.CreateMainPlaylist(request);
 
         return new FileContentResult(Encoding.UTF8.GetBytes(playlist), MimeTypes.GetMimeType("playlist.m3u8"));
@@ -1522,7 +1507,18 @@ public class DynamicHlsController : BaseJellyfinApiController
                                 segmentId = 0;
                             }
 
-                            streamingRequest.StartTimeTicks = streamingRequest.CurrentRuntimeTicks;
+                            var (startSegment, startTimeTicks, segmentStarts) = GetRunStartPosition(state, segmentId, streamingRequest.CurrentRuntimeTicks);
+                            streamingRequest.StartTimeTicks = startTimeTicks;
+                            state.HlsRemuxStartsOnKnownKeyframe = segmentStarts is not null;
+
+                            if (segmentStarts is not null)
+                            {
+                                // The segment muxer creates a segment's file when it starts writing it, and GetSegmentResult serves
+                                // segment N once N + 1 exists. A segment an earlier run left behind would make the new run's
+                                // unfinished segment before it look ready, so the new run starts without them.
+                                await DeleteSegmentFilesFrom(playlistPath, segmentExtension, startSegment).ConfigureAwait(false);
+                            }
+
                             state.WaitForPath = segmentPath;
 
                             // The shared FFmpeg job must outlive cancellation of any one HTTP request.
@@ -1530,7 +1526,7 @@ public class DynamicHlsController : BaseJellyfinApiController
                             job = await _transcodeManager.StartFfMpeg(
                                 state,
                                 playlistPath,
-                                GetCommandLineArguments(playlistPath, state, false, segmentId),
+                                GetCommandLineArguments(playlistPath, state, false, startSegment, segmentStarts),
                                 Request.HttpContext.User.GetUserId(),
                                 TranscodingJobType,
                                 cancellationTokenSource).ConfigureAwait(false);
@@ -1618,7 +1614,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         return segments;
     }
 
-    private string GetCommandLineArguments(string outputPath, StreamState state, bool isEventPlaylist, int startNumber)
+    private string GetCommandLineArguments(string outputPath, StreamState state, bool isEventPlaylist, int startNumber, long[]? segmentStarts = null)
     {
         var videoCodec = _encodingHelper.GetVideoEncoder(state, _encodingOptions);
         var threads = EncodingHelper.GetNumberOfThreads(state, _encodingOptions, videoCodec);
@@ -1629,11 +1625,35 @@ public class DynamicHlsController : BaseJellyfinApiController
         var outputFileNameWithoutExtension = Path.GetFileNameWithoutExtension(outputPath);
         var outputPrefix = Path.Combine(directory, outputFileNameWithoutExtension);
         var outputExtension = EncodingHelper.GetSegmentFileExtension(state.Request.SegmentContainer);
-        var outputTsArg = outputPrefix + "%d" + outputExtension;
 
-        var segmentFormat = string.Empty;
         var segmentContainer = outputExtension.TrimStart('.');
         var inputModifier = _encodingHelper.GetInputModifier(state, _encodingOptions, segmentContainer);
+
+        var maxMuxingQueueSize = _encodingOptions.MaxMuxingQueueSize > 128
+            ? _encodingOptions.MaxMuxingQueueSize.ToString(CultureInfo.InvariantCulture)
+            : "128";
+
+        var muxerArguments = segmentStarts is not null
+            ? GetSegmentMuxerArguments(startNumber, segmentStarts[startNumber] > 0, GetSegmentCutArguments(segmentStarts, startNumber), outputPrefix, outputExtension)
+            : GetHlsMuxerArguments(state, isEventPlaylist, startNumber, outputPath, outputPrefix, outputExtension);
+
+        return string.Format(
+            CultureInfo.InvariantCulture,
+            "{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -copyts -avoid_negative_ts disabled -max_muxing_queue_size {6} -max_delay 5000000 {7}",
+            inputModifier,
+            _encodingHelper.GetInputArgument(state, _encodingOptions, segmentContainer),
+            threads,
+            mapArgs,
+            GetVideoArguments(state, startNumber, isEventPlaylist, segmentContainer),
+            GetAudioArguments(state),
+            maxMuxingQueueSize,
+            muxerArguments).Trim();
+    }
+
+    private string GetHlsMuxerArguments(StreamState state, bool isEventPlaylist, int startNumber, string outputPath, string outputPrefix, string outputExtension)
+    {
+        var segmentContainer = outputExtension.TrimStart('.');
+        var segmentFormat = string.Empty;
         var hlsArguments = $"-hls_playlist_type {(isEventPlaylist ? "event" : "vod")} -hls_list_size 0";
 
         if (string.Equals(segmentContainer, "ts", StringComparison.OrdinalIgnoreCase))
@@ -1647,7 +1667,7 @@ public class DynamicHlsController : BaseJellyfinApiController
                 // on Windows, the path of fmp4 header file needs to be configured
                 true => " -hls_fmp4_init_filename \"" + outputPrefix + "-1" + outputExtension + "\"",
                 // on Linux/Unix, ffmpeg generate fmp4 header file to m3u8 output folder
-                false => " -hls_fmp4_init_filename \"" + outputFileNameWithoutExtension + "-1" + outputExtension + "\""
+                false => " -hls_fmp4_init_filename \"" + Path.GetFileNameWithoutExtension(outputPath) + "-1" + outputExtension + "\""
             };
 
             var useLegacySegmentOption = _mediaEncoder.EncoderVersion < _minFFmpegHlsSegmentOptions;
@@ -1667,10 +1687,6 @@ public class DynamicHlsController : BaseJellyfinApiController
             segmentFormat = "mpegts";
         }
 
-        var maxMuxingQueueSize = _encodingOptions.MaxMuxingQueueSize > 128
-            ? _encodingOptions.MaxMuxingQueueSize.ToString(CultureInfo.InvariantCulture)
-            : "128";
-
         var baseUrlParam = string.Empty;
         if (isEventPlaylist)
         {
@@ -1682,21 +1698,172 @@ public class DynamicHlsController : BaseJellyfinApiController
 
         return string.Format(
             CultureInfo.InvariantCulture,
-            "{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -copyts -avoid_negative_ts disabled -max_muxing_queue_size {6} -f hls -max_delay 5000000 -hls_time {7} -hls_segment_type {8} -start_number {9}{10} -hls_segment_filename \"{11}\" {12} -y \"{13}\"",
-            inputModifier,
-            _encodingHelper.GetInputArgument(state, _encodingOptions, segmentContainer),
-            threads,
-            mapArgs,
-            GetVideoArguments(state, startNumber, isEventPlaylist, segmentContainer),
-            GetAudioArguments(state),
-            maxMuxingQueueSize,
+            "-f hls -hls_time {0} -hls_segment_type {1} -start_number {2}{3} -hls_segment_filename \"{4}\" {5} -y \"{6}\"",
             state.SegmentLength.ToString(CultureInfo.InvariantCulture),
             segmentFormat,
             startNumber.ToString(CultureInfo.InvariantCulture),
             baseUrlParam,
-            outputTsArg.EscapeProcessArgument(),
+            (outputPrefix + "%d" + outputExtension).EscapeProcessArgument(),
             hlsArguments,
-            outputPath.EscapeProcessArgument()).Trim();
+            outputPath.EscapeProcessArgument());
+    }
+
+    private bool TryGetSegmentMuxerSegmentStarts(StreamState state, [NotNullWhen(true)] out long[]? segmentStarts)
+    {
+        // The hls muxer cuts from wherever ffmpeg restarted, so after a seek its segments drift from the keyframe playlist.
+        // The segment muxer cuts at the playlist's own times, relative to its first packet since FFmpeg 6.0, which requires
+        // a playlist cut at keyframes: the even grid of a file without keyframe data is not.
+        segmentStarts = null;
+        if (!state.IsOutputVideo
+            || !EncodingHelper.IsCopyCodec(state.OutputVideoCodec)
+            || _mediaEncoder.EncoderVersion < _minFFmpegSegmentTimesFromFirstPacket
+            || !CanWriteInitSegmentBeforePackets(state.Request.SegmentContainer, state.OutputAudioCodec, state.AudioStream?.Codec)
+            || !_dynamicHlsPlaylistGenerator.TryGetKeyframeSegmentLengths(GetMainPlaylistRequest(state, string.Empty, string.Empty), out var segmentLengths)
+            || segmentLengths.Count == 0)
+        {
+            return false;
+        }
+
+        // The muxers write different init files, so a stream keeps one muxer: if the cut list from the first segment
+        // does not fit in a command line, every run uses the hls muxer.
+        var starts = GetSegmentStartTicks(segmentLengths);
+        if (GetSegmentCutArguments(starts, 0).Length > MaxSegmentCutArgumentsLength)
+        {
+            return false;
+        }
+
+        segmentStarts = starts;
+        return true;
+    }
+
+    internal static bool CanWriteInitSegmentBeforePackets(string? segmentContainer, string? outputAudioCodec, string? audioCodec)
+    {
+        // The segment muxer writes the fMP4 init segment before it gets the first packet. For these codecs the mp4 muxer
+        // takes the sample description from a packet and fails without one, so copying them into fMP4 keeps the hls muxer,
+        // which delays the init segment until the first packets are there.
+        return !string.Equals(segmentContainer, "mp4", StringComparison.OrdinalIgnoreCase)
+            || !EncodingHelper.IsCopyCodec(outputAudioCodec)
+            || !(string.Equals(audioCodec, "ac3", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(audioCodec, "eac3", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(audioCodec, "truehd", StringComparison.OrdinalIgnoreCase));
+    }
+
+    internal static string GetSegmentMuxerArguments(int startNumber, bool isSeeking, string cutArguments, string outputPrefix, string outputExtension)
+    {
+        // The seek goes to the start keyframe's own time, and ffmpeg lands on that keyframe or on an earlier one (in
+        // containers that seek by DTS it seeks 3/23 s early when a stream has B-frames). -copypriorss 0 drops the copied
+        // packets before the seek time, so the run starts on the keyframe itself, which the cut times are counted from.
+        var copyArguments = isSeeking ? "-copypriorss 0 " : string.Empty;
+
+        var formatArguments = "-segment_format mpegts";
+        if (string.Equals(outputExtension, ".mp4", StringComparison.OrdinalIgnoreCase))
+        {
+            // The init file is written before the first packet, so no edit list can carry the first frame's composition offset:
+            // frag_discont puts the tfdt on the keyframe's PTS and negative_cts_offsets gives that keyframe an offset of 0.
+            // HLS does not use SIDX. The inner mp4 muxer sees only these options, so avoid_negative_ts is repeated here.
+            formatArguments = "-segment_format mp4 -segment_format_options movflags=+frag_custom+dash+frag_discont+skip_sidx+negative_cts_offsets:avoid_negative_ts=disabled"
+                + " -segment_header_filename \"" + outputPrefix + "-1" + outputExtension + "\"";
+        }
+
+        return string.Format(
+            CultureInfo.InvariantCulture,
+            "{0}-f segment {1} -segment_start_number {2} {3} -y \"{4}\"",
+            copyArguments,
+            formatArguments,
+            startNumber.ToString(CultureInfo.InvariantCulture),
+            cutArguments,
+            (outputPrefix + "%d" + outputExtension).EscapeProcessArgument());
+    }
+
+    internal static string GetSegmentCutArguments(IReadOnlyList<long> segmentStarts, int startSegment)
+    {
+        // Cut times are relative to the first packet, the keyframe the run starts on. They are rounded to the millisecond,
+        // so segment_time_delta allows a cut that much before its time: each cut is the first keyframe from there on.
+        var startTicks = segmentStarts[startSegment];
+        var cutTimes = segmentStarts
+            .Skip(startSegment + 1)
+            .Select(ticks => TimeSpan.FromTicks(ticks - startTicks).TotalSeconds.ToString("0.000", CultureInfo.InvariantCulture))
+            .ToList();
+        if (cutTimes.Count == 0)
+        {
+            // -segment_times cannot be empty; a segment time longer than any file keeps the rest in one file
+            return "-segment_time 86400";
+        }
+
+        return "-segment_times " + string.Join(',', cutTimes) + " -segment_time_delta 0.001";
+    }
+
+    private (int SegmentId, long StartTimeTicks, long[]? SegmentStarts) GetRunStartPosition(StreamState state, int segmentId, long currentRuntimeTicks)
+    {
+        if (TryGetSegmentMuxerSegmentStarts(state, out var segmentStarts) && IsPlaylistSegment(segmentStarts, segmentId, currentRuntimeTicks))
+        {
+            var startSegment = GetSeekableSegment(segmentStarts, segmentId, state.RunTimeTicks ?? 0);
+            return (startSegment, segmentStarts[startSegment], segmentStarts);
+        }
+
+        return (segmentId, currentRuntimeTicks, null);
+    }
+
+    internal static bool IsPlaylistSegment(IReadOnlyList<long> segmentStarts, int segmentId, long runtimeTicks)
+    {
+        // A request for a segment that this playlist does not have, or has at another position, comes from a playlist made
+        // from other keyframe data or from none: the file changed, or its keyframe data was saved after the client got its
+        // playlist. These cut times do not belong to that playlist, so such a run keeps the hls muxer.
+        return segmentId >= 0 && segmentId < segmentStarts.Count && segmentStarts[segmentId] == runtimeTicks;
+    }
+
+    internal static int GetSeekableSegment(IReadOnlyList<long> segmentStarts, int segmentId, long runTimeTicks)
+    {
+        // Near the end of the file the seek is clamped (see GetFastSeekCommandLineParameter) and cannot reach the requested
+        // segment, so the run starts from the last segment it still reaches. An unknown runtime is not clamped.
+        var maxStartTicks = runTimeTicks > 0
+            ? Math.Max(runTimeTicks - EncodingHelper.SeekMarginFromEndTicks, 0)
+            : long.MaxValue;
+        var segment = Math.Min(segmentId, segmentStarts.Count - 1);
+        while (segment > 0 && segmentStarts[segment] > maxStartTicks)
+        {
+            segment--;
+        }
+
+        return segment;
+    }
+
+    internal static long[] GetSegmentStartTicks(IReadOnlyList<double> segmentLengths)
+    {
+        // Summed the way CreateMainPlaylist sums them, so these are the runtimeTicks values it advertises
+        var starts = new long[segmentLengths.Count];
+        long ticks = 0;
+        for (var i = 0; i < segmentLengths.Count; i++)
+        {
+            starts[i] = ticks;
+            ticks += Convert.ToInt64(segmentLengths[i] * TimeSpan.TicksPerSecond);
+        }
+
+        return starts;
+    }
+
+    private static CreateMainPlaylistRequest GetMainPlaylistRequest(StreamState state, string endpointPrefix, string queryString)
+    {
+        var mediaSourceId = state.BaseRequest.MediaSourceId;
+        double fps = state.TargetFramerate ?? 0.0f;
+        int segmentLength = state.SegmentLength * 1000;
+
+        // If video is transcoded and framerate is fractional (i.e. 23.976), we need to slightly adjust segment length
+        if (!EncodingHelper.IsCopyCodec(state.OutputVideoCodec) && Math.Abs(fps - Math.Floor(fps + 0.001f)) > 0.001)
+        {
+            double nearestIntFramerate = Math.Ceiling(fps);
+            segmentLength = (int)Math.Ceiling(segmentLength * (nearestIntFramerate / fps));
+        }
+
+        return new CreateMainPlaylistRequest(
+            mediaSourceId is null ? null : Guid.Parse(mediaSourceId),
+            state.MediaPath,
+            segmentLength,
+            state.RunTimeTicks ?? 0,
+            state.Request.SegmentContainer ?? string.Empty,
+            endpointPrefix,
+            queryString,
+            EncodingHelper.IsCopyCodec(state.OutputVideoCodec));
     }
 
     /// <summary>
@@ -2112,6 +2279,34 @@ public class DynamicHlsController : BaseJellyfinApiController
         }
 
         await DeleteFile(file.FullName, retryCount).ConfigureAwait(false);
+    }
+
+    private async Task DeleteSegmentFilesFrom(string playlistPath, string segmentExtension, int startSegment)
+    {
+        var folder = Path.GetDirectoryName(playlistPath) ?? throw new ArgumentException("Path can't be a root directory.", nameof(playlistPath));
+        var filePrefix = Path.GetFileNameWithoutExtension(playlistPath);
+
+        List<FileSystemMetadata> files;
+        try
+        {
+            files = _fileSystem.GetFiles(folder, new[] { segmentExtension }, true, false).ToList();
+        }
+        catch (IOException)
+        {
+            return;
+        }
+
+        foreach (var file in files)
+        {
+            // NumberStyles.None leaves out the fMP4 init file, "<prefix>-1"
+            var name = Path.GetFileNameWithoutExtension(file.Name);
+            if (name.StartsWith(filePrefix, StringComparison.OrdinalIgnoreCase)
+                && int.TryParse(name.AsSpan(filePrefix.Length), NumberStyles.None, CultureInfo.InvariantCulture, out var index)
+                && index >= startSegment)
+            {
+                await DeleteFile(file.FullName, 0).ConfigureAwait(false);
+            }
+        }
     }
 
     private async Task DeleteFile(string path, int retryCount)
