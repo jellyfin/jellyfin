@@ -204,6 +204,7 @@ public static class StreamingHelpers
             state.OutputVideoBitrate = encodingHelper.GetVideoBitrateParamValue(state.VideoRequest, state.VideoStream, state.OutputVideoCodec);
 
             encodingHelper.TryStreamCopy(state, encodingOptions);
+            encodingHelper.ApplyMaxTranscodingVideoBitrate(state, encodingOptions);
 
             if (!EncodingHelper.IsCopyCodec(state.OutputVideoCodec) && state.OutputVideoBitrate.HasValue)
             {

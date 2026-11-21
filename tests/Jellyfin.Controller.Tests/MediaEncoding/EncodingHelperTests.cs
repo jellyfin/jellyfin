@@ -321,6 +321,85 @@ public class EncodingHelperTests
         Assert.Contains("pan=stereo", args, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void ApplyMaxTranscodingVideoBitrate_ReEncodeAboveLimit_LimitsRequestAndOutput()
+    {
+        var helper = CreateHelper();
+        var state = BuildVideoBitrateState(helper, "h264", requestedBitrate: 15_000_000);
+        var options = new EncodingOptions { MaxTranscodingVideoBitrate = 5_000_000 };
+
+        helper.ApplyMaxTranscodingVideoBitrate(state, options);
+
+        Assert.Equal(5_000_000, state.BaseRequest.VideoBitRate);
+        Assert.Equal(5_000_000, state.OutputVideoBitrate);
+    }
+
+    [Fact]
+    public void ApplyMaxTranscodingVideoBitrate_StreamCopy_KeepsBitrate()
+    {
+        var helper = CreateHelper();
+        var state = BuildVideoBitrateState(helper, "copy", requestedBitrate: 15_000_000);
+        var outputBitrate = state.OutputVideoBitrate;
+        var options = new EncodingOptions { MaxTranscodingVideoBitrate = 5_000_000 };
+
+        helper.ApplyMaxTranscodingVideoBitrate(state, options);
+
+        Assert.Equal(15_000_000, state.BaseRequest.VideoBitRate);
+        Assert.Equal(outputBitrate, state.OutputVideoBitrate);
+    }
+
+    [Fact]
+    public void ApplyMaxTranscodingVideoBitrate_RequestBelowLimit_KeepsBitrate()
+    {
+        var helper = CreateHelper();
+        var state = BuildVideoBitrateState(helper, "h264", requestedBitrate: 3_000_000);
+        var outputBitrate = state.OutputVideoBitrate;
+        var options = new EncodingOptions { MaxTranscodingVideoBitrate = 5_000_000 };
+
+        helper.ApplyMaxTranscodingVideoBitrate(state, options);
+
+        Assert.Equal(3_000_000, state.BaseRequest.VideoBitRate);
+        Assert.Equal(outputBitrate, state.OutputVideoBitrate);
+    }
+
+    [Fact]
+    public void ApplyMaxTranscodingVideoBitrate_LimitDisabled_KeepsBitrate()
+    {
+        var helper = CreateHelper();
+        var state = BuildVideoBitrateState(helper, "h264", requestedBitrate: 15_000_000);
+        var outputBitrate = state.OutputVideoBitrate;
+
+        helper.ApplyMaxTranscodingVideoBitrate(state, new EncodingOptions());
+
+        Assert.Equal(15_000_000, state.BaseRequest.VideoBitRate);
+        Assert.Equal(outputBitrate, state.OutputVideoBitrate);
+    }
+
+    private static EncodingJobInfo BuildVideoBitrateState(EncodingHelper helper, string outputVideoCodec, int requestedBitrate)
+    {
+        var video = new MediaStream
+        {
+            Index = 0,
+            Type = MediaStreamType.Video,
+            Codec = "hevc",
+            BitDepth = 10,
+            BitRate = 13_000_000,
+            Width = 1920,
+            Height = 1040,
+        };
+        var request = new VideoRequestDto { VideoBitRate = requestedBitrate };
+
+        return new EncodingJobInfo(TranscodingJobType.Hls)
+        {
+            VideoStream = video,
+            BaseRequest = request,
+            IsVideoRequest = true,
+            IsInputVideo = true,
+            OutputVideoCodec = outputVideoCodec,
+            OutputVideoBitrate = helper.GetVideoBitrateParamValue(request, video, outputVideoCodec),
+        };
+    }
+
     private static EncodingJobInfo BuildAudioState(string audioCodec, int requestedSampleRate, string? outputContainer = null)
     {
         var audio = new MediaStream { Index = 0, Type = MediaStreamType.Audio, Codec = "flac", SampleRate = 96000 };
