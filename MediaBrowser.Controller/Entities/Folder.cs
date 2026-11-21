@@ -404,10 +404,11 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
-            // For top parents i.e. Library folders, skip the validation if it's empty or inaccessible
-            if (item.IsTopParent && !directoryService.IsAccessible(item.ContainingFolderPath))
+            // An empty library root is available: its missing children must be collected.
+            // Skip only when the root cannot be enumerated.
+            if (item.IsTopParent && !FileSystem.CanEnumerateDirectory(item.ContainingFolderPath))
             {
-                Logger.LogWarning("Library folder {LibraryFolderPath} is inaccessible or empty, skipping", item.ContainingFolderPath);
+                Logger.LogWarning("Library folder {LibraryFolderPath} is inaccessible, skipping", item.ContainingFolderPath);
                 return false;
             }
 
@@ -596,6 +597,20 @@ namespace MediaBrowser.Controller.Entities
 
                         if (item.IsFileProtocol)
                         {
+                            if (!LibraryManager.GetLibraryOptions(item).RemoveMissingItemsAutomatically)
+                            {
+                                validChildren.Add(item);
+                                continue;
+                            }
+
+                            var libraryRoot = item.GetTopParent()?.Path;
+                            if (!LibraryManager.CanRemoveMissingItem(item.Path, libraryRoot))
+                            {
+                                Logger.LogWarning("Keeping missing item {Path}: library root is unavailable", item.Path);
+                                validChildren.Add(item);
+                                continue;
+                            }
+
                             Logger.LogDebug("Removed item: {Path}", item.Path);
 
                             actuallyRemoved.Add(item);

@@ -122,6 +122,13 @@ namespace MediaBrowser.Model.IO
         bool ContainsSubPath(string parentPath, string path);
 
         /// <summary>
+        /// Determines whether a directory can be enumerated, including when it is empty.
+        /// </summary>
+        /// <param name="path">The directory path.</param>
+        /// <returns>Whether enumeration succeeds.</returns>
+        bool CanEnumerateDirectory(string path);
+
+        /// <summary>
         /// Gets the file name without extension.
         /// </summary>
         /// <param name="info">The information.</param>

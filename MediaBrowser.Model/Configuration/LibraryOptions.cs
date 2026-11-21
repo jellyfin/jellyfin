@@ -46,6 +46,11 @@ namespace MediaBrowser.Model.Configuration
 
         public bool EnableRealtimeMonitor { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether missing items are removed during a library scan when the library root is available.
+        /// </summary>
+        public bool RemoveMissingItemsAutomatically { get; set; } = true;
+
         public bool EnableLUFSScan { get; set; }
 
         public bool EnableChapterImageExtraction { get; set; }
