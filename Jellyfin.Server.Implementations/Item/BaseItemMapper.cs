@@ -215,7 +215,10 @@ public static class BaseItemMapper
 
         if (entity.Images is not null)
         {
-            dto.ImageInfos = entity.Images.Select(e => MapImageFromEntity(e, appHost)).ToArray();
+            dto.ImageInfos = entity.Images
+                .OrderBy(e => e.ImageType)
+                .ThenBy(e => e.SortOrder)
+                .Select(e => MapImageFromEntity(e, appHost)).ToArray();
         }
 
         if (dto is IHasStartDate hasStartDate)
@@ -437,7 +440,8 @@ public static class BaseItemMapper
             DateModified = e.DateModified ?? DateTime.SpecifyKind(DateTime.MinValue, DateTimeKind.Utc),
             Height = e.Height,
             Width = e.Width,
-            Type = (ImageType)e.ImageType
+            Type = (ImageType)e.ImageType,
+            SortOrder = e.SortOrder
         };
     }
 
@@ -459,6 +463,7 @@ public static class BaseItemMapper
             Height = e.Height,
             Width = e.Width,
             ImageType = (ImageInfoImageType)e.Type,
+            SortOrder = e.SortOrder,
             Item = null!
         };
     }
