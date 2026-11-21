@@ -152,23 +152,14 @@ public sealed class BaseItemRepositoryInheritedTagTests : SqliteDbTestFixture
 
     private void Tagged(JellyfinDbContext context, params Guid[] itemIds)
     {
-        var itemValue = new ItemValue
-        {
-            ItemValueId = Guid.NewGuid(),
-            Type = ItemValueType.Tags,
-            Value = Tag,
-            CleanValue = Tag.GetCleanValue()
-        };
-
-        context.ItemValues.Add(itemValue);
         foreach (var itemId in itemIds)
         {
-            context.ItemValuesMap.Add(new ItemValueMap
+            context.BaseItemTags.Add(new BaseItemTag
             {
                 ItemId = itemId,
-                ItemValueId = itemValue.ItemValueId,
                 Item = null!,
-                ItemValue = null!
+                Value = Tag,
+                CleanValue = Tag.GetCleanValue()
             });
         }
     }

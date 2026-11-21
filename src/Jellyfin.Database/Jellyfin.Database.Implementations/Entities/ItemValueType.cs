@@ -1,4 +1,3 @@
-#pragma warning disable CA1027 // Mark enums with FlagsAttribute
 namespace Jellyfin.Database.Implementations.Entities;
 
 /// <summary>
@@ -30,9 +29,4 @@ public enum ItemValueType
     /// Tags.
     /// </summary>
     Tags = 4,
-
-    /// <summary>
-    /// InheritedTags.
-    /// </summary>
-    InheritedTags = 6,
 }
