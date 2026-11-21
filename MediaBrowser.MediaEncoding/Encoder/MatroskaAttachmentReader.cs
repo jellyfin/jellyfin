@@ -287,6 +287,13 @@ internal static class MatroskaAttachmentReader
             value = (value << 8) | (byte)next;
         }
 
+        // A size VINT may itself cross the parent boundary. Validate it before
+        // subtracting offsets (which is later compared as an unsigned integer).
+        if (stream.Position > containerEnd)
+        {
+            return false;
+        }
+
         var unknownSize = value == ((1UL << (sizeWidth * 7)) - 1);
         if (unknownSize && allowUnknownSize && id == SegmentId)
         {
