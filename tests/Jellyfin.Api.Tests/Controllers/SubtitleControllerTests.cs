@@ -65,11 +65,11 @@ public class SubtitleControllerTests
     }
 
     [Fact]
-    public async Task GetSubtitle_VobSubIdxPair_FallsBackToEncoder()
+    public async Task GetSubtitle_VobSubWithoutIdx_FallsBackToEncoder()
     {
-        // A .idx/.sub pair has no raw payload the client could render: the encoder converts it.
+        // A .sub without its .idx is not extracted to .mks: the encoder converts it.
         var encoder = new Mock<ISubtitleEncoder>(MockBehavior.Strict);
-        var controller = CreateController("dvdsub", "/media/sub.idx", encoder, out _);
+        var controller = CreateController("dvdsub", "/media/sub.sub", encoder, out _);
         encoder.Setup(e => e.GetSubtitles(It.IsAny<BaseItem>(), It.IsAny<string>(), SubtitleIndex, "vobsub", 0, 0, false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new MemoryStream([1, 2, 3]));
 
