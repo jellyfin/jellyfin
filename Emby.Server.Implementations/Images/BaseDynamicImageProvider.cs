@@ -45,6 +45,12 @@ namespace Emby.Server.Implementations.Images
         protected virtual IReadOnlyCollection<ImageType> SupportedImages { get; }
             = [ImageType.Primary];
 
+        /// <summary>
+        /// Gets a value indicating whether the image follows the library setting for saving artwork into media folders.
+        /// Generated images are kept in the internal metadata folder otherwise.
+        /// </summary>
+        protected virtual bool SaveWithMedia => false;
+
         /// <inheritdoc />
         public string Name => "Dynamic Image Provider";
 
@@ -120,7 +126,7 @@ namespace Emby.Server.Implementations.Images
                 mimeType = MediaTypeNames.Image.Png;
             }
 
-            await ProviderManager.SaveImage(item, outputPath, mimeType, imageType, null, false, cancellationToken).ConfigureAwait(false);
+            await ProviderManager.SaveImage(item, outputPath, mimeType, imageType, null, SaveWithMedia ? null : false, cancellationToken).ConfigureAwait(false);
 
             return ItemUpdateType.ImageUpdate;
         }
