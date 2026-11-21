@@ -28,6 +28,7 @@
   <ItemGroup>
     <PackageReference Include="AsyncKeyedLock" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
+    <PackageReference Include="prometheus-net" />
   </ItemGroup>
 
   <ItemGroup>

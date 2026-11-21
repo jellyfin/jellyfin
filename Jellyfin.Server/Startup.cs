@@ -18,6 +18,7 @@ using Jellyfin.Networking.HappyEyeballs;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.HealthChecks;
 using Jellyfin.Server.Implementations.Extensions;
+using Jellyfin.Server.Implementations.Metrics;
 using Jellyfin.Server.Implementations.Users;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -157,6 +158,15 @@ namespace Jellyfin.Server
             services.AddHostedService<UserDataChangeNotifier>();
             services.AddHostedService<RecordingNotifier>();
             services.AddHostedService<DeviceAccessHost>();
+
+            if (_serverConfigurationManager.Configuration.EnableMetrics)
+            {
+                services.AddSingleton<SessionMetricsCollector>();
+                services.AddSingleton<LibraryMetricsCollector>();
+                services.AddSingleton<UserMetricsCollector>();
+                services.AddSingleton<AuthenticationMetricsCollector>();
+                services.AddHostedService<MetricsCollectionService>();
+            }
         }
 
         /// <summary>
