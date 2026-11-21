@@ -16,6 +16,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Providers.Lyric;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.MediaInfo
@@ -72,6 +73,11 @@ namespace MediaBrowser.Providers.MediaInfo
             _type = type;
             _externalPathParser = new ExternalPathParser(namingOptions, localizationManager, _type);
         }
+
+        /// <summary>
+        /// Gets additional file extensions supplied by extensions.
+        /// </summary>
+        protected virtual IReadOnlyCollection<string> AdditionalFileExtensions => [];
 
         /// <summary>
         /// Retrieves the external streams for the provided video.
@@ -187,6 +193,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     Type = MediaStreamType.Lyric,
                     Path = pathInfos[i].Path,
                     Language = pathInfos[i].Language,
+                    IsExternal = true,
                     Index = startIndex++
                 };
             }
@@ -303,6 +310,9 @@ namespace MediaBrowser.Providers.MediaInfo
 
             var externalPathInfos = new List<ExternalPathParserResult>();
             ReadOnlySpan<char> prefix = audio.FileNameWithoutExtension;
+            var lyricMatches = _type == DlnaProfileType.Lyric
+                ? LyricSourcePaths.Find(audio.Path, directoryService.GetFiles(folder), _namingOptions.LyricFileExtensions.Concat(AdditionalFileExtensions).ToArray()).ToHashSet(StringComparer.Ordinal)
+                : [];
             foreach (var file in files)
             {
                 var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(file.AsSpan());
@@ -310,8 +320,19 @@ namespace MediaBrowser.Providers.MediaInfo
                     && prefix.Equals(fileNameWithoutExtension[..prefix.Length], StringComparison.OrdinalIgnoreCase)
                     && (fileNameWithoutExtension.Length == prefix.Length || _namingOptions.MediaFlagDelimiters.Contains(fileNameWithoutExtension[prefix.Length])))
                 {
-                    var externalPathInfo = _externalPathParser.ParseFile(file, fileNameWithoutExtension[prefix.Length..].ToString());
+                    var externalPathInfo = _externalPathParser.ParseFile(
+                        file,
+                        fileNameWithoutExtension[prefix.Length..].ToString(),
+                        AdditionalFileExtensions);
 
+                    if (externalPathInfo is not null)
+                    {
+                        externalPathInfos.Add(externalPathInfo);
+                    }
+                }
+                else if (lyricMatches.Contains(file))
+                {
+                    var externalPathInfo = _externalPathParser.ParseFile(file, string.Empty, AdditionalFileExtensions);
                     if (externalPathInfo is not null)
                     {
                         externalPathInfos.Add(externalPathInfo);
