@@ -2,6 +2,7 @@ using System.Linq;
 using Emby.Naming.Common;
 using Emby.Server.Implementations.Library.Resolvers.Audio;
 using Jellyfin.Data.Enums;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.IO;
@@ -28,17 +29,29 @@ public class AudioResolverTests
     }
 
     [Theory]
+    /* Multi-file audiobooks with sequential chapters/parts - now supported! */
+    [InlineData("01.mp3", "02.mp3")]
+    [InlineData("chapter 01.mp3", "chapter 02.mp3")]
+    [InlineData("part 1.mp3", "part 2.mp3")]
+    [InlineData("chapter 01 part 01.mp3", "chapter 01 part 02.mp3")]
+    public void Resolve_AudiobookDirectory_MultiFile_SingleResult(params string[] children)
+    {
+        var resolved = TestResolveChildren("/parent/book title", children);
+        Assert.NotNull(resolved);
+        Assert.IsType<AudioBook>(resolved);
+
+        var audiobook = (AudioBook)resolved;
+        // First file becomes the primary path, rest are additional parts
+        Assert.Equal(children.Length - 1, audiobook.AdditionalParts.Length);
+    }
+
+    [Theory]
     /* Results that can't be displayed as an audio book. */
     [InlineData] // no contents
     [InlineData("subdirectory/")]
     [InlineData("non-media.txt")]
     /* Names don't indicate parts of a single book. */
     [InlineData("Name.mp3", "Another Name.mp3")]
-    /* Results that are an audio book but not currently navigable as such (multiple chapters and/or parts). */
-    [InlineData("01.mp3", "02.mp3")]
-    [InlineData("chapter 01.mp3", "chapter 02.mp3")]
-    [InlineData("part 1.mp3", "part 2.mp3")]
-    [InlineData("chapter 01 part 01.mp3", "chapter 01 part 02.mp3")]
     /* Mismatched chapters, parts, and named files. */
     [InlineData("chapter 01.mp3", "part 2.mp3")]
     [InlineData("book title.mp3", "chapter name.mp3")] // "book title" resolves as alternate version of book based on directory name
