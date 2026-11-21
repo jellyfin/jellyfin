@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Extensions;
 using Jellyfin.Server.Implementations.Item;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
@@ -71,6 +72,7 @@ public sealed class ItemPersistencePeopleCleanupTests : SqliteDbTestFixture
     {
         Id = Guid.NewGuid(),
         Name = name,
+        CleanName = name.GetCleanValue(),
         PersonType = "Actor"
     };
 
