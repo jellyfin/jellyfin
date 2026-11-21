@@ -260,8 +260,9 @@ namespace MediaBrowser.Providers.Books.OpenPackagingFormat
             {
                 case "arr":
                     return PersonKind.Arranger;
+                // An artist or a musician on a book is no music artist, which is what those kinds stand for.
                 case "art":
-                    return PersonKind.Artist;
+                    return PersonKind.Illustrator;
                 case "aut":
                 case "aqt":
                 case "aft":
@@ -275,7 +276,7 @@ namespace MediaBrowser.Providers.Books.OpenPackagingFormat
                 case "lyr":
                     return PersonKind.Lyricist;
                 case "mus":
-                    return PersonKind.AlbumArtist;
+                    return PersonKind.Unknown;
                 case "nrt":
                     return PersonKind.Narrator;
                 case "oth":
