@@ -88,6 +88,17 @@ namespace MediaBrowser.Controller.Entities
         public int? SubtitleStreamIndex { get; set; }
 
         /// <summary>
+        /// Gets or sets the generic progress state for complex media types.
+        /// </summary>
+        /// <remarks>
+        /// This field stores position information that cannot be represented as simple ticks,
+        /// such as EPUB CFI (Canonical Fragment Identifier) strings for precise ebook locations.
+        /// This field is null for standard video/audio content where <see cref="PlaybackPositionTicks"/> is sufficient.
+        /// </remarks>
+        /// <value>The progress state string, or null if not applicable.</value>
+        public string? ProgressState { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether the item is liked or not.
         /// This should never be serialized.
         /// </summary>

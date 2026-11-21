@@ -72,5 +72,15 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The item identifier.</value>
         public Guid ItemId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the generic progress state for complex media types.
+        /// </summary>
+        /// <remarks>
+        /// This field stores position information that cannot be represented as simple ticks,
+        /// such as EPUB CFI (Canonical Fragment Identifier) strings for precise ebook locations.
+        /// </remarks>
+        /// <value>The progress state string, or null if not applicable.</value>
+        public string? ProgressState { get; set; }
     }
 }

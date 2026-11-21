@@ -152,6 +152,11 @@ namespace Emby.Server.Implementations.Library
                 userData.Rating = userDataDto.Rating.Value;
             }
 
+            if (userDataDto.ProgressState is not null)
+            {
+                userData.ProgressState = userDataDto.ProgressState;
+            }
+
             SaveUserData(user, item, userData, reason, CancellationToken.None);
         }
 
@@ -173,6 +178,7 @@ namespace Emby.Server.Implementations.Library
                 Rating = dto.Rating,
                 UserId = userId,
                 SubtitleStreamIndex = dto.SubtitleStreamIndex,
+                ProgressState = dto.ProgressState,
             };
         }
 
@@ -190,6 +196,7 @@ namespace Emby.Server.Implementations.Library
                 Played = dto.Played,
                 Rating = dto.Rating,
                 SubtitleStreamIndex = dto.SubtitleStreamIndex,
+                ProgressState = dto.ProgressState,
             };
         }
 
@@ -447,7 +454,8 @@ namespace Emby.Server.Implementations.Library
                 Played = data.Played,
                 LastPlayedDate = data.LastPlayedDate,
                 ItemId = itemId,
-                Key = data.Key
+                Key = data.Key,
+                ProgressState = data.ProgressState
             };
         }
 
