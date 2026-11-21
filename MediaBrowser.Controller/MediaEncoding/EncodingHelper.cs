@@ -6361,6 +6361,23 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     mainFilters.Insert(0, fpsFilter);
                 }
+
+                // Rebuild the timeline from the gaps between input timestamps. Real gaps are kept, so soft
+                // telecine and VFR content stay in sync. Missing, backwards or implausibly long gaps are
+                // replaced with one frame at the reference frame rate, so corrupted timestamps (e.g. frames
+                // hours apart) cannot make the fps filter run away.
+                // This must come first, before any deinterlace filter, so a double rate deinterlacer
+                // derives its output timestamps from the corrected timeline.
+                if (state.NormalizeInputTimestamps && videoStream.ReferenceFrameRate > 0)
+                {
+                    const int MaxFrameGapSeconds = 10;
+                    const string Gap = "(PTS-PREV_INPTS)"; // gap since the previous input frame, in time base units
+                    var isRealGap = $"gt({Gap}\\,0)*lte({Gap}*TB\\,{MaxFrameGapSeconds})";
+                    var nominalGap = string.Create(CultureInfo.InvariantCulture, $"1/({videoStream.ReferenceFrameRate.Value:F3}*TB)");
+
+                    // Keep real gaps, replace missing, backwards or implausibly long ones with one nominal frame.
+                    mainFilters.Insert(0, $"setpts=if(N\\,PREV_OUTPTS+if({isRealGap}\\,{Gap}\\,{nominalGap})\\,0)");
+                }
             }
 
             var mainStr = string.Empty;
