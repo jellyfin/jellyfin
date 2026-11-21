@@ -157,6 +157,77 @@ public class BaseItemTests
         Assert.Equal(BaseItem.GetItemByNameFolderName(name), BaseItem.GetItemByNameFolderName(name));
     }
 
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData(".")]
+    [InlineData("..")]
+    [InlineData("...")]
+    [InlineData(". .")]
+    [InlineData(".  \t.")]
+    [InlineData("??????")]
+    [InlineData("///")]
+    public void GetItemByNameFolderName_EmptyOrDotOnlyResult_FallsBackToHashedFolder(string name)
+    {
+        var previousFileSystem = BaseItem.FileSystem;
+        var previousConfig = BaseItem.ConfigurationManager;
+        var peoplePath = Path.Combine(Path.GetTempPath(), "jellyfin-test-people");
+        var fileSystem = new Mock<IFileSystem>();
+        fileSystem.Setup(x => x.GetValidFilename(It.IsAny<string>()))
+            .Returns((string input) => string.Create(input.Length, input, static (chars, state) =>
+            {
+                for (var i = 0; i < state.Length; i++)
+                {
+                    chars[i] = state[i] is '?' or '/' or '*' ? ' ' : state[i];
+                }
+            }));
+        var config = new Mock<IServerConfigurationManager>();
+        config.Setup(x => x.ApplicationPaths.PeoplePath).Returns(peoplePath);
+
+        try
+        {
+            BaseItem.FileSystem = fileSystem.Object;
+            BaseItem.ConfigurationManager = config.Object;
+
+            var folderName = BaseItem.GetItemByNameFolderName(name);
+            var personPath = Person.GetPath(name);
+
+            Assert.False(string.IsNullOrWhiteSpace(folderName));
+            Assert.NotEqual(".", folderName);
+            Assert.NotEqual("..", folderName);
+            Assert.StartsWith("_", folderName, StringComparison.Ordinal);
+            Assert.NotEqual(peoplePath, Path.TrimEndingDirectorySeparator(personPath));
+            Assert.StartsWith(peoplePath + Path.DirectorySeparatorChar, personPath, StringComparison.Ordinal);
+        }
+        finally
+        {
+            BaseItem.FileSystem = previousFileSystem;
+            BaseItem.ConfigurationManager = previousConfig;
+        }
+    }
+
+    [Fact]
+    public void GetItemByNameFolderName_DistinctSanitizedEmptyNames_StayApart()
+    {
+        var previousFileSystem = BaseItem.FileSystem;
+        var fileSystem = new Mock<IFileSystem>();
+        fileSystem.Setup(x => x.GetValidFilename(It.IsAny<string>()))
+            .Returns((string input) => new string(' ', input.Length));
+
+        try
+        {
+            BaseItem.FileSystem = fileSystem.Object;
+
+            Assert.NotEqual(
+                BaseItem.GetItemByNameFolderName("??????"),
+                BaseItem.GetItemByNameFolderName("///"));
+        }
+        finally
+        {
+            BaseItem.FileSystem = previousFileSystem;
+        }
+    }
+
     private static void SetupPassThroughFileSystem()
     {
         var fileSystem = new Mock<IFileSystem>();

@@ -976,8 +976,18 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>The folder name.</returns>
         public static string GetItemByNameFolderName(string name)
         {
-            // Trim the period at the end because windows will have a hard time with that
-            var validName = FileSystem.GetValidFilename(name).Trim().TrimEnd('.');
+            // Trim trailing periods and whitespace because Windows ignores them, and
+            // punctuation-only or dot-only names would otherwise resolve back to the container folder.
+            var validName = FileSystem.GetValidFilename(name).Trim();
+            while (validName.Length > 0 && (validName[^1] == '.' || char.IsWhiteSpace(validName[^1])))
+            {
+                validName = validName.TrimEnd('.').TrimEnd();
+            }
+
+            if (string.IsNullOrEmpty(validName) || validName is "." or "..")
+            {
+                return "_" + (name ?? string.Empty).GetMD5().ToString("N", CultureInfo.InvariantCulture);
+            }
 
             // Most Linux filesystems cap a path component at 255 bytes, so a name past that cannot be
             // turned into a folder at all - and an entity with no folder can never be created, which
