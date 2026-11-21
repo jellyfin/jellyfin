@@ -98,7 +98,7 @@ public class DeleteTranscodeFileTask : IScheduledTask, IConfigurableScheduledTas
     private void DeleteTempFilesFromDirectory(string directory, DateTime minDateModified, IProgress<double> progress, CancellationToken cancellationToken)
     {
         var filesToDelete = _fileSystem.GetFiles(directory, true)
-            .Where(f => _fileSystem.GetLastWriteTimeUtc(f) < minDateModified)
+            .Where(f => !FileSystemHelper.IsProtectedCacheFile(f.FullName) && _fileSystem.GetLastWriteTimeUtc(f) < minDateModified)
             .ToList();
 
         var index = 0;
