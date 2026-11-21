@@ -664,7 +664,13 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             }
         }
 
-        private void FetchThumbNode(XmlReader reader, MetadataResult<T> itemResult, string parentNode)
+        /// <summary>
+        /// Fetches the thumb node.
+        /// </summary>
+        /// <param name="reader">The xml reader.</param>
+        /// <param name="itemResult">The item result.</param>
+        /// <param name="parentNode">The parent node name.</param>
+        protected void FetchThumbNode(XmlReader reader, MetadataResult<T> itemResult, string parentNode)
         {
             var artType = reader.GetAttribute("aspect");
             var val = reader.ReadElementContentAsString();
