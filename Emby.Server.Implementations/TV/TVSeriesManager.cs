@@ -217,7 +217,10 @@ namespace Emby.Server.Implementations.TV
 
                     if (!includePlayed)
                     {
-                        sortedEpisodes = sortedEpisodes.Where(episode => _userDataManager.GetUserData(user, episode) is not { Played: true });
+                        // The candidates only carry user data when the response asks for it, so the
+                        // played state has to be resolved instead of read off the loaded items
+                        var userData = _userDataManager.GetUserDataBatch(consideredEpisodes, user);
+                        sortedEpisodes = sortedEpisodes.Where(episode => userData.GetValueOrDefault(episode.Id) is not { Played: true });
                     }
 
                     nextEpisode = sortedEpisodes.FirstOrDefault();
@@ -226,10 +229,13 @@ namespace Emby.Server.Implementations.TV
 
             if (nextEpisode is not null && !includeResumable)
             {
-                // The resume progress may live on an alternate version
-                foreach (var version in nextEpisode.GetAllVersions())
+                // The resume progress may live on an alternate version, and the loaded versions only
+                // carry user data when the response asks for it
+                var versions = nextEpisode.GetAllVersions();
+                var userData = _userDataManager.GetUserDataBatch(versions, user);
+                foreach (var version in versions)
                 {
-                    if (_userDataManager.GetUserData(user, version)?.PlaybackPositionTicks > 0)
+                    if (userData.GetValueOrDefault(version.Id)?.PlaybackPositionTicks > 0)
                     {
                         return null;
                     }
