@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -148,6 +149,44 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             return remoteSearchResults;
         }
 
+        /// <summary>
+        /// Finds the TMDb movie that best matches an item, searching by its name and, if that finds nothing, by its file name.
+        /// </summary>
+        /// <param name="name">The name of the item.</param>
+        /// <param name="path">The path of the item's video file, if any.</param>
+        /// <param name="year">The year of the item, if known.</param>
+        /// <param name="parseName">Parses a name into a title and year.</param>
+        /// <param name="searchAsync">Searches TMDb for a title and year.</param>
+        /// <returns>The best match, or <c>null</c> if neither name found anything.</returns>
+        internal static async Task<SearchMovie?> FindMatchAsync(
+            string name,
+            string? path,
+            int? year,
+            Func<string, ItemLookupInfo> parseName,
+            Func<string, int, Task<IReadOnlyList<SearchMovie>?>> searchAsync)
+        {
+            var (results, parsedName, searchYear) = await SearchByNameAsync(name).ConfigureAwait(false);
+
+            if (results is null or { Count: 0 }
+                && !string.IsNullOrEmpty(path)
+                && Path.GetFileNameWithoutExtension(path) is { Length: > 0 } fileName
+                && !string.Equals(fileName, name, StringComparison.OrdinalIgnoreCase))
+            {
+                (results, parsedName, searchYear) = await SearchByNameAsync(fileName).ConfigureAwait(false);
+            }
+
+            return TmdbUtils.FindBestMatch(results, parsedName.Name, searchYear);
+
+            async Task<(IReadOnlyList<SearchMovie>? Results, ItemLookupInfo ParsedName, int Year)> SearchByNameAsync(string nameToSearch)
+            {
+                var parsed = parseName(nameToSearch);
+                var searchYear = year ?? parsed.Year ?? 0;
+
+                var found = await searchAsync(TmdbUtils.CleanName(parsed.Name), searchYear).ConfigureAwait(false);
+                return (found, parsed, searchYear);
+            }
+        }
+
         /// <inheritdoc />
         public async Task<MetadataResult<Movie>> GetMetadata(MovieInfo info, CancellationToken cancellationToken)
         {
@@ -159,15 +198,12 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
             if (tmdbId <= 0 && string.IsNullOrEmpty(imdbId))
             {
-                // ParseName is required here.
-                // Caller provides the filename with extension stripped and NOT the parsed filename
-                var parsedName = _libraryManager.ParseName(info.Name);
-                var cleanedName = TmdbUtils.CleanName(parsedName.Name);
-                var searchYear = info.Year ?? parsedName.Year ?? 0;
-
-                var searchResults = await _tmdbClientManager.SearchMovieAsync(cleanedName, searchYear, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
-
-                var match = TmdbUtils.FindBestMatch(searchResults, parsedName.Name, searchYear);
+                var match = await FindMatchAsync(
+                    info.Name,
+                    info.Path,
+                    info.Year,
+                    _libraryManager.ParseName,
+                    (name, year) => _tmdbClientManager.SearchMovieAsync(name, year, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken)).ConfigureAwait(false);
 
                 if (match is not null)
                 {
