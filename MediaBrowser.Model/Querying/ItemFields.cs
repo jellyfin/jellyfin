@@ -248,6 +248,11 @@ namespace MediaBrowser.Model.Querying
         /// <summary>
         /// The special feature count.
         /// </summary>
-        SpecialFeatureCount
+        SpecialFeatureCount,
+
+        /// <summary>
+        /// The networks of the item.
+        /// </summary>
+        Networks
     }
 }

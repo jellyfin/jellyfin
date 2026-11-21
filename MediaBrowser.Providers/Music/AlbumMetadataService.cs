@@ -55,6 +55,9 @@ public class AlbumMetadataService : MetadataService<MusicAlbum, AlbumInfo>
     protected override bool EnableUpdatingStudiosFromChildren => true;
 
     /// <inheritdoc />
+    protected override bool EnableUpdatingNetworksFromChildren => true;
+
+    /// <inheritdoc />
     protected override IReadOnlyList<BaseItem> GetChildrenForMetadataUpdates(MusicAlbum item)
         => item.GetRecursiveChildren(i => i is Audio);
 
