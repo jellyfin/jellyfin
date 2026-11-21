@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Emby.Server.Implementations.Dto;
 using Emby.Server.Implementations.Playlists;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Common;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Drawing;
@@ -12,12 +13,14 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Trickplay;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using Moq;
 using Xunit;
+using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 
 namespace Jellyfin.Server.Implementations.Tests.Dto;
 
@@ -284,6 +287,35 @@ public class DtoServiceImageInheritanceTests
         libraryManager.Verify(x => x.GetItemIdsWithAlternateVersions(It.IsAny<IReadOnlyList<Guid>>()), Times.Once);
     }
 
+    [Fact]
+    public void GetBaseItemDtos_MediaStreamsWithoutMediaSources_ResolvesStreamsDirectly()
+    {
+        var episode = new Episode
+        {
+            Id = Guid.NewGuid(),
+            Name = "Pilot",
+            ImageInfos = []
+        };
+
+        var expectedStream = new MediaStream { Type = MediaStreamType.Video, Index = 0, Codec = "hevc" };
+        var libraryManager = new Mock<ILibraryManager>();
+        var mediaSourceManager = new Mock<IMediaSourceManager>();
+        mediaSourceManager
+            .Setup(x => x.GetMediaStreams(It.Is<MediaStreamQuery>(q => q.ItemId.Equals(episode.Id))))
+            .Returns([expectedStream]);
+
+        var dtoService = BuildDtoService(libraryManager, mediaSourceManager);
+        BaseItem.MediaSourceManager = mediaSourceManager.Object;
+
+        var options = new DtoOptions(false) { Fields = [ItemFields.MediaStreams] };
+        var dtos = dtoService.GetBaseItemDtos([episode], options);
+
+        var dto = Assert.Single(dtos);
+        var stream = Assert.Single(dto.MediaStreams);
+        Assert.Equal("hevc", stream.Codec);
+        mediaSourceManager.Verify(x => x.GetStaticMediaSources(It.IsAny<BaseItem>(), It.IsAny<bool>(), It.IsAny<User?>()), Times.Never);
+    }
+
     private static DtoService BuildDtoService(BaseItem displayParent)
     {
         var libraryManager = new Mock<ILibraryManager>();
@@ -293,14 +325,14 @@ public class DtoServiceImageInheritanceTests
         return BuildDtoService(libraryManager);
     }
 
-    private static DtoService BuildDtoService(Mock<ILibraryManager> libraryManager)
+    private static DtoService BuildDtoService(Mock<ILibraryManager> libraryManager, Mock<IMediaSourceManager>? mediaSourceManager = null)
     {
         var userDataManager = new Mock<IUserDataManager>();
         var imageProcessor = new Mock<IImageProcessor>();
         var providerManager = new Mock<IProviderManager>();
         var recordingsManager = new Mock<IRecordingsManager>();
         var appHost = new Mock<IApplicationHost>();
-        var mediaSourceManager = new Mock<IMediaSourceManager>();
+        mediaSourceManager ??= new Mock<IMediaSourceManager>();
         var liveTvManager = new Mock<ILiveTvManager>();
         var trickplayManager = new Mock<ITrickplayManager>();
         var chapterManager = new Mock<IChapterManager>();
