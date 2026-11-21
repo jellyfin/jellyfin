@@ -1,8 +1,11 @@
+using System;
+
 namespace Jellyfin.Api.Models.StartupDtos;
 
 /// <summary>
 /// The startup user DTO.
 /// </summary>
+[Obsolete("Use RegisterUserDto")]
 public class StartupUserDto
 {
     /// <summary>

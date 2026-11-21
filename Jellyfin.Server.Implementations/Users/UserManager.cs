@@ -103,19 +103,10 @@ namespace Jellyfin.Server.Implementations.Users
                 .ToArray();
         }
 
-        /// <inheritdoc/>
-        public IEnumerable<Guid> GetUsersIds()
-        {
-            using var dbContext = _dbProvider.CreateDbContext();
-            return dbContext.Users
-                .AsNoTracking()
-                .Select(user => user.Id)
-                .ToArray();
-        }
-
         // This is some regex that matches only on unicode "word" characters, as well as -, _ and @
         // In theory this will cut out most if not all 'control' characters which should help minimize any weirdness
         // Usernames can contain letters (a-z + whatever else unicode is cool with), numbers (0-9), at-signs (@), dashes (-), underscores (_), apostrophes ('), periods (.) and spaces ( )
+        // TODO remove whitespace as a valid character
         [GeneratedRegex(@"^(?!\s)[\w\ \-'._@+]+(?<!\s)$")]
         private static partial Regex ValidUsernameRegex();
 
@@ -739,36 +730,6 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             return new PinRedeemResult();
-        }
-
-        /// <inheritdoc />
-        public async Task InitializeAsync()
-        {
-            // TODO: Refactor the startup wizard so that it doesn't require a user to already exist.
-            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
-            await using (dbContext.ConfigureAwait(false))
-            {
-                if (await dbContext.Users.AnyAsync().ConfigureAwait(false))
-                {
-                    return;
-                }
-
-                var defaultName = Environment.UserName;
-                if (string.IsNullOrWhiteSpace(defaultName) || !ValidUsernameRegex().IsMatch(defaultName))
-                {
-                    defaultName = "MyJellyfinUser";
-                }
-
-                _logger.LogWarning("No users, creating one with username {UserName}", defaultName);
-
-                var newUser = await CreateUserInternalAsync(defaultName, dbContext).ConfigureAwait(false);
-                newUser.SetPermission(PermissionKind.IsAdministrator, true);
-                newUser.SetPermission(PermissionKind.EnableContentDeletion, true);
-                newUser.SetPermission(PermissionKind.EnableRemoteControlOfOtherUsers, true);
-
-                dbContext.Users.Add(newUser);
-                await dbContext.SaveChangesAsync().ConfigureAwait(false);
-            }
         }
 
         /// <inheritdoc/>

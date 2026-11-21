@@ -6,7 +6,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Serialization;
-using Jellyfin.Api.Models.StartupDtos;
+using Jellyfin.Api.Models.UserDtos;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Configuration;
@@ -96,8 +96,8 @@ public sealed class StartOverTests : IDisposable
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             }
 
-            var user = new StartupUserDto { Name = "StartOver", Password = "StartOver" };
-            using (var response = await client.PostAsJsonAsync("/Startup/User", user, _jsonOptions, TestContext.Current.CancellationToken))
+            var user = new RegisterUserDto { Username = "StartOver", Password = "StartOver" };
+            using (var response = await client.PostAsJsonAsync("/Users/Register", user, _jsonOptions, TestContext.Current.CancellationToken))
             {
                 Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
             }
