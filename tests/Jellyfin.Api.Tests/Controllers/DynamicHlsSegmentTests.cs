@@ -263,6 +263,26 @@ public sealed class DynamicHlsSegmentTests : IAsyncLifetime
         Assert.Equal(0, _job.ActiveRequestCount);
     }
 
+    [Fact]
+    public async Task ExistingSegmentWithoutJob_IsServedWithoutWarning()
+    {
+        // E.g. after seeking back to segments that a stopped transcode left on disk.
+        var activeJobs = (List<TranscodingJob>)typeof(TranscodeManager)
+            .GetField("_activeTranscodingJobs", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .GetValue(_manager)!;
+        activeJobs.Remove(_job);
+        var logger = new Mock<ILogger<DynamicHlsController>>();
+        _fixture.Inject(logger.Object);
+
+        var request = Request(9, TestContext.Current.CancellationToken);
+
+        AssertSegment(9, await AwaitResult(request.Result));
+        await request.Complete();
+        logger.Verify(
+            x => x.Log(LogLevel.Warning, It.IsAny<EventId>(), It.IsAny<It.IsAnyType>(), It.IsAny<Exception?>(), It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Never);
+    }
+
     public async ValueTask DisposeAsync()
     {
         _job.HasExited = true;
