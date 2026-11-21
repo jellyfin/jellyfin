@@ -59,10 +59,24 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             if (season?.IndexNumber is null || series?.TryGetTmdbId(out seriesTmdbId) != true)
             {
-                return Enumerable.Empty<RemoteImageInfo>();
+                return [];
             }
 
             var language = item.GetPreferredMetadataLanguage();
+
+            // The season number counts episode groups when the series is ordered by one, and TMDb has no artwork
+            // for a group, so there is nothing to offer rather than the posters of an unrelated season.
+            if (series.TryGetProviderId(TmdbEpisodeGroupId.ProviderKey, out var episodeGroup))
+            {
+                var group = await _tmdbClientManager
+                    .GetSeriesGroupAsync(episodeGroup, season.IndexNumber.Value, null, null, null, cancellationToken)
+                    .ConfigureAwait(false);
+
+                if (group is not null)
+                {
+                    return [];
+                }
+            }
 
             // TODO use image languages if All Languages isn't toggled, but there's currently no way to get that value in here
             var seasonResult = await _tmdbClientManager
@@ -72,7 +86,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             var posters = seasonResult?.Images?.Posters;
             if (posters is null)
             {
-                return Enumerable.Empty<RemoteImageInfo>();
+                return [];
             }
 
             return _tmdbClientManager.ConvertPostersToRemoteImageInfo(posters, language);
