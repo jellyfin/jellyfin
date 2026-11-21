@@ -9,6 +9,17 @@ namespace Jellyfin.Server.Implementations.Users
     /// </summary>
     public class InvalidAuthProvider : IAuthenticationProvider
     {
+        private readonly DummyPasswordVerifier _dummyPasswordVerifier;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InvalidAuthProvider"/> class.
+        /// </summary>
+        /// <param name="dummyPasswordVerifier">The dummy password verifier.</param>
+        public InvalidAuthProvider(DummyPasswordVerifier dummyPasswordVerifier)
+        {
+            _dummyPasswordVerifier = dummyPasswordVerifier;
+        }
+
         /// <inheritdoc />
         public string Name => "InvalidOrMissingAuthenticationProvider";
 
@@ -18,6 +29,8 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc />
         public Task<ProviderAuthenticationResult> Authenticate(string username, string password)
         {
+            // Match the cost of a real password check so the response time does not reveal that the user exists.
+            _dummyPasswordVerifier.Verify(password);
             throw new AuthenticationException("User Account cannot login with this provider. The Normal provider for this user cannot be found");
         }
 

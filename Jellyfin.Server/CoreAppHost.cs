@@ -81,6 +81,7 @@ namespace Jellyfin.Server
 
             serviceCollection.AddSingleton<IActivityManager, ActivityManager>();
             serviceCollection.AddSingleton<IUserManager, UserManager>();
+            serviceCollection.AddSingleton<DummyPasswordVerifier>();
             serviceCollection.AddSingleton<IAuthenticationProvider, DefaultAuthenticationProvider>();
             serviceCollection.AddSingleton<IAuthenticationProvider, InvalidAuthProvider>();
             serviceCollection.AddSingleton<IPasswordResetProvider, DefaultPasswordResetProvider>();

@@ -1723,25 +1723,38 @@ namespace Emby.Server.Implementations.Session
             ArgumentException.ThrowIfNullOrEmpty(request.AppVersion);
 
             User user = null;
-            if (!request.UserId.IsEmpty())
-            {
-                user = _userManager.GetUserById(request.UserId);
-            }
-
-            user ??= _userManager.GetUserByName(request.Username);
-
+            var isUnknownUser = false;
             if (enforcePassword)
             {
-                user = await _userManager.AuthenticateUser(
-                    request.Username,
-                    request.Password,
-                    request.RemoteEndPoint,
-                    true).ConfigureAwait(false);
+                // An unknown username throws, while a wrong password returns null. Handle both the same way below,
+                // so both do the same work before responding and the response time does not reveal which usernames exist.
+                try
+                {
+                    user = await _userManager.AuthenticateUser(
+                        request.Username,
+                        request.Password,
+                        request.RemoteEndPoint,
+                        true).ConfigureAwait(false);
+                }
+                catch (AuthenticationException)
+                {
+                    user = null;
+                    isUnknownUser = true;
+                }
+            }
+            else
+            {
+                if (!request.UserId.IsEmpty())
+                {
+                    user = _userManager.GetUserById(request.UserId);
+                }
+
+                user ??= _userManager.GetUserByName(request.Username);
             }
 
             if (user is null)
             {
-                await _eventManager.PublishAsync(new AuthenticationRequestEventArgs(request)).ConfigureAwait(false);
+                await _eventManager.PublishAsync(new AuthenticationRequestEventArgs(request) { IsUnknownUser = isUnknownUser }).ConfigureAwait(false);
                 throw new AuthenticationException("Invalid username or password entered.");
             }
 
