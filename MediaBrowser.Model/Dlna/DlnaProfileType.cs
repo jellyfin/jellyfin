@@ -8,6 +8,7 @@ namespace MediaBrowser.Model.Dlna
         Video = 1,
         Photo = 2,
         Subtitle = 3,
-        Lyric = 4
+        Lyric = 4,
+        Book = 5
     }
 }

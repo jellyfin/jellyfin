@@ -13,6 +13,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Streaming;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.AspNetCore.Http;
@@ -44,6 +45,7 @@ namespace Jellyfin.Api.Tests.Helpers
                 serverConfigurationManager.Object,
                 Mock.Of<ILogger<MediaInfoHelper>>(),
                 Mock.Of<INetworkManager>(),
+                Array.Empty<IStreamProvider>(),
                 Mock.Of<IDeviceManager>(),
                 appHost ?? Mock.Of<IServerApplicationHost>());
         }
