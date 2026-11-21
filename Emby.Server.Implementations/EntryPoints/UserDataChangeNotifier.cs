@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
@@ -88,7 +89,8 @@ namespace Emby.Server.Implementations.EntryPoints
 
                 var baseItem = e.Item;
 
-                // Go up one level for indicators
+                // Parents show played indicators and unplayed counts for their children, so send them too.
+                // An episode's parent is usually its season, which would leave out the series.
                 if (baseItem is not null)
                 {
                     Track(keys, baseItem);
@@ -98,6 +100,11 @@ namespace Emby.Server.Implementations.EntryPoints
                     if (parent is not null)
                     {
                         Track(keys, parent);
+                    }
+
+                    if (baseItem is Episode { Series: { } series })
+                    {
+                        Track(keys, series);
                     }
                 }
 
