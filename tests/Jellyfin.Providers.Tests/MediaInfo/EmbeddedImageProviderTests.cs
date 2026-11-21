@@ -73,8 +73,12 @@ namespace Jellyfin.Providers.Tests.MediaInfo
             var input = new Movie();
 
             var mediaEncoder = new Mock<IMediaEncoder>(MockBehavior.Strict);
-            mediaEncoder.Setup(encoder => encoder.ExtractVideoImage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<MediaSourceInfo>(), It.IsAny<MediaStream>(), It.IsAny<int>(), It.IsAny<ImageFormat>(), It.IsAny<CancellationToken>()))
-                .Returns<string, string, MediaSourceInfo, MediaStream, int, ImageFormat, CancellationToken>((_, _, _, _, index, ext, _) => Task.FromResult(pathPrefix + index + "." + ext));
+            mediaEncoder.Setup(encoder => encoder.ExtractVideoAttachment(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<MediaSourceInfo>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<ImageFormat>(), It.IsAny<CancellationToken>()))
+                .Returns<string, string, MediaSourceInfo, string, int, ImageFormat, CancellationToken>((_, _, _, name, index, ext, _) =>
+                {
+                    Assert.Equal(attachments[index - 1].FileName, name);
+                    return Task.FromResult(pathPrefix + index + "." + ext);
+                });
             var mediaSourceManager = GetMediaSourceManager(input, attachments, new List<MediaStream>());
             var embeddedImageProvider = new EmbeddedImageProvider(mediaSourceManager, mediaEncoder.Object, new NullLogger<EmbeddedImageProvider>());
 
