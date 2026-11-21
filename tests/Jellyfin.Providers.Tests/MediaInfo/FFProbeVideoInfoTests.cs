@@ -32,6 +32,26 @@ public class FFProbeVideoInfoTests
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void FetchEmbeddedInfo_PlaybackProbe_PreservesEditedAndEmptyFields(bool emptyGenres)
+    {
+        var video = new Video { Name = "Edited title", Genres = emptyGenres ? [] : ["Edited genre"] };
+        var data = CreateMediaInfoWithDates();
+        data.Name = "Embedded title";
+        data.Genres = ["Embedded genre"];
+        var options = CreateRefreshOptions(false);
+        options.RefreshMediaInfoOnly = true;
+
+        _fFProbeVideoInfo.FetchEmbeddedInfo(video, data, options, new LibraryOptions { EnableEmbeddedTitles = true });
+
+        Assert.Equal("Edited title", video.Name);
+        Assert.Equal(emptyGenres ? Array.Empty<string>() : ["Edited genre"], video.Genres);
+        Assert.Null(video.ProductionYear);
+        Assert.Null(video.PremiereDate);
+    }
+
+    [Theory]
     [InlineData(-1L)]
     [InlineData(long.MinValue)]
     [InlineData(long.MaxValue)]

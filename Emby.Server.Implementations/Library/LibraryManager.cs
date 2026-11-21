@@ -2678,6 +2678,24 @@ namespace Emby.Server.Implementations.Library
         /// <inheritdoc />
         public async Task UpdateItemsAsync(IReadOnlyList<BaseItem> items, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
         {
+            if (updateReason == ItemUpdateType.MediaInfo)
+            {
+                foreach (var item in items)
+                {
+                    await _persistenceService.SaveMediaInfoAsync(item, cancellationToken).ConfigureAwait(false);
+                    _cache.TryRemove(item.Id, out _);
+                }
+
+                if (parent is Folder mediaParent)
+                {
+                    mediaParent.Children = null;
+                    mediaParent.UserData = null;
+                }
+
+                ReportItemsUpdated(items, parent, updateReason);
+                return;
+            }
+
             foreach (var item in items)
             {
                 // Parental controls filter on the stored score, so it has to match the ratings being saved.
@@ -2748,6 +2766,11 @@ namespace Emby.Server.Implementations.Library
                 folder.UserData = null;
             }
 
+            ReportItemsUpdated(items, parent, updateReason);
+        }
+
+        private void ReportItemsUpdated(IReadOnlyList<BaseItem> items, BaseItem parent, ItemUpdateType updateReason)
+        {
             if (ItemUpdated is not null)
             {
                 foreach (var item in items)
