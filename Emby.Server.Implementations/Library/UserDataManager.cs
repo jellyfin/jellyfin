@@ -93,7 +93,7 @@ namespace Emby.Server.Implementations.Library
 
             transaction.Commit();
 
-            var userId = user.InternalId;
+            var userId = user.Id;
             var cacheKey = GetCacheKey(userId, item.Id);
             _cache.AddOrUpdate(cacheKey, userData);
             item.UserData = dbContext.UserData.Where(e => e.ItemId == item.Id).AsNoTracking().ToArray(); // rehydrate the cached userdata
@@ -201,7 +201,7 @@ namespace Emby.Server.Implementations.Library
 
             foreach (var item in items)
             {
-                var cacheKey = GetCacheKey(user.InternalId, item.Id);
+                var cacheKey = GetCacheKey(user.Id, item.Id);
                 if (_cache.TryGet(cacheKey, out var cachedData))
                 {
                     result[item.Id] = cachedData;
@@ -252,7 +252,7 @@ namespace Emby.Server.Implementations.Library
                 }
 
                 result[item.Id] = userData;
-                var cacheKey = GetCacheKey(user.InternalId, item.Id);
+                var cacheKey = GetCacheKey(user.Id, item.Id);
                 _cache.AddOrUpdate(cacheKey, userData);
             }
 
@@ -360,9 +360,10 @@ namespace Emby.Server.Implementations.Library
         /// Gets the internal key.
         /// </summary>
         /// <returns>System.String.</returns>
-        private static string GetCacheKey(long internalUserId, Guid itemId)
+        private static string GetCacheKey(Guid userId, Guid itemId)
         {
-            return internalUserId.ToString(CultureInfo.InvariantCulture) + "-" + itemId.ToString("N", CultureInfo.InvariantCulture);
+            // Keyed by the user's Guid: a new user can get the InternalId of a deleted one.
+            return userId.ToString("N", CultureInfo.InvariantCulture) + "-" + itemId.ToString("N", CultureInfo.InvariantCulture);
         }
 
         /// <inheritdoc />
@@ -553,7 +554,7 @@ namespace Emby.Server.Implementations.Library
 
             dbContext.SaveChanges();
 
-            var cacheKey = GetCacheKey(user.InternalId, item.Id);
+            var cacheKey = GetCacheKey(user.Id, item.Id);
             if (_cache.TryGet(cacheKey, out var cached))
             {
                 cached.AudioStreamIndex = null;
