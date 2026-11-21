@@ -861,6 +861,8 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ItemId", "StartTicks");
+
                     b.ToTable("MediaSegments");
 
                     b.HasAnnotation("Sqlite:UseSqlReturningClause", false);
