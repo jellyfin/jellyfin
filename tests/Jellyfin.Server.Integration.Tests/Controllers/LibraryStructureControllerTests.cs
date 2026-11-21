@@ -23,12 +23,12 @@ using Xunit.v3.Priority;
 
 namespace Jellyfin.Server.Integration.Tests.Controllers;
 
+[Collection("Controller collection")]
 [TestCaseOrderer(typeof(PriorityOrderer))]
-public sealed class LibraryStructureControllerTests : IClassFixture<JellyfinApplicationFactory>
+public sealed class LibraryStructureControllerTests
 {
     private readonly JellyfinApplicationFactory _factory;
     private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
-    private static string? _accessToken;
 
     public LibraryStructureControllerTests(JellyfinApplicationFactory factory)
     {
@@ -42,7 +42,7 @@ public sealed class LibraryStructureControllerTests : IClassFixture<JellyfinAppl
         const string Name = "stale-cache-test";
 
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+        client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
         var directoryService = _factory.Services.GetRequiredService<IDirectoryService>();
         var rootFolderPath = _factory.Services.GetRequiredService<IServerApplicationPaths>().DefaultUserViewsPath;
@@ -79,7 +79,7 @@ public sealed class LibraryStructureControllerTests : IClassFixture<JellyfinAppl
     public async Task Post_NewVirtualFolder_NotFound()
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+        client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
         var body = new AddVirtualFolderDto()
         {
@@ -98,7 +98,7 @@ public sealed class LibraryStructureControllerTests : IClassFixture<JellyfinAppl
     public async Task UpdateLibraryOptions_Invalid_NotFound()
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+        client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
         var body = new UpdateLibraryOptionsDto()
         {
@@ -115,7 +115,7 @@ public sealed class LibraryStructureControllerTests : IClassFixture<JellyfinAppl
     public async Task UpdateLibraryOptions_Valid_Success()
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+        client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
         var createBody = new AddVirtualFolderDto()
         {
@@ -157,7 +157,7 @@ public sealed class LibraryStructureControllerTests : IClassFixture<JellyfinAppl
     public async Task DeleteLibrary_Invalid_NotFound()
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+        client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
         using var response = await client.DeleteAsync("Library/VirtualFolders?name=doesntExist", TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -173,7 +173,7 @@ public sealed class LibraryStructureControllerTests : IClassFixture<JellyfinAppl
     public async Task DeleteLibrary_PathTraversal_NotFound(string name)
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+        client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
         using var response = await client.DeleteAsync($"Library/VirtualFolders?name={Uri.EscapeDataString(name)}", TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -189,7 +189,7 @@ public sealed class LibraryStructureControllerTests : IClassFixture<JellyfinAppl
     public async Task RenameLibrary_PathTraversalNewName_BadRequest(string newName)
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+        client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
         using var response = await client.PostAsync(
             $"Library/VirtualFolders/Name?name=test&newName={Uri.EscapeDataString(newName)}",
@@ -206,7 +206,7 @@ public sealed class LibraryStructureControllerTests : IClassFixture<JellyfinAppl
     public async Task RenameLibrary_PathTraversalName_NotFound(string name)
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+        client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
         using var response = await client.PostAsync(
             $"Library/VirtualFolders/Name?name={Uri.EscapeDataString(name)}&newName=renamed",
@@ -220,7 +220,7 @@ public sealed class LibraryStructureControllerTests : IClassFixture<JellyfinAppl
     public async Task DeleteLibrary_Valid_Success()
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+        client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
         using var response = await client.DeleteAsync("Library/VirtualFolders?name=test&refreshLibrary=true", TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -234,7 +234,7 @@ public sealed class LibraryStructureControllerTests : IClassFixture<JellyfinAppl
         const string NewName = "rename-prefs-new";
 
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+        client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
         var libraryManager = _factory.Services.GetRequiredService<ILibraryManager>();
         var userManager = _factory.Services.GetRequiredService<IUserManager>();
@@ -301,6 +301,9 @@ public sealed class LibraryStructureControllerTests : IClassFixture<JellyfinAppl
 
         using var cleanup = await client.DeleteAsync($"Library/VirtualFolders?name={NewName}&refreshLibrary=false", TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.NoContent, cleanup.StatusCode);
+
+        // The server is shared with the other controller tests, which count the users.
+        await userManager.DeleteUserAsync(user.Id);
     }
 
     [Fact]
@@ -310,7 +313,7 @@ public sealed class LibraryStructureControllerTests : IClassFixture<JellyfinAppl
         const string Name = "rename-case-test";
 
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+        client.DefaultRequestHeaders.AddAuthHeader(await _factory.GetAccessTokenAsync());
 
         var libraryManager = _factory.Services.GetRequiredService<ILibraryManager>();
         var userManager = _factory.Services.GetRequiredService<IUserManager>();
@@ -342,5 +345,8 @@ public sealed class LibraryStructureControllerTests : IClassFixture<JellyfinAppl
 
         using var cleanup = await client.DeleteAsync($"Library/VirtualFolders?name={Name.ToUpperInvariant()}&refreshLibrary=false", TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.NoContent, cleanup.StatusCode);
+
+        // The server is shared with the other controller tests, which count the users.
+        await userManager.DeleteUserAsync(user.Id);
     }
 }
