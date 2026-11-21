@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Emby.Naming.Common;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
@@ -15,6 +16,7 @@ namespace MediaBrowser.LocalMetadata.Images
     public class InternalMetadataFolderImageProvider : ILocalImageProvider, IHasOrder
     {
         private readonly IFileSystem _fileSystem;
+        private readonly NamingOptions _namingOptions;
         private readonly ILogger<InternalMetadataFolderImageProvider> _logger;
 
         /// <summary>
@@ -22,12 +24,15 @@ namespace MediaBrowser.LocalMetadata.Images
         /// </summary>
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
         /// <param name="logger">Instance of the <see cref="ILogger{InternalMetadataFolderImageProvider}"/> interface.</param>
+        /// <param name="namingOptions">The library naming rules.</param>
         public InternalMetadataFolderImageProvider(
             IFileSystem fileSystem,
-            ILogger<InternalMetadataFolderImageProvider> logger)
+            ILogger<InternalMetadataFolderImageProvider> logger,
+            NamingOptions namingOptions)
         {
             _fileSystem = fileSystem;
             _logger = logger;
+            _namingOptions = namingOptions;
         }
 
         /// Make sure this is last so that all other locations are scanned first
@@ -76,7 +81,7 @@ namespace MediaBrowser.LocalMetadata.Images
 
             try
             {
-                return new LocalImageProvider(_fileSystem).GetImages(item, path, directoryService);
+                return new LocalImageProvider(_fileSystem, _namingOptions).GetImages(item, path, directoryService);
             }
             catch (IOException ex)
             {
