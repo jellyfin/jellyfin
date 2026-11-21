@@ -214,7 +214,7 @@ namespace MediaBrowser.Providers.MediaInfo
             };
 
             string extractedAttachmentPath =
-                await _mediaEncoder.ExtractVideoImage(item.Path, item.Container, mediaSource, null, attachmentStream.Index, format, cancellationToken)
+                await _mediaEncoder.ExtractVideoAttachment(item.Path, item.Container, mediaSource, attachmentStream.FileName, attachmentStream.Index, format, cancellationToken)
                     .ConfigureAwait(false);
 
             return new DynamicImageResponse
