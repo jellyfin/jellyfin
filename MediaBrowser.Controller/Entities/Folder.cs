@@ -152,6 +152,11 @@ namespace MediaBrowser.Controller.Entities
 
         protected virtual bool FilterLinkedChildrenPerUser => false;
 
+        /// <summary>
+        /// Gets a value indicating whether metadata refresh should use the loaded children, because virtual children are never added to the accessible children.
+        /// </summary>
+        protected virtual bool RefreshesLoadedChildren => false;
+
         [JsonIgnore]
         protected override bool SupportsOwnedItems => base.SupportsOwnedItems || SupportsShortcutChildren;
 
@@ -806,7 +811,15 @@ namespace MediaBrowser.Controller.Entities
                         validChildren = Children.ToList();
                     }
 
-                    await RefreshMetadataRecursive(accessibleChildren, refreshOptions, recursive, innerProgress, cancellationToken).ConfigureAwait(false);
+                    // Virtual seasons (episodes with no season folder on disk) never populate accessibleChildren,
+                    // so refresh their loaded children instead. Other virtual folders keep the previous behaviour.
+                    IList<BaseItem> childrenToRefresh = accessibleChildren;
+                    if (!IsFileProtocol && RefreshesLoadedChildren)
+                    {
+                        childrenToRefresh = validChildren;
+                    }
+
+                    await RefreshMetadataRecursive(childrenToRefresh, refreshOptions, recursive, innerProgress, cancellationToken).ConfigureAwait(false);
                 }
             }
         }

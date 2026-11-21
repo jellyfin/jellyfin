@@ -13,6 +13,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LibraryTaskScheduler;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaSegments;
 using MediaBrowser.Controller.Providers;
@@ -71,6 +72,28 @@ public class BaseItemTests
             BaseItem.ItemRepository = previousRepository;
             BaseItem.Logger = previousLogger;
             BaseItem.MediaSourceManager = previousMediaSourceManager;
+        }
+    }
+
+    [Fact]
+    public async Task ValidateChildren_VirtualFolder_RefreshesChildMetadata()
+    {
+        var previousProviderManager = BaseItem.ProviderManager;
+        var previousScheduler = Folder.LimitedConcurrencyLibraryScheduler;
+        var providerManager = new Mock<MediaBrowser.Controller.Providers.IProviderManager>();
+        try
+        {
+            BaseItem.ProviderManager = providerManager.Object;
+            Folder.LimitedConcurrencyLibraryScheduler = new InlineLibraryScheduler();
+            var child = new RecordingContainerFolder { Id = Guid.NewGuid() };
+            var folder = new VirtualSeason(child) { Id = Guid.NewGuid() };
+            await folder.ValidateChildren(new Progress<double>(), new MetadataRefreshOptions(new Mock<IDirectoryService>().Object), recursive: true, cancellationToken: TestContext.Current.CancellationToken).ConfigureAwait(true);
+            Assert.Equal(1, child.RefreshCount);
+        }
+        finally
+        {
+            BaseItem.ProviderManager = previousProviderManager;
+            Folder.LimitedConcurrencyLibraryScheduler = previousScheduler;
         }
     }
 
@@ -757,6 +780,36 @@ public class BaseItemTests
         var ids = (Guid[])method!.Invoke(primary, null)!;
 
         Assert.Equal([primary.Id, alt1.Id, alt2.Id], ids);
+    }
+
+    private sealed class InlineLibraryScheduler : ILimitedConcurrencyLibraryScheduler
+    {
+        public async Task Enqueue<T>(T[] data, Func<T, IProgress<double>, Task> worker, IProgress<double> progress, CancellationToken cancellationToken)
+        {
+            foreach (var item in data)
+            {
+                await worker(item, progress).ConfigureAwait(false);
+            }
+        }
+    }
+
+    private sealed class VirtualSeason(BaseItem child) : Season
+    {
+        protected override IReadOnlyList<BaseItem> LoadChildren()
+        {
+            return [child];
+        }
+    }
+
+    private sealed class RecordingContainerFolder : Folder, IMetadataContainer
+    {
+        public int RefreshCount { get; private set; }
+
+        public Task RefreshAllMetadata(MetadataRefreshOptions refreshOptions, IProgress<double> progress, CancellationToken cancellationToken)
+        {
+            RefreshCount++;
+            return Task.CompletedTask;
+        }
     }
 
     private sealed class FailingEnumerationFolder(bool failAfterFirstChild, bool accessDenied) : Folder
