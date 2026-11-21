@@ -20,6 +20,16 @@ public static class MatroskaKeyframeExtractor
     public static KeyframeData GetKeyframeData(string filePath)
     {
         using var stream = File.OpenRead(filePath);
+        return GetKeyframeData(stream);
+    }
+
+    /// <summary>
+    /// Extracts the keyframes in ticks (scaled using the container timestamp scale) from the matroska stream.
+    /// </summary>
+    /// <param name="stream">The matroska stream.</param>
+    /// <returns>An instance of <see cref="KeyframeData"/>.</returns>
+    internal static KeyframeData GetKeyframeData(Stream stream)
+    {
         using var reader = new EbmlReader(stream);
 
         var seekHead = reader.ReadSeekHead();
@@ -52,14 +62,23 @@ public static class MatroskaKeyframeExtractor
             // Mandatory element
             reader.FindElement(MatroskaConstants.CueTrackPositions);
             reader.EnterContainer();
-            if (reader.FindElement(MatroskaConstants.CuePointTrackNumber))
+            var hasCueReference = false;
+            while (reader.ReadNext())
             {
-                trackNumber = reader.ReadUInt();
+                if (reader.ElementId.EncodedValue == MatroskaConstants.CuePointTrackNumber)
+                {
+                    trackNumber = reader.ReadUInt();
+                }
+                else if (reader.ElementId.EncodedValue == MatroskaConstants.CueReference)
+                {
+                    // CueReference is only present on non-keyframe cue points.
+                    hasCueReference = true;
+                }
             }
 
             reader.LeaveContainer();
 
-            if (trackNumber == videoTrackNumber)
+            if (trackNumber == videoTrackNumber && !hasCueReference)
             {
                 keyframes.Add(ScaleToTicks(cueTime, info.TimestampScale));
             }

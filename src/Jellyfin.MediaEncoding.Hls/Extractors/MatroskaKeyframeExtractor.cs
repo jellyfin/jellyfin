@@ -9,6 +9,9 @@ namespace Jellyfin.MediaEncoding.Hls.Extractors;
 /// <inheritdoc />
 public class MatroskaKeyframeExtractor : IKeyframeExtractor
 {
+    private const int MinKeyframesForIntervalCheck = 10;
+    private static readonly long _minAverageKeyframeIntervalTicks = TimeSpan.FromMilliseconds(250).Ticks;
+
     private readonly ILogger<MatroskaKeyframeExtractor> _logger;
 
     /// <summary>
@@ -34,7 +37,19 @@ public class MatroskaKeyframeExtractor : IKeyframeExtractor
 
         try
         {
-            keyframeData = Extractor.GetKeyframeData(filePath);
+            var extracted = Extractor.GetKeyframeData(filePath);
+            if (!HasPlausibleKeyframeInterval(extracted, out var averageIntervalTicks))
+            {
+                _logger.LogWarning(
+                    "Matroska cues in {FilePath} appear to index non-keyframes (average interval {AverageIntervalMs:F1} ms across {CueCount} cue points); skipping metadata-based keyframe extraction",
+                    filePath,
+                    TimeSpan.FromTicks(averageIntervalTicks).TotalMilliseconds,
+                    extracted.KeyframeTicks.Count);
+                keyframeData = null;
+                return false;
+            }
+
+            keyframeData = extracted;
             return keyframeData.KeyframeTicks.Count > 0;
         }
         catch (Exception ex)
@@ -44,5 +59,19 @@ public class MatroskaKeyframeExtractor : IKeyframeExtractor
 
         keyframeData = null;
         return false;
+    }
+
+    internal static bool HasPlausibleKeyframeInterval(KeyframeData keyframeData, out long averageIntervalTicks)
+    {
+        var count = keyframeData.KeyframeTicks.Count;
+        if (count < MinKeyframesForIntervalCheck)
+        {
+            averageIntervalTicks = 0;
+            return true;
+        }
+
+        var spanTicks = keyframeData.KeyframeTicks[^1] - keyframeData.KeyframeTicks[0];
+        averageIntervalTicks = spanTicks / (count - 1);
+        return averageIntervalTicks >= _minAverageKeyframeIntervalTicks;
     }
 }

@@ -27,4 +27,5 @@ public static class MatroskaConstants
     internal const ulong CuePoint = 0xBB;
     internal const ulong CueTrackPositions = 0xB7;
     internal const ulong CuePointTrackNumber = 0xF7;
+    internal const ulong CueReference = 0xDB;
 }
