@@ -316,6 +316,8 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
         [InlineData("ID-D", "ID", 18, null)] // TMDB style country prefix
         [InlineData("ID-D", "US", 18, null)] // Country prefix resolved via the separator fallback
         [InlineData("P", "US", 1000, null)] // Ambiguous outside Indonesia, preferred as the Portuguese "Pornográfico"
+        [InlineData("R15+", "JP", 15, 1)]
+        [InlineData("R18+", "JP", 18, null)]
         public async Task GetRatingLevel_GivenValidString_Success(string value, string countryCode, int? expectedScore, int? expectedSubScore)
         {
             var localizationManager = Setup(new ServerConfiguration()
@@ -390,6 +392,7 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
             Assert.Null(localizationManager.GetRatingScore("n/a"));
             Assert.Null(localizationManager.GetRatingScore("N/A"));
             Assert.Null(localizationManager.GetRatingScore(" n/a "));
+            Assert.Null(localizationManager.GetRatingScore("UR"));
         }
 
         [Theory]
