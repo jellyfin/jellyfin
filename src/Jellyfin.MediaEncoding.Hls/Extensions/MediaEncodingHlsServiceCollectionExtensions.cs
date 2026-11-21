@@ -20,6 +20,7 @@ public static class MediaEncodingHlsServiceCollectionExtensions
     {
         serviceCollection.AddSingletonWithDecorator(typeof(FfProbeKeyframeExtractor));
         serviceCollection.AddSingletonWithDecorator(typeof(MatroskaKeyframeExtractor));
+        serviceCollection.AddSingletonWithDecorator(typeof(Mp4KeyframeExtractor));
         serviceCollection.AddSingleton<IDynamicHlsPlaylistGenerator, DynamicHlsPlaylistGenerator>();
         return serviceCollection;
     }
