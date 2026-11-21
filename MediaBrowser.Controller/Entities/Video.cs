@@ -520,6 +520,13 @@ namespace MediaBrowser.Controller.Entities
                     VideoType = newVideo.VideoType;
                     updateType |= ItemUpdateType.MetadataImport;
                 }
+
+                // A failed detection leaves the resolved value empty, don't let it clear a known type.
+                if (newVideo.IsoType.HasValue && IsoType != newVideo.IsoType)
+                {
+                    IsoType = newVideo.IsoType;
+                    updateType |= ItemUpdateType.MetadataImport;
+                }
             }
 
             return updateType;

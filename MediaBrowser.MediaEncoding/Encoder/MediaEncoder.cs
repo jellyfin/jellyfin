@@ -52,6 +52,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// </summary>
         internal const int DefaultHdrImageExtractionTimeout = 20000;
 
+        // FFmpeg's mpegts seeking fails on single subfile inputs of a few gigabytes, while the same data split into pieces seeks fine.
+        private const long MaxSubfileLength = 1024L * 1024 * 1024;
+
         private readonly ILogger<MediaEncoder> _logger;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IFileSystem _fileSystem;
@@ -1326,6 +1329,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <inheritdoc />
         public void GenerateConcatConfig(MediaSourceInfo source, string concatFilePath)
         {
+            if (source.VideoType == VideoType.Iso && source.IsoType == IsoType.BluRay)
+            {
+                GenerateBlurayIsoConcatConfig(source.Path, concatFilePath);
+                return;
+            }
+
             // Get all playable files
             IReadOnlyList<string> files;
             var videoType = source.VideoType;
@@ -1367,6 +1376,57 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 // Add duration stanza to concat configuration
                 sw.WriteLine("duration {0}", duration);
+            }
+        }
+
+        /// <summary>
+        /// Gets the FFmpeg inputs which read a clip out of a Blu-ray ISO image.
+        /// </summary>
+        /// <param name="isoPath">The path to the image.</param>
+        /// <param name="clip">The clip.</param>
+        /// <returns>The inputs in playback order.</returns>
+        internal static IEnumerable<string> GetBlurayIsoClipInputs(string isoPath, BlurayIsoClip clip)
+        {
+            foreach (var (start, end) in clip.Extents)
+            {
+                for (var position = start; position < end; position += MaxSubfileLength)
+                {
+                    yield return string.Create(
+                        CultureInfo.InvariantCulture,
+                        $"subfile,,start,{position},end,{Math.Min(position + MaxSubfileLength, end)},,:file:{isoPath}");
+                }
+            }
+        }
+
+        private void GenerateBlurayIsoConcatConfig(string isoPath, string concatFilePath)
+        {
+            IReadOnlyList<BlurayIsoClip> clips;
+            try
+            {
+                clips = _blurayExaminer.GetIsoClips(isoPath);
+            }
+            catch (Exception ex)
+            {
+                // Without a config the image is played through FFmpeg's bluray protocol
+                _logger.LogError(ex, "Error reading Blu-ray ISO image: {Path}", isoPath);
+                return;
+            }
+
+            if (clips.Count == 0)
+            {
+                _logger.LogWarning("No usable playlist found in Blu-ray ISO image: {Path}", isoPath);
+                return;
+            }
+
+            Directory.CreateDirectory(Path.GetDirectoryName(concatFilePath));
+            using var sw = new FormattingStreamWriter(concatFilePath, CultureInfo.InvariantCulture);
+            for (var i = 0; i < clips.Count; i++)
+            {
+                var listPath = string.Create(CultureInfo.InvariantCulture, $"{concatFilePath}.{i}.list");
+                File.WriteAllLines(listPath, GetBlurayIsoClipInputs(isoPath, clips[i]));
+
+                sw.WriteLine("file 'concatf:{0}'", listPath.Replace("'", @"'\''", StringComparison.Ordinal));
+                sw.WriteLine("duration {0}", clips[i].DurationSeconds);
             }
         }
 

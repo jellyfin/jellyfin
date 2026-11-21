@@ -142,6 +142,11 @@ namespace MediaBrowser.Providers.MediaInfo
                 else
                 {
                     mediaInfoResult = await GetMediaInfo(item, cancellationToken).ConfigureAwait(false);
+
+                    if (item.VideoType == VideoType.Iso && item.IsoType == IsoType.BluRay)
+                    {
+                        ApplyBlurayIsoPlaylist(item.Path, mediaInfoResult);
+                    }
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();
@@ -363,6 +368,26 @@ namespace MediaBrowser.Providers.MediaInfo
                 blurayVideoStream.ColorPrimaries = ffmpegVideoStream.ColorPrimaries;
                 blurayVideoStream.BitDepth = ffmpegVideoStream.BitDepth;
                 blurayVideoStream.PixelFormat = ffmpegVideoStream.PixelFormat;
+            }
+        }
+
+        // FFmpeg computes the duration of a playlist from the timestamps of its first and last packet,
+        // which is wrong for discs whose clips each restart their timeline.
+        private void ApplyBlurayIsoPlaylist(string path, Model.MediaInfo.MediaInfo mediaInfo)
+        {
+            try
+            {
+                var clips = _blurayExaminer.GetIsoClips(path);
+                var duration = clips.Sum(c => c.DurationSeconds);
+                if (duration > 0)
+                {
+                    mediaInfo.RunTimeTicks = TimeSpan.FromSeconds(duration).Ticks;
+                    mediaInfo.Bitrate = (int)Math.Min(int.MaxValue, clips.Sum(c => c.Extents.Sum(e => e.End - e.Start)) * 8 / duration);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error reading Blu-ray ISO image: {Path}", path);
             }
         }
 
