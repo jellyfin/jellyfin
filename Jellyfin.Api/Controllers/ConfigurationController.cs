@@ -4,6 +4,7 @@ using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Branding;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.LiveTv;
@@ -22,14 +23,19 @@ namespace Jellyfin.Api.Controllers;
 public class ConfigurationController : BaseJellyfinApiController
 {
     private readonly IServerConfigurationManager _configurationManager;
+    private readonly IMediaEncoder _mediaEncoder;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ConfigurationController"/> class.
     /// </summary>
     /// <param name="configurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
-    public ConfigurationController(IServerConfigurationManager configurationManager)
+    /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
+    public ConfigurationController(
+        IServerConfigurationManager configurationManager,
+        IMediaEncoder mediaEncoder)
     {
         _configurationManager = configurationManager;
+        _mediaEncoder = mediaEncoder;
     }
 
     /// <summary>
@@ -97,6 +103,29 @@ public class ConfigurationController : BaseJellyfinApiController
     {
         _configurationManager.SaveConfiguration("encoding", ConfigurationMapper.MapToInternal(configuration));
         return NoContent();
+    }
+
+    /// <summary>
+    /// Gets the encoding options with the hardware acceleration recommended for this server, without saving them.
+    /// </summary>
+    /// <response code="200">Encoding options returned.</response>
+    /// <response code="404">FFmpeg can't encode with a supported GPU.</response>
+    /// <returns>The encoding options with the recommended hardware acceleration.</returns>
+    [HttpGet("Configuration/Encoding/Recommended")]
+    [Authorize(Policy = Policies.RequiresElevation)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public ActionResult<EncodingOptionsDto> GetRecommendedEncodingOptions()
+    {
+        // Work on a copy, the stored options only change when the administrator saves them
+        var options = ConfigurationMapper.MapToInternal(ConfigurationMapper.MapToDto(_configurationManager.GetEncodingOptions()));
+
+        if (!_mediaEncoder.ApplyRecommendedHardwareAcceleration(options))
+        {
+            return NotFound();
+        }
+
+        return ConfigurationMapper.MapToDto(options);
     }
 
     /// <summary>
