@@ -1,10 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Extensions;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Api;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller.Configuration;
@@ -180,6 +187,59 @@ public class PackageController : BaseJellyfinApiController
         _serverConfigurationManager.Configuration.PluginRepositories = repositoryInfos;
         _serverConfigurationManager.SaveConfiguration();
         return NoContent();
+    }
+
+    /// <summary>
+    /// Validates a plugin repository without changing the configured repositories.
+    /// </summary>
+    /// <param name="repositoryInfo">The repository to validate.</param>
+    /// <param name="httpClientFactory">The HTTP client factory.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <response code="204">The repository manifest is valid.</response>
+    /// <response code="400">The repository could not be reached or its manifest is invalid.</response>
+    /// <returns>The validation result.</returns>
+    [HttpPost("Repositories/Validate")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult> ValidateRepository(
+        [FromBody, Required] RepositoryInfo repositoryInfo,
+        [FromServices] IHttpClientFactory httpClientFactory,
+        CancellationToken cancellationToken)
+    {
+        if (!Uri.TryCreate(repositoryInfo.Url, UriKind.Absolute, out var uri)
+            || (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+        {
+            return BadRequest("The repository URL must be an absolute HTTP or HTTPS URL.");
+        }
+
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeout.CancelAfter(TimeSpan.FromSeconds(15));
+
+        try
+        {
+            var packages = await httpClientFactory.CreateClient(NamedClient.Default)
+                .GetFromJsonAsync<PackageInfo[]>(uri, JsonDefaults.Options, timeout.Token).ConfigureAwait(false);
+
+            // Empty repositories and plugins targeting a newer server are valid. Reject
+            // null entries that the catalog reader cannot process.
+            if (packages is null || packages.Any(package => package is null
+                || package.Versions is null || package.Versions.Any(version => version is null
+                    || (!string.IsNullOrEmpty(version.TargetAbi) && !Version.TryParse(version.TargetAbi, out _)))))
+            {
+                return BadRequest("The repository manifest is invalid.");
+            }
+
+            return NoContent();
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            return BadRequest("The repository did not respond in time.");
+        }
+        catch (Exception ex) when (ex is HttpRequestException or IOException or JsonException or NotSupportedException
+            or FormatException or ArgumentException or OverflowException)
+        {
+            return BadRequest("The repository could not be reached or its manifest is invalid.");
+        }
     }
 
     private bool IsBundledPlugin(string name, Guid? assemblyGuid)
