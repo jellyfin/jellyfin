@@ -53,9 +53,14 @@ namespace MediaBrowser.Controller.LiveTv
         /// <summary>
         /// Gets or sets a value indicating whether this instance is sports.
         /// </summary>
+        /// <remarks>Stored as the "Sports" tag, which is what channel queries filter on.</remarks>
         /// <value><c>true</c> if this instance is sports; otherwise, <c>false</c>.</value>
         [JsonIgnore]
-        public bool IsSports { get; set; }
+        public bool IsSports
+        {
+            get => Tags.Contains("Sports", StringComparison.OrdinalIgnoreCase);
+            set => SetTag("Sports", value);
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is series.
@@ -67,9 +72,14 @@ namespace MediaBrowser.Controller.LiveTv
         /// <summary>
         /// Gets or sets a value indicating whether this instance is news.
         /// </summary>
+        /// <remarks>Stored as the "News" tag, which is what channel queries filter on.</remarks>
         /// <value><c>true</c> if this instance is news; otherwise, <c>false</c>.</value>
         [JsonIgnore]
-        public bool IsNews { get; set; }
+        public bool IsNews
+        {
+            get => Tags.Contains("News", StringComparison.OrdinalIgnoreCase);
+            set => SetTag("News", value);
+        }
 
         /// <summary>
         /// Gets a value indicating whether this instance is kids.
@@ -152,6 +162,18 @@ namespace MediaBrowser.Controller.LiveTv
         public override bool CanDelete()
         {
             return false;
+        }
+
+        private void SetTag(string name, bool value)
+        {
+            if (value)
+            {
+                this.AddTag(name);
+            }
+            else
+            {
+                this.RemoveTag(name);
+            }
         }
     }
 }
