@@ -235,6 +235,7 @@ public class DynamicHlsHelper
             var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
 
             // Provide AV1 and HEVC SDR entrances for backward compatibility.
+            var isSdrEntranceAdded = false;
             foreach (var sdrVideoCodec in new[] { "av1", "hevc" })
             {
                 var isAv1EncodingAllowed = encodingOptions.AllowAv1Encoding
@@ -261,14 +262,17 @@ public class DynamicHlsHelper
 
                     // HACK: Use the same bitrate so that the client can choose by other attributes, such as color range.
                     AppendPlaylist(builder, state, sdrVideoUrl, totalBitrate, subtitleGroup);
+                    isSdrEntranceAdded = true;
 
                     // Restore the video codec
                     state.OutputVideoCodec = "copy";
                 }
             }
 
-            // Provide H.264 SDR entrance for backward compatibility.
-            if (EncodingHelper.IsCopyCodec(state.OutputVideoCodec)
+            // Provide H.264 SDR entrance for backward compatibility,
+            // but only if no AV1 or HEVC SDR entrance is already present
+            if (!isSdrEntranceAdded
+                && EncodingHelper.IsCopyCodec(state.OutputVideoCodec)
                 && state.VideoStream.VideoRange == VideoRange.HDR)
             {
                 // Force H.264 and disable video stream copy.
