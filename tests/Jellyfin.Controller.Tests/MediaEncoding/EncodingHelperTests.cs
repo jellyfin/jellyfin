@@ -12,6 +12,7 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Session;
 using Moq;
 using Xunit;
 
@@ -319,6 +320,27 @@ public class EncodingHelperTests
 
         Assert.DoesNotContain("-ac ", args, StringComparison.Ordinal);
         Assert.Contains("pan=stereo", args, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(TranscodingJobType.Hls, "mp4", "mp3", false)]
+    [InlineData(TranscodingJobType.Hls, "ts", "mp3", true)]
+    [InlineData(TranscodingJobType.Hls, "mp4", "aac", true)]
+    [InlineData(TranscodingJobType.Progressive, "mp4", "mp3", true)]
+    public void CanStreamCopyAudio_Mp3IntoHlsFmp4_IsReEncoded(TranscodingJobType jobType, string segmentContainer, string codec, bool expected)
+    {
+        // Workaround for https://code.ffmpeg.org/FFmpeg/FFmpeg/issues/26006, see EncodingHelper.IsMp3CopyIntoHlsFmp4.
+        var audio = new MediaStream { Index = 1, Type = MediaStreamType.Audio, Codec = codec, Channels = 2 };
+        var state = new EncodingJobInfo(jobType)
+        {
+            AudioStream = audio,
+            BaseRequest = new VideoRequestDto { SegmentContainer = segmentContainer, AudioCodec = codec },
+        };
+
+        var canCopy = CreateHelper().CanStreamCopyAudio(state, audio, [codec], out var reasons);
+
+        Assert.Equal(expected, canCopy);
+        Assert.Equal(expected ? 0 : TranscodeReason.AudioCodecNotSupported, reasons);
     }
 
     private static EncodingJobInfo BuildAudioState(string audioCodec, int requestedSampleRate, string? outputContainer = null)

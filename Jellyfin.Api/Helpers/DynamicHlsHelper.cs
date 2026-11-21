@@ -344,6 +344,8 @@ public class DynamicHlsHelper
 
     private StringBuilder AppendPlaylist(StringBuilder builder, StreamState state, string url, int bitrate, string? subtitleGroup)
     {
+        var audioGroup = AppendAudioRendition(builder, state, url);
+
         var playlistBuilder = new StringBuilder();
         playlistBuilder.Append("#EXT-X-STREAM-INF:BANDWIDTH=")
             .Append(bitrate.ToString(CultureInfo.InvariantCulture))
@@ -367,11 +369,72 @@ public class DynamicHlsHelper
                 .Append('"');
         }
 
+        if (audioGroup is not null)
+        {
+            playlistBuilder.Append(",AUDIO=\"")
+                .Append(audioGroup)
+                .Append('"');
+        }
+
         playlistBuilder.Append(Environment.NewLine);
         playlistBuilder.AppendLine(url);
         builder.Append(playlistBuilder);
 
         return playlistBuilder;
+    }
+
+    /// <summary>
+    /// Appends an EXT-X-MEDIA audio rendition for a video variant when the audio is served separately from the video.
+    /// Each variant gets its own group because its audio playlist must carry the same query (and so restart the
+    /// same transcode) as the variant's video playlist.
+    /// </summary>
+    /// <param name="builder">StringBuilder for the master playlist.</param>
+    /// <param name="state">StreamState of the current stream.</param>
+    /// <param name="url">Video playlist URL of the variant.</param>
+    /// <returns>The audio group id, or null if the audio isn't served as a separate rendition.</returns>
+    internal static string? AppendAudioRendition(StringBuilder builder, StreamState state, string url)
+    {
+        if (!state.EnableSeparateAudioRendition)
+        {
+            return null;
+        }
+
+        var groupId = "audio-" + url.GetMD5().ToString("N", CultureInfo.InvariantCulture)[..8];
+        var groupIdAttribute = "GROUP-ID=\"" + groupId + "\"";
+        if (builder.ToString().Contains(groupIdAttribute, StringComparison.Ordinal))
+        {
+            return groupId;
+        }
+
+        var queryIndex = url.IndexOf('?', StringComparison.Ordinal);
+        var audioUrl = "audio.m3u8" + (queryIndex >= 0 ? url[queryIndex..] : string.Empty);
+
+        builder.Append("#EXT-X-MEDIA:TYPE=AUDIO,")
+            .Append(groupIdAttribute)
+            .Append(",NAME=\"")
+            .Append((state.AudioStream.DisplayTitle ?? "Audio").Replace('"', '\''))
+            .Append("\",DEFAULT=YES,AUTOSELECT=YES");
+
+        if (!string.IsNullOrEmpty(state.AudioStream.Language))
+        {
+            builder.Append(",LANGUAGE=\"")
+                .Append(state.AudioStream.Language)
+                .Append('"');
+        }
+
+        if (state.OutputAudioChannels.HasValue)
+        {
+            builder.Append(",CHANNELS=\"")
+                .Append(state.OutputAudioChannels.Value.ToString(CultureInfo.InvariantCulture))
+                .Append('"');
+        }
+
+        builder.Append(",URI=\"")
+            .Append(audioUrl)
+            .Append('"')
+            .AppendLine();
+
+        return groupId;
     }
 
     /// <summary>
@@ -392,6 +455,8 @@ public class DynamicHlsHelper
         {
             return;
         }
+
+        var audioGroup = AppendAudioRendition(builder, state, url);
 
         var playlistBuilder = new StringBuilder();
         playlistBuilder.Append("#EXT-X-STREAM-INF:BANDWIDTH=")
@@ -425,6 +490,13 @@ public class DynamicHlsHelper
         {
             playlistBuilder.Append(",SUBTITLES=\"")
                 .Append(subtitleGroup)
+                .Append('"');
+        }
+
+        if (audioGroup is not null)
+        {
+            playlistBuilder.Append(",AUDIO=\"")
+                .Append(audioGroup)
                 .Append('"');
         }
 

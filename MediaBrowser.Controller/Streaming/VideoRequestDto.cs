@@ -20,4 +20,9 @@ public class VideoRequestDto : StreamingRequestDto
     /// Gets or sets a value indicating whether to enable trickplay images.
     /// </summary>
     public bool EnableTrickplay { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether HLS fMP4 output should serve the audio as a separate rendition.
+    /// </summary>
+    public bool SeparateAudioRendition { get; set; }
 }
