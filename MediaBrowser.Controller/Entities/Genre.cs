@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
+using MediaBrowser.Controller.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Entities
@@ -85,6 +86,8 @@ namespace MediaBrowser.Controller.Entities
         {
             var validName = normalizeName ? GetItemByNameFolderName(name) : name;
 
+            validName = SafeNameHelper.EnsureSafeName(
+                ConfigurationManager.ApplicationPaths.GenrePath, validName);
             return System.IO.Path.Combine(ConfigurationManager.ApplicationPaths.GenrePath, validName);
         }
 
