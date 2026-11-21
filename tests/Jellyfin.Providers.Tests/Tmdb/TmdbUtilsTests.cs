@@ -30,14 +30,25 @@ namespace Jellyfin.Providers.Tests.Tmdb
         }
 
         [Theory]
-        [InlineData("en", "en-US", "en-US")]
-        [InlineData("fr-CA", "fr-BE", "fr-CA")]
-        [InlineData("fr-CA", "fr", "fr-CA")]
-        [InlineData("de", "en-US", "de")]
-        [InlineData("", "en-US", "")]
-        public static void AdjustImageLanguage_Valid_Success(string imageLanguage, string requestLanguage, string? expected)
+        // A regional request is only answered with a region when the image contradicts it.
+        [InlineData("pt", "BR", "pt-BR", "pt-BR")]
+        [InlineData("pt", "PT", "pt-BR", "pt-PT")]
+        [InlineData("en", "GB", "en-US", "en-GB")]
+        [InlineData("en", "US", "en-US", "en-US")]
+        [InlineData("en", null, "en-US", "en-US")]
+        // TMDb files nearly every image under a region, which must not stop a plain request matching.
+        [InlineData("en", "US", "en", "en")]
+        [InlineData("pt", "PT", "pt", "pt")]
+        // An image in another language keeps its bare code, so the English fallback still resolves.
+        [InlineData("en", "US", "pt-BR", "en")]
+        [InlineData("de", "DE", "en-US", "de")]
+        // TMDb returns xx rather than an empty string for an image with no text.
+        [InlineData("xx", "US", "en-US", "")]
+        [InlineData("", "US", "en-US", "")]
+        [InlineData(null, null, "en-US", "")]
+        public static void GetImageLanguage_Valid_Success(string? imageLanguage, string? imageRegion, string? requestLanguage, string expected)
         {
-            Assert.Equal(expected, TmdbUtils.AdjustImageLanguage(imageLanguage, requestLanguage));
+            Assert.Equal(expected, TmdbUtils.GetImageLanguage(imageLanguage, imageRegion, requestLanguage));
         }
 
         [Theory]
@@ -206,6 +217,19 @@ namespace Jellyfin.Providers.Tests.Tmdb
                 {
                     "Off by one year", "Some Movie", 2011,
                     [Movie(1, "Some Movie", "Some Movie", 2015), Movie(2, "Some Movie", "Some Movie", 2010)],
+                    2
+                },
+                // M. Night Shyamalan's Split premiered at a festival in 2016 and was released in 2017, so the obscure
+                // 2016 film of the same name must not outrank it. Years one apart tie and TMDb's own ordering decides.
+                {
+                    "Split (2016)", "Split", 2016,
+                    [Movie(381288, "Split", "Split", 2017), Movie(358364, "Split", "Split", 2016)],
+                    381288
+                },
+                // Two years apart is a different film, so the tie only covers a year off by one.
+                {
+                    "Two years apart", "Some Movie", 2016,
+                    [Movie(1, "Some Movie", "Some Movie", 2018), Movie(2, "Some Movie", "Some Movie", 2016)],
                     2
                 },
                 // Nothing matches the name, so TMDb's own ordering is kept.

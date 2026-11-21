@@ -484,6 +484,15 @@ namespace MediaBrowser.Controller.Library
             string uniqueId);
 
         /// <summary>
+        /// Gets the identifier of a named user view.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="parentId">The parent identifier.</param>
+        /// <param name="viewType">Type of the view.</param>
+        /// <returns>The named view identifier.</returns>
+        Guid GetNamedViewId(User user, Guid parentId, CollectionType? viewType);
+
+        /// <summary>
         /// Gets the shadow view.
         /// </summary>
         /// <param name="parent">The parent.</param>
@@ -494,6 +503,15 @@ namespace MediaBrowser.Controller.Library
             BaseItem parent,
             CollectionType? viewType,
             string sortName);
+
+        /// <summary>
+        /// Gets the identifier of a shadow view.
+        /// </summary>
+        /// <param name="name">The view name.</param>
+        /// <param name="parentId">The parent identifier.</param>
+        /// <param name="viewType">Type of the view.</param>
+        /// <returns>The shadow view identifier.</returns>
+        Guid GetShadowViewId(string name, Guid parentId, CollectionType? viewType);
 
         /// <summary>
         /// Gets the season number from path.

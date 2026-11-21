@@ -25,6 +25,8 @@ namespace Jellyfin.Naming.Tests.TV
         [InlineData("Marvel's.Agents.of.S.H.I.E.L.D.", "Marvel's Agents of S.H.I.E.L.D.")]
         [InlineData("The.Show.S.H.O.W", "The Show S.H.O.W")]
         [InlineData("/some/path/Dawson's Creek", "Dawson's Creek")]
+        [InlineData("/media/Bunker.S03.1080p.PULSAR.WEB-DL.DDP5.1.Atmos.H.264-showWEB", "Bunker")]
+        [InlineData("/media/Outer.Colony.S01.1080p.NOVA.WEB-DL.DDP5.1.H.264.HUN.ENG-QUASAR", "Outer Colony")]
         public void SeriesResolverResolveTest(string path, string name)
         {
             var res = SeriesResolver.Resolve(_namingOptions, path);

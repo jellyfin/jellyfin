@@ -29,5 +29,15 @@
     "Default": "Լռելյայն",
     "Favorites": "Ընտրյալ",
     "Forced": "Ստիպուած",
-    "Genres": "Ոճ"
+    "Genres": "Ոճ",
+    "HeaderFavoriteEpisodes": "Սիրելի դրվագներ",
+    "HeaderFavoriteShows": "Սիրելի հաղորդումներ",
+    "HeaderLiveTV": "Ուղիղ եթեր",
+    "HeaderNextUp": "Հաջորդը",
+    "HomeVideos": "Տնային տեսանյութեր",
+    "LabelRunningTimeValue": "Տևողությունը: {0}",
+    "Latest": "Վերջինը",
+    "LyricDownloadFailureFromForItem": "Չհաջողվեց ներբեռնել {1}-ի երգի բառերը {0}-ից",
+    "MixedContent": "Խառը բովանդակություն",
+    "CleanupUserDataTaskDescription": "Մաքրում է օգտատիրոջ բոլոր տվյալները (դիտման կարգավիճակ, «սիրելի» նշում և այլն) այն մեդիաֆայլերից, որոնք առնվազն 90 օր է՝ առկա չեն։"
 }

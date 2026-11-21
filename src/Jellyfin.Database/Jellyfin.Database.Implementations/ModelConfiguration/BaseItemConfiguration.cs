@@ -35,9 +35,11 @@ public class BaseItemConfiguration : IEntityTypeConfiguration<BaseItemEntity>
 
         builder.HasIndex(e => e.Path);
         builder.HasIndex(e => e.ParentId);
-        builder.HasIndex(e => e.OwnerId);
+        builder.HasIndex(e => e.OwnerId)
+            .HasFilter("\"OwnerId\" IS NOT NULL");
         builder.HasIndex(e => e.Name);
-        builder.HasIndex(e => new { e.ExtraType, e.OwnerId });
+        builder.HasIndex(e => new { e.ExtraType, e.OwnerId })
+            .HasFilter("\"ExtraType\" IS NOT NULL");
         builder.HasIndex(e => e.PresentationUniqueKey);
         // covering index
         builder.HasIndex(e => new { e.TopParentId, e.Id });

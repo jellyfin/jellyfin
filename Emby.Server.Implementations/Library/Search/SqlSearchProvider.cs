@@ -10,6 +10,7 @@ using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
@@ -36,6 +37,7 @@ public class SqlSearchProvider : IInternalSearchProvider
     private readonly ILibraryManager _libraryManager;
     private readonly IUserManager _userManager;
     private readonly IItemQueryHelpers _queryHelpers;
+    private readonly IServerConfigurationManager _configurationManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SqlSearchProvider"/> class.
@@ -45,18 +47,21 @@ public class SqlSearchProvider : IInternalSearchProvider
     /// <param name="libraryManager">The library manager.</param>
     /// <param name="userManager">The user manager.</param>
     /// <param name="queryHelpers">The shared item query helpers.</param>
+    /// <param name="configurationManager">The configuration manager.</param>
     public SqlSearchProvider(
         IDbContextFactory<JellyfinDbContext> dbProvider,
         IItemTypeLookup itemTypeLookup,
         ILibraryManager libraryManager,
         IUserManager userManager,
-        IItemQueryHelpers queryHelpers)
+        IItemQueryHelpers queryHelpers,
+        IServerConfigurationManager configurationManager)
     {
         _dbProvider = dbProvider;
         _itemTypeLookup = itemTypeLookup;
         _libraryManager = libraryManager;
         _userManager = userManager;
         _queryHelpers = queryHelpers;
+        _configurationManager = configurationManager;
     }
 
     /// <inheritdoc/>
@@ -98,6 +103,12 @@ public class SqlSearchProvider : IInternalSearchProvider
         // so match it via a case-insensitive LIKE rather than a per-row case conversion
         // that may not translate to SQL on every provider.
         var likeOriginal = $"%{rawSearchTerm}%";
+
+        // Great benefit for users with metadata in non-latin script
+        // since SortName is among other things stored transliterated.
+        var sortNameShape = BaseItem.GetSortName(rawSearchTerm, true, _configurationManager.Configuration);
+        var likeSortName = string.IsNullOrWhiteSpace(sortNameShape) ? null : $"%{sortNameShape}%";
+
         var limit = query.Limit ?? DefaultSearchLimit;
 
         var dbContext = await _dbProvider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
@@ -107,9 +118,21 @@ public class SqlSearchProvider : IInternalSearchProvider
             var dbQuery = dbContext.BaseItems
                 .AsNoTracking()
                 .Where(e => e.Id != _placeholderId)
-                .Where(e => !e.IsVirtualItem)
-                .Where(e => e.CleanName!.Contains(cleanSearchTerm)
-                    || (e.OriginalTitle != null && EF.Functions.Like(e.OriginalTitle, likeOriginal)));
+                .Where(e => !e.IsVirtualItem);
+
+            if (likeSortName is null)
+            {
+                dbQuery = dbQuery
+                    .Where(e => e.CleanName!.Contains(cleanSearchTerm)
+                        || (e.OriginalTitle != null && EF.Functions.Like(e.OriginalTitle, likeOriginal)));
+            }
+            else
+            {
+                dbQuery = dbQuery
+                    .Where(e => e.CleanName!.Contains(cleanSearchTerm)
+                        || (e.OriginalTitle != null && EF.Functions.Like(e.OriginalTitle, likeOriginal))
+                        || (e.SortName != null && EF.Functions.Like(e.SortName, likeSortName)));
+            }
 
             dbQuery = ApplyTypeFilter(dbQuery, query.IncludeItemTypes, query.ExcludeItemTypes);
             dbQuery = ApplyMediaTypeFilter(dbQuery, query.MediaTypes);

@@ -118,5 +118,8 @@
     "NameExtraShort": "Kratko",
     "NameExtraThemeSong": "Tema",
     "NameExtraThemeVideo": "Tematski video",
-    "NameExtraTrailer": "Najava"
+    "NameExtraTrailer": "Najava",
+    "LyricDownloadFailureFromForItem": "Tekstovi nisu uspješno preuzeti sa {0} za {1}",
+    "NameExtraUnknown": "Ekstra",
+    "Original": "Original"
 }

@@ -60,7 +60,7 @@ public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, Ar
             return [];
         }
 
-        var artistSearchResults = await query.FindArtistsAsync($"\"{searchInfo.Name}\"", null, null, false, cancellationToken)
+        var artistSearchResults = await query.FindArtistsWithRetryAsync($"\"{searchInfo.Name}\"", _logger, cancellationToken)
             .ConfigureAwait(false);
         if (artistSearchResults.Results.Count > 0)
         {
@@ -70,7 +70,7 @@ public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, Ar
         if (searchInfo.Name.HasDiacritics())
         {
             // Try again using the search with an accented characters query
-            var artistAccentsSearchResults = await query.FindArtistsAsync($"artistaccent:\"{searchInfo.Name}\"", null, null, false, cancellationToken)
+            var artistAccentsSearchResults = await query.FindArtistsWithRetryAsync($"artistaccent:\"{searchInfo.Name}\"", _logger, cancellationToken)
                 .ConfigureAwait(false);
             if (artistAccentsSearchResults.Results.Count > 0)
             {

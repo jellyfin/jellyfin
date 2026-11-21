@@ -75,6 +75,22 @@ namespace Emby.Server.Implementations.Library
             }
 
             dbContext.SaveChanges();
+
+            // Rows under keys the item no longer reports are kept, not deleted: the key set is briefly
+            // incomplete mid-refresh, and those rows are what a deleted and re-added item reattaches by.
+            dbContext.UserData
+                .Where(e => e.ItemId == item.Id && e.UserId == user.Id && !keys.Contains(e.CustomDataKey))
+                .ExecuteUpdate(e => e
+                    .SetProperty(f => f.AudioStreamIndex, userData.AudioStreamIndex)
+                    .SetProperty(f => f.IsFavorite, userData.IsFavorite)
+                    .SetProperty(f => f.LastPlayedDate, userData.LastPlayedDate)
+                    .SetProperty(f => f.Likes, userData.Likes)
+                    .SetProperty(f => f.PlaybackPositionTicks, userData.PlaybackPositionTicks)
+                    .SetProperty(f => f.PlayCount, userData.PlayCount)
+                    .SetProperty(f => f.Played, userData.Played)
+                    .SetProperty(f => f.Rating, userData.Rating)
+                    .SetProperty(f => f.SubtitleStreamIndex, userData.SubtitleStreamIndex));
+
             transaction.Commit();
 
             var userId = user.InternalId;

@@ -544,6 +544,12 @@ namespace Emby.Naming.Common
                     MediaType.Video),
 
                 new ExtraRule(
+                    ExtraType.Sample,
+                    ExtraRuleType.DirectoryName,
+                    "sample",
+                    MediaType.Video),
+
+                new ExtraRule(
                     ExtraType.Short,
                     ExtraRuleType.DirectoryName,
                     "shorts",

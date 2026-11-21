@@ -73,6 +73,10 @@ internal static class ItemCountBuilder
             {
                 result.BookCount += count;
             }
+            else if (string.Equals(type, lookup[BaseItemKind.AudioBook], StringComparison.Ordinal))
+            {
+                result.AudioBookCount += count;
+            }
         }
 
         result.ItemCount = result.TotalItemCount();

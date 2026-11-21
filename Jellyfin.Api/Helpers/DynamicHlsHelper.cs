@@ -7,6 +7,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Controllers;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
@@ -150,27 +151,27 @@ public class DynamicHlsHelper
         var isLiveStream = state.IsSegmentedLiveStream;
 
         var queryString = _httpContextAccessor.HttpContext.Request.QueryString.ToString();
+        var playlistQuery = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(queryString);
 
-        // from universal audio service, need to override the AudioCodec when the actual request differs from original query
+        // From universal audio service: timeline is determined by segment index and runtime ticks, not StartTimeTicks
+        playlistQuery.Remove("StartTimeTicks");
+
+        // From universal audio service: override AudioCodec when the actual request differs from original query
         if (!string.Equals(state.OutputAudioCodec, _httpContextAccessor.HttpContext.Request.Query["AudioCodec"].ToString(), StringComparison.OrdinalIgnoreCase))
         {
-            var newQuery = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(queryString);
-            newQuery["AudioCodec"] = state.OutputAudioCodec;
-            queryString = Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString(string.Empty, newQuery);
+            playlistQuery["AudioCodec"] = state.OutputAudioCodec;
         }
 
-        // from universal audio service
-        if (!string.IsNullOrWhiteSpace(state.Request.SegmentContainer)
-            && !queryString.Contains("SegmentContainer", StringComparison.OrdinalIgnoreCase))
+        // From universal audio service
+        if (!string.IsNullOrWhiteSpace(state.Request.SegmentContainer))
         {
-            queryString += "&SegmentContainer=" + state.Request.SegmentContainer;
+            playlistQuery.TryAdd("SegmentContainer", state.Request.SegmentContainer);
         }
 
-        // from universal audio service
-        if (!string.IsNullOrWhiteSpace(state.Request.TranscodeReasons)
-            && !queryString.Contains("TranscodeReasons=", StringComparison.OrdinalIgnoreCase))
+        // From universal audio service
+        if (!string.IsNullOrWhiteSpace(state.Request.TranscodeReasons))
         {
-            queryString += "&TranscodeReasons=" + state.Request.TranscodeReasons;
+            playlistQuery.TryAdd("TranscodeReasons", state.Request.TranscodeReasons);
         }
 
         // Video rotation metadata is only supported in fMP4 remuxing
@@ -181,13 +182,12 @@ public class DynamicHlsHelper
             && !string.IsNullOrWhiteSpace(state.Request.SegmentContainer)
             && !string.Equals(state.Request.SegmentContainer, "mp4", StringComparison.OrdinalIgnoreCase))
         {
-            queryString += "&AllowVideoStreamCopy=false";
+            playlistQuery["AllowVideoStreamCopy"] = "false";
         }
 
         // Main stream
         var baseUrl = isLiveStream ? "live.m3u8" : "main.m3u8";
-        var playlistUrl = baseUrl + queryString;
-        var playlistQuery = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(queryString);
+        var playlistUrl = Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString(baseUrl, playlistQuery);
 
         var subtitleStreams = state.MediaSource
             .MediaStreams
@@ -691,11 +691,12 @@ public class DynamicHlsHelper
 
             var url = string.Format(
                 CultureInfo.InvariantCulture,
-                "{0}/Subtitles/{1}/subtitles.m3u8?SegmentLength={2}&ApiKey={3}",
+                "{0}/Subtitles/{1}/subtitles.m3u8?SegmentLength={2}&ApiKey={3}&VttTimestampMapMpegts={4}",
                 state.Request.MediaSourceId,
                 stream.Index.ToString(CultureInfo.InvariantCulture),
                 30.ToString(CultureInfo.InvariantCulture),
-                user.GetToken());
+                user.GetToken(),
+                GetVttTimestampMapMpegts(state.Request.SegmentContainer).ToString(CultureInfo.InvariantCulture));
 
             var line = string.Format(
                 CultureInfo.InvariantCulture,
@@ -708,6 +709,20 @@ public class DynamicHlsHelper
 
             builder.AppendLine(line);
         }
+    }
+
+    /// <summary>
+    /// Gets the WebVTT X-TIMESTAMP-MAP MPEGTS offset appropriate for the given HLS segment container.
+    /// fMP4 segments start at PTS 0, unlike legacy MPEG-TS segments which start at the historical 10 second offset.
+    /// </summary>
+    /// <param name="segmentContainer">The HLS segment container, e.g. "ts" or "mp4".</param>
+    /// <returns>The MPEGTS offset to embed in the WebVTT X-TIMESTAMP-MAP header.</returns>
+    internal static long GetVttTimestampMapMpegts(string? segmentContainer)
+    {
+        var segmentExtension = EncodingHelper.GetSegmentFileExtension(segmentContainer);
+        return string.Equals(segmentExtension, ".mp4", StringComparison.OrdinalIgnoreCase)
+            ? 0
+            : SubtitleController.DefaultVttTimestampMapMpegts;
     }
 
     /// <summary>

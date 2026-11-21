@@ -9,8 +9,11 @@ using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Server.Implementations.Item;
 using Jellyfin.Server.Implementations.Tests.Item;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Configuration;
+using Microsoft.Extensions.Configuration;
 using Moq;
 using Xunit;
 using BaseItemKind = Jellyfin.Data.Enums.BaseItemKind;
@@ -52,12 +55,17 @@ public sealed class SqlSearchProviderTests : SqliteDbTestFixture
         var userManager = new Mock<IUserManager>();
         userManager.Setup(u => u.GetUserById(_user.Id)).Returns(_user);
 
+        var serverConfigurationManager = new Mock<IServerConfigurationManager>();
+        serverConfigurationManager.Setup(scm => scm.Configuration)
+            .Returns(new ServerConfiguration());
+
         _provider = new SqlSearchProvider(
             CreateDbContextFactory(),
             itemTypeLookup,
             _libraryManager.Object,
             userManager.Object,
-            CreateBaseItemRepository(itemTypeLookup));
+            CreateBaseItemRepository(itemTypeLookup),
+            serverConfigurationManager.Object);
     }
 
     [Fact]

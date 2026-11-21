@@ -40,15 +40,21 @@ public class BaseItemTests
         var previousLibrary = BaseItem.LibraryManager;
         var previousRepository = BaseItem.ItemRepository;
         var previousLogger = BaseItem.Logger;
+        var previousMediaSourceManager = BaseItem.MediaSourceManager;
         var library = new Mock<ILibraryManager>(MockBehavior.Strict);
         var repository = new Mock<MediaBrowser.Controller.Persistence.IItemRepository>(MockBehavior.Strict);
         var directory = new Mock<IDirectoryService>();
         directory.Setup(d => d.IsAccessible(It.IsAny<string>())).Returns(true);
+
+        // IsLibraryFolderAccessible reads FileNameWithoutExtension, which resolves the path protocol
+        var mediaSourceManager = new Mock<IMediaSourceManager>();
+        mediaSourceManager.Setup(x => x.GetPathProtocol(It.IsAny<string>())).Returns(MediaProtocol.File);
         try
         {
             BaseItem.LibraryManager = library.Object;
             BaseItem.ItemRepository = repository.Object;
             BaseItem.Logger = Microsoft.Extensions.Logging.Abstractions.NullLogger<BaseItem>.Instance;
+            BaseItem.MediaSourceManager = mediaSourceManager.Object;
             var folder = new FailingEnumerationFolder(failAfterFirstChild, accessDenied)
             {
                 Id = Guid.NewGuid(),
@@ -64,6 +70,7 @@ public class BaseItemTests
             BaseItem.LibraryManager = previousLibrary;
             BaseItem.ItemRepository = previousRepository;
             BaseItem.Logger = previousLogger;
+            BaseItem.MediaSourceManager = previousMediaSourceManager;
         }
     }
 
@@ -82,6 +89,28 @@ public class BaseItemTests
         video.SetPrimaryVersionId(null);
         Assert.Null(video.PrimaryVersionId);
         Assert.Equal(video.Id.ToString("N", CultureInfo.InvariantCulture), video.PresentationUniqueKey);
+    }
+
+    [Theory]
+    [InlineData(float.NaN, null)]
+    [InlineData(float.PositiveInfinity, null)]
+    [InlineData(float.NegativeInfinity, null)]
+    [InlineData(-3.5f, -3.5f)]
+    [InlineData(null, null)]
+    public void RatingsAndGains_KeepOnlyFiniteValues(float? value, float? expected)
+    {
+        var item = new Video
+        {
+            CommunityRating = value,
+            CriticRating = value,
+            LUFS = value,
+            NormalizationGain = value
+        };
+
+        Assert.Equal(expected, item.CommunityRating);
+        Assert.Equal(expected, item.CriticRating);
+        Assert.Equal(expected, item.LUFS);
+        Assert.Equal(expected, item.NormalizationGain);
     }
 
     [Fact]
