@@ -255,7 +255,8 @@ namespace Emby.Server.Implementations.SyncPlay
             return true;
         }
 
-        private bool AllUsersHaveAccessToQueue(IReadOnlyList<Guid> queue)
+        /// <inheritdoc />
+        public bool AllUsersHaveAccessToQueue(IReadOnlyList<Guid> queue)
         {
             // Check if queue is empty.
             if (queue is null || queue.Count == 0)
