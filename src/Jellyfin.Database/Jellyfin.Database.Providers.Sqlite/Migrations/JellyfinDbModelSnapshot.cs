@@ -330,6 +330,15 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<long?>("Size")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("SortAlbum")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SortAlbumArtist")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SortArtist")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("SortName")
                         .HasColumnType("TEXT");
 
