@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
@@ -51,9 +53,10 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
             // name so /Persons doesn't return the same BaseItem id repeatedly, keeping the
             // lowest id per lowercased name so case-only duplicates collapse together.
             var candidates = dbQuery;
-            dbQuery = candidates
-                .Where(p => !candidates.Any(other => other.Name.ToLower() == p.Name.ToLower() && other.Id < p.Id))
-                .OrderBy(e => e.Name.ToLower());
+            dbQuery = ApplyOrder(
+                candidates.Where(p => !candidates.Any(other => other.Name.ToLower() == p.Name.ToLower() && other.Id < p.Id)),
+                filter,
+                context);
 
             if (filter.EnableTotalRecordCount)
             {
@@ -501,6 +504,75 @@ public class PeopleRepository(IDbContextFactory<JellyfinDbContext> dbProvider, I
         }
 
         return query;
+    }
+
+    /// <summary>
+    /// Orders people by the requested sort keys. Keys that map to the name, and keys with no meaning for a
+    /// person, both sort by the lowercased name; the name is always the final tiebreaker so pages stay stable.
+    /// </summary>
+    private IOrderedQueryable<People> ApplyOrder(IQueryable<People> query, InternalPeopleQuery filter, JellyfinDbContext context)
+    {
+        IOrderedQueryable<People>? ordered = null;
+        var orderedByName = false;
+
+        foreach (var (sortBy, sortOrder) in filter.OrderBy)
+        {
+            if (sortBy == ItemSortBy.Default)
+            {
+                continue;
+            }
+
+            var key = MapOrderByField(sortBy, filter, context);
+            if (key is null)
+            {
+                orderedByName = true;
+                key = e => e.Name.ToLower();
+            }
+
+            if (ordered is null)
+            {
+                ordered = sortOrder == SortOrder.Ascending ? query.OrderBy(key) : query.OrderByDescending(key);
+            }
+            else
+            {
+                ordered = sortOrder == SortOrder.Ascending ? ordered.ThenBy(key) : ordered.ThenByDescending(key);
+            }
+        }
+
+        if (ordered is null)
+        {
+            return query.OrderBy(e => e.Name.ToLower());
+        }
+
+        return orderedByName ? ordered : ordered.ThenBy(e => e.Name.ToLower());
+    }
+
+    /// <summary>
+    /// Maps a sort key to an expression over a credit, or <c>null</c> when the key means the name.
+    /// The Peoples table only stores a name and a type, so everything else is read from the by-name item.
+    /// </summary>
+    private Expression<Func<People, object?>>? MapOrderByField(ItemSortBy sortBy, InternalPeopleQuery filter, JellyfinDbContext context)
+    {
+        var personType = itemTypeLookup.BaseItemKindNames[BaseItemKind.Person];
+        var items = context.BaseItems.Where(b => b.Type == personType);
+
+        if (sortBy == ItemSortBy.IsFavoriteOrLiked && filter.User is not null)
+        {
+            var userId = filter.User.Id;
+            return e => context.UserData
+                .Where(u => u.UserId == userId && items.Any(b => b.Id == u.ItemId && b.Name == e.Name))
+                .Select(u => (bool?)u.IsFavorite)
+                .FirstOrDefault() ?? false;
+        }
+
+        return sortBy switch
+        {
+            ItemSortBy.Random => e => EF.Functions.Random(),
+            ItemSortBy.DateCreated => e => items.Where(b => b.Name == e.Name).Select(b => b.DateCreated).FirstOrDefault(),
+            ItemSortBy.PremiereDate => e => items.Where(b => b.Name == e.Name).Select(b => b.PremiereDate).FirstOrDefault(),
+            ItemSortBy.CommunityRating => e => items.Where(b => b.Name == e.Name).Select(b => b.CommunityRating).FirstOrDefault(),
+            _ => null,
+        };
     }
 
     private bool IsAlphaNumeric(string str)

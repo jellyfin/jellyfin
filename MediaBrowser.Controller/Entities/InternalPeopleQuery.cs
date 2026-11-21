@@ -4,7 +4,9 @@
 
 using System;
 using System.Collections.Generic;
+using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -20,7 +22,15 @@ namespace MediaBrowser.Controller.Entities
             PersonTypes = personTypes;
             ExcludePersonTypes = excludePersonTypes;
             EnableTotalRecordCount = true;
+            OrderBy = [];
         }
+
+        /// <summary>
+        /// Gets or sets the sort keys, applied in order. The people table only stores a name and a type, so
+        /// every other key is read from the person's by-name item; keys that have no meaning for a person
+        /// sort by name instead. The name is always the final tiebreaker.
+        /// </summary>
+        public IReadOnlyList<(ItemSortBy OrderBy, SortOrder SortOrder)> OrderBy { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether to count the matching people. Under an
