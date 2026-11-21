@@ -20,6 +20,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Providers.Extensions;
 using Microsoft.Extensions.Logging;
 using static Jellyfin.Extensions.StringExtensions;
 
@@ -387,7 +388,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (track.Date.HasValue)
             {
-                audio.PremiereDate = track.Date;
+                audio.PremiereDate = track.Date.AsCalendarDate();
             }
 
             if (trackYear.HasValue)
@@ -400,7 +401,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     try
                     {
-                        audio.PremiereDate = new DateTime(year, 01, 01);
+                        audio.PremiereDate = new DateTime(year, 01, 01, 0, 0, 0, DateTimeKind.Utc);
                     }
                     catch (ArgumentOutOfRangeException ex)
                     {
