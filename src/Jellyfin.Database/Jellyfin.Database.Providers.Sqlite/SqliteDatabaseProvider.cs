@@ -287,18 +287,15 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
     /// <inheritdoc />
     public async Task<string> MigrationBackupFast(CancellationToken cancellationToken)
     {
+        var dbContextFactory = DbContextFactory ?? throw new InvalidOperationException("The database provider has not been initialized.");
         var path = GetDatabasePath();
+        if (!File.Exists(path))
+        {
+            throw new FileNotFoundException("Cannot back up jellyfin.db because it does not exist.", path);
+        }
+
         var backupFolder = Path.Combine(_applicationPaths.DataPath, BackupFolderName);
         Directory.CreateDirectory(backupFolder);
-
-        if (DbContextFactory is not null && File.Exists(path))
-        {
-            var context = await DbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-            await using (context.ConfigureAwait(false))
-            {
-                await context.Database.ExecuteSqlRawAsync("PRAGMA wal_checkpoint(TRUNCATE)", cancellationToken).ConfigureAwait(false);
-            }
-        }
 
         var key = DateTime.UtcNow.ToString("yyyyMMddHHmmss", CultureInfo.InvariantCulture);
         var backupFile = Path.Combine(backupFolder, $"{key}_jellyfin.db");
@@ -308,7 +305,43 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
             backupFile = Path.Combine(backupFolder, $"{key}_jellyfin.db");
         }
 
-        File.Copy(path, backupFile);
+        // Never copy the file directly: POSIX locks belong to the process, so closing any other handle on
+        // jellyfin.db silently drops the locks held by every open SQLite connection. Other processes then think
+        // the database is unused and may delete the write-ahead log from under us. SQLite's online backup reads
+        // through its own connection, and includes whatever still sits in the write-ahead log.
+        var context = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await using (context.ConfigureAwait(false))
+        {
+            await context.Database.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                var destinationConnectionString = new SqliteConnectionStringBuilder
+                {
+                    DataSource = backupFile,
+                    Mode = SqliteOpenMode.ReadWriteCreate,
+                    // The backup may be restored or deleted later, so do not keep it open in a pool.
+                    Pooling = false
+                }.ToString();
+
+                var destination = new SqliteConnection(destinationConnectionString);
+                await using (destination.ConfigureAwait(false))
+                {
+                    await destination.OpenAsync(cancellationToken).ConfigureAwait(false);
+                    ((SqliteConnection)context.Database.GetDbConnection()).BackupDatabase(destination);
+                }
+            }
+            catch
+            {
+                // Do not leave a half-written backup behind that could later be mistaken for a good one.
+                File.Delete(backupFile);
+                throw;
+            }
+            finally
+            {
+                await context.Database.CloseConnectionAsync().ConfigureAwait(false);
+            }
+        }
+
         return key;
     }
 
@@ -338,6 +371,9 @@ public sealed class SqliteDatabaseProvider : IJellyfinDatabaseProvider
             return Task.CompletedTask;
         }
 
+        // Unlike MigrationBackupFast, copying the file directly is safe here: SQLite only deletes the write-ahead
+        // log when the last connection to the database closes, so once it is gone no connection in this process
+        // holds a lock on jellyfin.db that closing the copy's handle could drop.
         File.Copy(backupFile, path, true);
 
         return Task.CompletedTask;
