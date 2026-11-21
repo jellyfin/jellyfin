@@ -159,6 +159,20 @@ namespace MediaBrowser.Controller.MediaEncoding
         Task<string> ExtractVideoImage(string inputFile, string container, MediaSourceInfo mediaSource, MediaStream imageStream, int? imageStreamIndex, ImageFormat? targetFormat, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Extracts a named Matroska video attachment without scanning media clusters when possible.
+        /// Falls back to FFmpeg for unsupported containers and attachment layouts.
+        /// </summary>
+        /// <param name="inputFile">Input video file.</param>
+        /// <param name="container">Video container name.</param>
+        /// <param name="mediaSource">Media source information.</param>
+        /// <param name="attachmentFileName">The attachment's name in the container.</param>
+        /// <param name="imageStreamIndex">FFmpeg stream index used for fallback.</param>
+        /// <param name="targetFormat">Expected image format.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The extracted image path.</returns>
+        Task<string> ExtractVideoAttachment(string inputFile, string container, MediaSourceInfo mediaSource, string attachmentFileName, int imageStreamIndex, ImageFormat targetFormat, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Extracts the video images on interval.
         /// </summary>
         /// <param name="inputFile">Input file.</param>
