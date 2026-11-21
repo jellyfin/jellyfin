@@ -12,6 +12,7 @@ using Jellyfin.Data;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -217,14 +218,40 @@ namespace MediaBrowser.Controller.Entities.Audio
 
         private async Task RefreshArtists(MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
         {
-            foreach (var i in this.GetAllArtists())
-            {
-                // This should not be necessary but we're seeing some cases of it
-                if (string.IsNullOrEmpty(i))
-                {
-                    continue;
-                }
+            // Buffer MusicArtist, which performs lookups access and may create an artist
+            var musicArtist = MusicArtist;
+            var allArtists = this.GetAllArtists().ToList();
 
+            // If a 'musicArtist' exists but doesn't exactly match at least one artist, perform necessary corrections
+            if (musicArtist is not null && allArtists.Count > 0 && !allArtists.Contains(musicArtist.Name))
+            {
+                var oldMusicArtist = musicArtist.Name;
+                var firstArtist = allArtists[0];
+
+                // Use album artist instead of mismatched folder name
+                musicArtist.Name = firstArtist;
+
+                // Only full refresh images/metadata with force save if clean values don't match
+                // e.g. Rush1 vs Rush = Refresh, RUSH vs Rush = Update
+                if (!string.Equals(oldMusicArtist.GetCleanValue(), firstArtist.GetCleanValue(), StringComparison.Ordinal))
+                {
+                    var fullRefreshOptions = new MetadataRefreshOptions(refreshOptions)
+                    {
+                        ForceSave = true,
+                        ImageRefreshMode = MetadataRefreshMode.FullRefresh,
+                        MetadataRefreshMode = MetadataRefreshMode.FullRefresh
+                    };
+
+                    await musicArtist.RefreshMetadata(fullRefreshOptions, cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    await musicArtist.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
+                }
+            }
+
+            foreach (var i in allArtists)
+            {
                 var artist = LibraryManager.GetArtist(i);
 
                 if (!artist.IsAccessedByName)
