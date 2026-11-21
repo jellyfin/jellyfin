@@ -249,13 +249,14 @@ public class PlaystateController : BaseJellyfinApiController
     public async Task<ActionResult> ReportPlaybackStopped([FromBody] PlaybackStopInfo playbackStopInfo)
     {
         _logger.LogDebug("ReportPlaybackStopped PlaySessionId: {0}", playbackStopInfo.PlaySessionId ?? string.Empty);
+        playbackStopInfo.SessionId = await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        await _sessionManager.OnPlaybackStopped(playbackStopInfo).ConfigureAwait(false);
+
         if (!string.IsNullOrWhiteSpace(playbackStopInfo.PlaySessionId))
         {
             await _transcodeManager.KillTranscodingJobs(User.GetDeviceId()!, playbackStopInfo.PlaySessionId, s => true).ConfigureAwait(false);
         }
 
-        playbackStopInfo.SessionId = await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
-        await _sessionManager.OnPlaybackStopped(playbackStopInfo).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -465,13 +466,14 @@ public class PlaystateController : BaseJellyfinApiController
         };
 
         _logger.LogDebug("ReportPlaybackStopped PlaySessionId: {0}", playbackStopInfo.PlaySessionId ?? string.Empty);
+        playbackStopInfo.SessionId = await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
+        await _sessionManager.OnPlaybackStopped(playbackStopInfo).ConfigureAwait(false);
+
         if (!string.IsNullOrWhiteSpace(playbackStopInfo.PlaySessionId))
         {
             await _transcodeManager.KillTranscodingJobs(User.GetDeviceId()!, playbackStopInfo.PlaySessionId, s => true).ConfigureAwait(false);
         }
 
-        playbackStopInfo.SessionId = await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
-        await _sessionManager.OnPlaybackStopped(playbackStopInfo).ConfigureAwait(false);
         return NoContent();
     }
 
