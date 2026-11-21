@@ -629,11 +629,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             var inputArgument = GetInputPathArgument(inputFile, mediaSource);
 
-            // Attached pictures are single-frame streams, not a sequence of video
-            // keyframes. Retrying them with a second full-file ffmpeg scan after
-            // the I-frame attempt times out needlessly doubles disk I/O for MKVs.
-            var isAttachedPicture = imageStreamIndex.HasValue && videoStream is null;
-            if (ShouldTryIFrameImageExtraction(isAudio, isAttachedPicture))
+            // Attachments and embedded pictures are single-frame images, not
+            // video keyframes. Avoid a redundant full-file extraction pass.
+            if (ShouldTryIFrameImageExtraction(isAudio, videoStream, imageStreamIndex))
             {
                 try
                 {
@@ -652,9 +650,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, false, targetFormat, isAudio, cancellationToken).ConfigureAwait(false);
         }
 
-        internal static bool ShouldTryIFrameImageExtraction(bool isAudio, bool isAttachedPicture)
+        internal static bool ShouldTryIFrameImageExtraction(bool isAudio, MediaStream videoStream, int? imageStreamIndex)
         {
-            return !isAudio && !isAttachedPicture;
+            var isStillImage = imageStreamIndex.HasValue
+                && (videoStream is null || videoStream.Type == MediaStreamType.EmbeddedImage);
+            return !isAudio && !isStillImage;
         }
 
         private string GetImageResolutionParameter()
