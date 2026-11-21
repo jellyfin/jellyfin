@@ -615,6 +615,50 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return ExtractImage(inputFile, container, imageStream, imageStreamIndex, mediaSource, false, null, null, targetFormat, cancellationToken);
         }
 
+        /// <inheritdoc />
+        public async Task<string> ExtractVideoAttachment(
+            string inputFile,
+            string container,
+            MediaSourceInfo mediaSource,
+            string attachmentFileName,
+            int imageStreamIndex,
+            ImageFormat targetFormat,
+            CancellationToken cancellationToken)
+        {
+            // Local Matroska attachments can be copied directly from their EBML FileData.
+            // FFmpeg otherwise reads every media packet up to EOF before returning a still
+            // image, which becomes prohibitively slow with cold multi-gigabyte files.
+            if (mediaSource.Protocol == MediaProtocol.File
+                && (string.Equals(container, "mkv", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(container, "matroska", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(container, "webm", StringComparison.OrdinalIgnoreCase))
+                && !string.IsNullOrEmpty(attachmentFileName))
+            {
+                var outputPath = Path.Combine(
+                    _configurationManager.ApplicationPaths.TempDirectory,
+                    Guid.NewGuid() + targetFormat.GetExtension());
+
+                try
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
+                    if (await MatroskaAttachmentReader.TryExtractAsync(inputFile, attachmentFileName, outputPath, cancellationToken).ConfigureAwait(false))
+                    {
+                        return outputPath;
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (IOException ex)
+                {
+                    _logger.LogDebug(ex, "Native Matroska attachment extraction failed; falling back to FFmpeg.");
+                }
+            }
+
+            return await ExtractVideoImage(inputFile, container, mediaSource, null, imageStreamIndex, targetFormat, cancellationToken).ConfigureAwait(false);
+        }
+
         private async Task<string> ExtractImage(
             string inputFile,
             string container,
