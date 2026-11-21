@@ -31,7 +31,7 @@
             }
         },
         {
-            "ratingStrings": ["N-18"],
+            "ratingStrings": ["N-18", "LT-S"],
             "ratingScore": {
                 "score": 18,
                 "subScore": null
