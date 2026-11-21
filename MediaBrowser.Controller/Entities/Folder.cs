@@ -407,7 +407,9 @@ namespace MediaBrowser.Controller.Entities
             // For top parents i.e. Library folders, skip the validation if it's empty or inaccessible
             if (item.IsTopParent && !directoryService.IsAccessible(item.ContainingFolderPath))
             {
-                Logger.LogWarning("Library folder {LibraryFolderPath} is inaccessible or empty, skipping", item.ContainingFolderPath);
+                // The playlists folder is empty until the first playlist is created, which is not worth a warning
+                var logLevel = item is ICollectionFolder { CollectionType: CollectionType.playlists } ? LogLevel.Debug : LogLevel.Warning;
+                Logger.Log(logLevel, "Library folder {LibraryFolderPath} is inaccessible or empty, skipping", item.ContainingFolderPath);
                 return false;
             }
 
