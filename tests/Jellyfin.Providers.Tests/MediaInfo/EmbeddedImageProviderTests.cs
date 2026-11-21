@@ -145,13 +145,41 @@ namespace Jellyfin.Providers.Tests.MediaInfo
             }
         }
 
-        private static IMediaSourceManager GetMediaSourceManager(BaseItem item, List<MediaAttachment> mediaAttachments, List<MediaStream> mediaStreams)
+        [Fact]
+        public async Task GetImage_EmbeddedWithExternalSubtitle_MapsToFileStreamIndex()
+        {
+            // The external subtitle is prepended, so the image has Index 2 but is stream 1 inside the file.
+            var externalSubtitle = new MediaStream { Type = MediaStreamType.Subtitle, Index = 0, IsExternal = true };
+            var image = new MediaStream { Type = MediaStreamType.EmbeddedImage, Index = 2, Codec = "png" };
+            var allStreams = new List<MediaStream> { externalSubtitle, image };
+
+            var input = new Movie();
+
+            int? mappedIndex = null;
+            var mediaEncoder = new Mock<IMediaEncoder>(MockBehavior.Strict);
+            mediaEncoder.Setup(encoder => encoder.ExtractVideoImage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<MediaSourceInfo>(), It.IsAny<MediaStream>(), It.IsAny<int>(), It.IsAny<ImageFormat>(), It.IsAny<CancellationToken>()))
+                .Returns<string, string, MediaSourceInfo, MediaStream, int, ImageFormat, CancellationToken>((_, _, _, _, index, _, _) =>
+                {
+                    mappedIndex = index;
+                    return Task.FromResult("path.png");
+                });
+            var mediaSourceManager = GetMediaSourceManager(input, new List<MediaAttachment>(), new List<MediaStream> { image }, allStreams);
+            var embeddedImageProvider = new EmbeddedImageProvider(mediaSourceManager, mediaEncoder.Object, new NullLogger<EmbeddedImageProvider>());
+
+            var actual = await embeddedImageProvider.GetImage(input, ImageType.Primary, CancellationToken.None);
+            Assert.True(actual.HasImage);
+            Assert.Equal(1, mappedIndex);
+        }
+
+        private static IMediaSourceManager GetMediaSourceManager(BaseItem item, List<MediaAttachment> mediaAttachments, List<MediaStream> mediaStreams, List<MediaStream>? allStreams = null)
         {
             var mediaSourceManager = new Mock<IMediaSourceManager>(MockBehavior.Strict);
             mediaSourceManager.Setup(i => i.GetMediaAttachments(item.Id))
                 .Returns(mediaAttachments);
             mediaSourceManager.Setup(i => i.GetMediaStreams(It.Is<MediaStreamQuery>(q => q.ItemId.Equals(item.Id) && q.Type == MediaStreamType.EmbeddedImage)))
                 .Returns(mediaStreams);
+            mediaSourceManager.Setup(i => i.GetMediaStreams(It.Is<MediaStreamQuery>(q => q.ItemId.Equals(item.Id) && q.Type == null)))
+                .Returns(allStreams ?? mediaStreams);
             return mediaSourceManager.Object;
         }
     }

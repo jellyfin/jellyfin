@@ -185,8 +185,16 @@ namespace MediaBrowser.Providers.MediaInfo
                 _ => ImageFormat.Jpg
             };
 
+            // Stream indexes include external streams (e.g. sidecar subtitles) that are prepended to the list,
+            // but ffmpeg only knows about the streams inside the file, so map back to the file's own index.
+            var externalStreamsBefore = _mediaSourceManager.GetMediaStreams(new MediaStreamQuery
+            {
+                ItemId = item.Id
+            }).Count(stream => stream.IsExternal && stream.Index < imageStream.Index);
+            var fileStreamIndex = imageStream.Index - externalStreamsBefore;
+
             string extractedImagePath =
-                await _mediaEncoder.ExtractVideoImage(item.Path, item.Container, mediaSource, imageStream, imageStream.Index, format, cancellationToken)
+                await _mediaEncoder.ExtractVideoImage(item.Path, item.Container, mediaSource, imageStream, fileStreamIndex, format, cancellationToken)
                     .ConfigureAwait(false);
 
             return new DynamicImageResponse
