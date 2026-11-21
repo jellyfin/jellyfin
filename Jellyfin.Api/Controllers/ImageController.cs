@@ -1691,7 +1691,8 @@ public class ImageController : BaseJellyfinApiController
         {
             Image = new ItemImageInfo
             {
-                Path = splashscreenPath
+                Path = splashscreenPath,
+                DateModified = _fileSystem.GetLastWriteTimeUtc(splashscreenPath)
             },
             Height = null,
             MaxHeight = null,
