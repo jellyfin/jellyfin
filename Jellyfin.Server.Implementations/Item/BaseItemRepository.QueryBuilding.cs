@@ -127,7 +127,11 @@ public sealed partial class BaseItemRepository
             dbQuery = ApplyNameFilters(dbQuery, filter);
         }
 
-        dbQuery = ApplyOrder(dbQuery, filter, context);
+        // A seeded random sort orders the ids in memory, so the database doesn't need to sort them.
+        if (!HasSeededRandomSort(filter))
+        {
+            dbQuery = ApplyOrder(dbQuery, filter, context);
+        }
 
         return dbQuery;
     }
