@@ -406,7 +406,7 @@ namespace Emby.Server.Implementations.Library
             var externalDataManager = _externalDataManagerFactory.Value;
             foreach (var (item, _, _) in pathMaps)
             {
-                externalDataManager.DeleteExternalItemFiles(item);
+                externalDataManager.DeleteExternalItemFiles(item, deleteSourceFiles);
             }
 
             _persistenceService.DeleteItem([.. pathMaps.Select(f => f.Item.Id)]);
@@ -597,10 +597,13 @@ namespace Emby.Server.Implementations.Library
             item.SetParent(null);
 
             var externalDataManager = _externalDataManagerFactory.Value;
-            externalDataManager.DeleteExternalItemFiles(item);
+            // Removing a library does not remove its media files or user-saved trickplay.
+            // Delete the sidecar tiles only when physically deleting media source files.
+            var deleteMediaTrickplay = options.DeleteFileLocation && item.IsFileProtocol;
+            externalDataManager.DeleteExternalItemFiles(item, deleteMediaTrickplay);
             foreach (var child in children)
             {
-                externalDataManager.DeleteExternalItemFiles(child);
+                externalDataManager.DeleteExternalItemFiles(child, deleteMediaTrickplay);
             }
 
             _persistenceService.DeleteItem([item.Id, .. children.Select(f => f.Id)]);
