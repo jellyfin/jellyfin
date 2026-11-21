@@ -248,6 +248,14 @@ internal static class MatroskaAttachmentReader
             id = (id << 8) | (byte)next;
         }
 
+        // Never parse an element header beyond its containing EBML element.
+        // An out-of-bounds ID could otherwise make the remaining-length subtraction
+        // negative and be treated as an enormous unsigned valid payload.
+        if (stream.Position >= containerEnd)
+        {
+            return false;
+        }
+
         var sizeFirst = stream.ReadByte();
         if (sizeFirst <= 0)
         {
