@@ -72,6 +72,57 @@ public class MatroskaAttachmentReaderTests
         }
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task TruncatedSegmentChildHeader_DoesNotReadPastParent(bool splitSizeVint)
+    {
+        var input = NewTempPath();
+        var output = NewTempPath();
+        try
+        {
+            using var entry = new MemoryStream();
+            WriteElement(entry, 0x466E, Encoding.UTF8.GetBytes("cover.jpg"));
+            WriteElement(entry, 0x4660, Encoding.ASCII.GetBytes("image/jpeg"));
+            WriteElement(entry, 0x465C, _jpeg);
+
+            using var attached = new MemoryStream();
+            WriteElement(attached, 0x61A7, entry.ToArray());
+            var attachmentPayload = attached.ToArray();
+
+            using (var stream = File.Create(input))
+            {
+                WriteElement(stream, 0x1A45DFA3, Array.Empty<byte>());
+                WriteId(stream, 0x18538067);
+
+                // Segment ends in the middle of its first Attachments child header.
+                // The apparent remainder of the child is outside the declared segment.
+                WriteSize(stream, splitSizeVint ? 5 : 2);
+                WriteId(stream, 0x1941A469);
+                if (splitSizeVint)
+                {
+                    Assert.True(attachmentPayload.Length < 256);
+                    stream.WriteByte(0x40); // First byte of a two-byte EBML size VINT.
+                    stream.WriteByte((byte)attachmentPayload.Length);
+                }
+                else
+                {
+                    WriteSize(stream, attachmentPayload.Length);
+                }
+
+                stream.Write(attachmentPayload);
+            }
+
+            Assert.False(await MatroskaAttachmentReader.TryExtractAsync(input, "cover.jpg", output, TestContext.Current.CancellationToken));
+            Assert.False(File.Exists(output));
+        }
+        finally
+        {
+            File.Delete(input);
+            File.Delete(output);
+        }
+    }
+
     [Fact]
     public async Task ActualFfmpegMatroska_CopiesOriginalPng()
     {
