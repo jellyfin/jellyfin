@@ -75,8 +75,8 @@ public class GenresValidator
                     item = existingGenre;
                 }
 
-                // Fall back to GetGenre if not found (creates new item if needed)
-                item ??= _libraryManager.GetGenre(name);
+                // Fall back to creating the item if the name has none yet
+                item ??= _libraryManager.GetOrCreateGenre(name);
 
                 if (!existingGenreIds.Contains(item.Id))
                 {
@@ -95,11 +95,7 @@ public class GenresValidator
             }
 
             numComplete++;
-            double percent = numComplete;
-            percent /= count;
-            percent *= 100;
-
-            progress.Report(percent);
+            progress.Report(numComplete * 100.0 / count);
         }
 
         _logger.LogInformation("Refreshed metadata for {RefreshedCount} new genres out of {TotalCount} total", refreshed, count);

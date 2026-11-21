@@ -125,31 +125,73 @@ namespace MediaBrowser.Controller.Library
         /// Gets the artist.
         /// </summary>
         /// <param name="name">The name of the artist.</param>
-        /// <returns>Task{Artist}.</returns>
-        MusicArtist GetArtist(string name);
+        /// <returns>The artist, or <c>null</c> when none exists for the name.</returns>
+        MusicArtist? GetArtist(string name);
 
-        MusicArtist GetArtist(string name, DtoOptions options);
+        /// <summary>
+        /// Gets the artist.
+        /// </summary>
+        /// <param name="name">The name of the artist.</param>
+        /// <param name="options">The dto options.</param>
+        /// <returns>The artist, or <c>null</c> when none exists for the name.</returns>
+        MusicArtist? GetArtist(string name, DtoOptions options);
+
+        /// <summary>
+        /// Gets an artist, creating and persisting it if no item exists for the name yet.
+        /// </summary>
+        /// <param name="name">The name of the artist.</param>
+        /// <returns>The artist.</returns>
+        MusicArtist GetOrCreateArtist(string name);
+
+        /// <summary>
+        /// Gets an artist, creating and persisting it if no item exists for the name yet.
+        /// </summary>
+        /// <param name="name">The name of the artist.</param>
+        /// <param name="options">The dto options.</param>
+        /// <returns>The artist.</returns>
+        MusicArtist GetOrCreateArtist(string name, DtoOptions options);
 
         /// <summary>
         /// Gets a Studio.
         /// </summary>
         /// <param name="name">The name of the studio.</param>
-        /// <returns>Task{Studio}.</returns>
-        Studio GetStudio(string name);
+        /// <returns>The studio, or <c>null</c> when none exists for the name.</returns>
+        Studio? GetStudio(string name);
+
+        /// <summary>
+        /// Gets a Studio, creating and persisting it if no item exists for the name yet.
+        /// </summary>
+        /// <param name="name">The name of the studio.</param>
+        /// <returns>The studio.</returns>
+        Studio GetOrCreateStudio(string name);
 
         /// <summary>
         /// Gets a Genre.
         /// </summary>
         /// <param name="name">The name of the genre.</param>
-        /// <returns>Task{Genre}.</returns>
-        Genre GetGenre(string name);
+        /// <returns>The genre, or <c>null</c> when none exists for the name.</returns>
+        Genre? GetGenre(string name);
+
+        /// <summary>
+        /// Gets a Genre, creating and persisting it if no item exists for the name yet.
+        /// </summary>
+        /// <param name="name">The name of the genre.</param>
+        /// <returns>The genre.</returns>
+        Genre GetOrCreateGenre(string name);
 
         /// <summary>
         /// Gets the genre.
         /// </summary>
         /// <param name="name">The name of the music genre.</param>
-        /// <returns>Task{MusicGenre}.</returns>
-        MusicGenre GetMusicGenre(string name);
+        /// <returns>The music genre, or <c>null</c> when none exists for the name.</returns>
+        MusicGenre? GetMusicGenre(string name);
+
+        /// <summary>
+        /// Gets a music genre, creating and persisting it if no item exists for the name yet.
+        /// </summary>
+        /// <param name="name">The name of the music genre.</param>
+        /// <returns>The music genre.</returns>
+        MusicGenre GetOrCreateMusicGenre(string name);
 
         /// <summary>
         /// Gets a Year.
