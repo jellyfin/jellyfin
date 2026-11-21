@@ -24,6 +24,11 @@ internal static class MatroskaAttachmentReader
     /// <summary>
     /// Attempts to copy the named attachment to a new file. The output is deleted on failure.
     /// </summary>
+    /// <param name="sourcePath">Path to the source Matroska video.</param>
+    /// <param name="attachmentName">The expected attachment filename.</param>
+    /// <param name="outputPath">Unique destination path for the original image.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>True when a supported image was copied, or false for an unsupported attachment.</returns>
     internal static async Task<bool> TryExtractAsync(string sourcePath, string attachmentName, string outputPath, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(attachmentName))
@@ -31,7 +36,7 @@ internal static class MatroskaAttachmentReader
             return false;
         }
 
-        await using var input = new FileStream(sourcePath, FileMode.Open, FileAccess.Read, FileShare.Read, 32768, FileOptions.Asynchronous);
+        using var input = new FileStream(sourcePath, FileMode.Open, FileAccess.Read, FileShare.Read, 32768, FileOptions.Asynchronous);
         if (!TryLocateAttachment(input, attachmentName, out var offset, out var length, out var mimeType))
         {
             return false;
@@ -49,7 +54,7 @@ internal static class MatroskaAttachmentReader
         input.Position = offset;
         try
         {
-            await using var output = new FileStream(outputPath, FileMode.CreateNew, FileAccess.Write, FileShare.None, 32768, FileOptions.Asynchronous);
+            using var output = new FileStream(outputPath, FileMode.CreateNew, FileAccess.Write, FileShare.None, 32768, FileOptions.Asynchronous);
             var buffer = new byte[32768];
             var remaining = length;
             while (remaining > 0)
