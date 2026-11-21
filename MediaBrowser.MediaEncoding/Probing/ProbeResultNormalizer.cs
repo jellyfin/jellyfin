@@ -839,6 +839,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 }
 
                 stream.AspectRatio = GetAspectRatio(streamInfo);
+                stream.SampleAspectRatio = streamInfo.SampleAspectRatio;
 
                 if (streamInfo.BitsPerSample > 0)
                 {
