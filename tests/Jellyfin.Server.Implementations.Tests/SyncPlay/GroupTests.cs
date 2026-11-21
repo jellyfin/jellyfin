@@ -1,11 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Emby.Server.Implementations.SyncPlay;
 using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Controller.SyncPlay.Requests;
+using MediaBrowser.Model.Session;
+using MediaBrowser.Model.SyncPlay;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
@@ -76,5 +81,32 @@ public class GroupTests
         var result = group.HasAccessToPlayQueue(user);
 
         Assert.False(result);
+    }
+
+    [Fact]
+    public void CreateGroup_AttributesInheritedQueueToCreator()
+    {
+        var itemId = Guid.NewGuid();
+        MockItem.Object.Id = itemId;
+        var group = new Emby.Server.Implementations.SyncPlay.Group(
+            MockLoggerFactory.Object, MockUserManager.Object, MockSessionManager.Object, MockLibraryManager.Object);
+        var session = new SessionInfo(MockSessionManager.Object, NullLogger.Instance)
+        {
+            Id = "creator-session",
+            UserId = Guid.NewGuid(),
+            UserName = "creator",
+            FullNowPlayingItem = MockItem.Object,
+            NowPlayingQueue = new[] { new QueueItem { Id = itemId }, new QueueItem { Id = Guid.NewGuid() } }
+        };
+
+        group.CreateGroup(session, new NewGroupRequest("group"), CancellationToken.None);
+
+        var playlist = group.GetPlayQueueUpdate(PlayQueueUpdateReason.NewPlaylist).Playlist;
+        Assert.Equal(2, playlist.Count);
+        Assert.All(playlist, item =>
+        {
+            Assert.Equal(session.UserId, item.AddedByUserId);
+            Assert.Equal(session.UserName, item.AddedByUserName);
+        });
     }
 }
