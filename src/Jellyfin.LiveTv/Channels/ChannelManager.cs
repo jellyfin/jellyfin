@@ -51,7 +51,12 @@ namespace Jellyfin.LiveTv.Channels
         private readonly IFileSystem _fileSystem;
         private readonly IProviderManager _providerManager;
         private readonly IMemoryCache _memoryCache;
-        private readonly AsyncNonKeyedLocker _resourcePool = new(1);
+        private readonly AsyncKeyedLocker<string> _folderLocks = new(o =>
+        {
+            o.PoolSize = 20;
+            o.PoolInitialFill = 1;
+        });
+
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
         private bool _disposed = false;
 
@@ -718,14 +723,9 @@ namespace Jellyfin.LiveTv.Channels
                 ? channel
                 : _libraryManager.GetItemById(query.ParentId);
 
-            var itemsResult = await GetChannelItems(
-                channelProvider,
-                query.User,
-                parentItem is Channel ? null : parentItem.ExternalId,
-                null,
-                false,
-                cancellationToken)
-                .ConfigureAwait(false);
+            var externalFolderId = parentItem is Channel ? null : parentItem.ExternalId;
+            var userId = query.User?.Id.ToString("N", CultureInfo.InvariantCulture);
+            var cachePath = GetChannelDataCachePath(channelProvider, userId, externalFolderId);
 
             if (query.ParentId.IsEmpty())
             {
@@ -737,45 +737,70 @@ namespace Jellyfin.LiveTv.Channels
             // Not yet sure why this is causing a problem
             query.GroupByPresentationUniqueKey = false;
 
-            // null if came from cache
-            if (itemsResult is not null)
+            if (!await IsCacheFreshAsync(cachePath, cancellationToken).ConfigureAwait(false))
             {
-                var items = itemsResult.Items;
-                var itemsLen = items.Count;
-                var internalItems = new Guid[itemsLen];
-                for (int i = 0; i < itemsLen; i++)
+                // The lock of the folder is held until its items are in the library, so that a request
+                // waiting on it never reads the library before the items it expects exist.
+                using (await _folderLocks.LockAsync(cachePath, cancellationToken).ConfigureAwait(false))
                 {
-                    internalItems[i] = (await GetChannelItemEntityAsync(
-                        items[i],
-                        channelProvider,
-                        channel.Id,
-                        parentItem,
-                        cancellationToken).ConfigureAwait(false)).Id;
-                }
-
-                var existingIds = _libraryManager.GetItemIds(query);
-                var deadIds = existingIds.Except(internalItems)
-                    .ToArray();
-
-                foreach (var deadId in deadIds)
-                {
-                    var deadItem = _libraryManager.GetItemById(deadId);
-                    if (deadItem is not null)
+                    // Another request may have refreshed the folder while this one waited.
+                    if (!await IsCacheFreshAsync(cachePath, cancellationToken).ConfigureAwait(false))
                     {
-                        _libraryManager.DeleteItem(
-                            deadItem,
-                            new DeleteOptions
-                            {
-                                DeleteFileLocation = false,
-                                DeleteFromExternalProvider = false
-                            },
-                            parentItem,
-                            false);
+                        await UpdateChannelFolderAsync(channelProvider, channel, parentItem, externalFolderId, query, cachePath, cancellationToken).ConfigureAwait(false);
                     }
                 }
             }
 
             return _libraryManager.GetItemsResult(query);
+        }
+
+        private async Task UpdateChannelFolderAsync(
+            IChannel channelProvider,
+            Channel channel,
+            BaseItem parentItem,
+            string externalFolderId,
+            InternalItemsQuery query,
+            string cachePath,
+            CancellationToken cancellationToken)
+        {
+            var itemsResult = await GetChannelItems(channelProvider, query.User, externalFolderId, cancellationToken).ConfigureAwait(false);
+            var items = itemsResult.Items;
+            var itemsLen = items.Count;
+            var internalItems = new Guid[itemsLen];
+            for (int i = 0; i < itemsLen; i++)
+            {
+                internalItems[i] = (await GetChannelItemEntityAsync(
+                    items[i],
+                    channelProvider,
+                    channel.Id,
+                    parentItem,
+                    cancellationToken).ConfigureAwait(false)).Id;
+            }
+
+            var existingIds = _libraryManager.GetItemIds(query);
+            var deadIds = existingIds.Except(internalItems)
+                .ToArray();
+
+            foreach (var deadId in deadIds)
+            {
+                var deadItem = _libraryManager.GetItemById(deadId);
+                if (deadItem is not null)
+                {
+                    _libraryManager.DeleteItem(
+                        deadItem,
+                        new DeleteOptions
+                        {
+                            DeleteFileLocation = false,
+                            DeleteFromExternalProvider = false
+                        },
+                        parentItem,
+                        false);
+                }
+            }
+
+            // Cached only once the library holds the items, since a request finding
+            // the cache fresh reads the items from the library instead.
+            await CacheResponse(itemsResult, cachePath).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
@@ -793,22 +818,11 @@ namespace Jellyfin.LiveTv.Channels
             return result;
         }
 
-        private async Task<ChannelItemResult> GetChannelItems(
-            IChannel channel,
-            User user,
-            string externalFolderId,
-            ChannelItemSortField? sortField,
-            bool sortDescending,
-            CancellationToken cancellationToken)
+        private async Task<bool> IsCacheFreshAsync(string cachePath, CancellationToken cancellationToken)
         {
-            var userId = user?.Id.ToString("N", CultureInfo.InvariantCulture);
-
-            var cacheLength = CacheLength;
-            var cachePath = GetChannelDataCachePath(channel, userId, externalFolderId, sortField, sortDescending);
-
             try
             {
-                if (_fileSystem.GetLastWriteTimeUtc(cachePath).Add(cacheLength) > DateTime.UtcNow)
+                if (_fileSystem.GetLastWriteTimeUtc(cachePath).Add(CacheLength) > DateTime.UtcNow)
                 {
                     var jsonStream = AsyncFile.OpenRead(cachePath);
                     await using (jsonStream.ConfigureAwait(false))
@@ -816,10 +830,7 @@ namespace Jellyfin.LiveTv.Channels
                         var cachedResult = await JsonSerializer
                             .DeserializeAsync<ChannelItemResult>(jsonStream, _jsonOptions, cancellationToken)
                             .ConfigureAwait(false);
-                        if (cachedResult is not null)
-                        {
-                            return null;
-                        }
+                        return cachedResult is not null;
                     }
                 }
             }
@@ -829,80 +840,71 @@ namespace Jellyfin.LiveTv.Channels
             catch (IOException)
             {
             }
-
-            using (await _resourcePool.LockAsync(cancellationToken).ConfigureAwait(false))
+            catch (JsonException ex)
             {
-                try
-                {
-                    if (_fileSystem.GetLastWriteTimeUtc(cachePath).Add(cacheLength) > DateTime.UtcNow)
-                    {
-                        var jsonStream = AsyncFile.OpenRead(cachePath);
-                        await using (jsonStream.ConfigureAwait(false))
-                        {
-                            var cachedResult = await JsonSerializer
-                                .DeserializeAsync<ChannelItemResult>(jsonStream, _jsonOptions, cancellationToken)
-                                .ConfigureAwait(false);
-                            if (cachedResult is not null)
-                            {
-                                return null;
-                            }
-                        }
-                    }
-                }
-                catch (FileNotFoundException)
-                {
-                }
-                catch (IOException)
-                {
-                }
-
-                var query = new InternalChannelItemQuery
-                {
-                    UserId = user?.Id ?? Guid.Empty,
-                    SortBy = sortField,
-                    SortDescending = sortDescending,
-                    FolderId = externalFolderId
-                };
-
-                query.FolderId = externalFolderId;
-
-                var result = await channel.GetChannelItems(query, cancellationToken).ConfigureAwait(false);
-
-                if (result is null)
-                {
-                    throw new InvalidOperationException("Channel returned a null result from GetChannelItems");
-                }
-
-                await CacheResponse(result, cachePath).ConfigureAwait(false);
-
-                return result;
+                // E.g. truncated by a crash while it was written; the folder is fetched again and the file replaced.
+                _logger.LogWarning(ex, "Ignoring unreadable channel cache file: {Path}", cachePath);
             }
+
+            return false;
+        }
+
+        private async Task<ChannelItemResult> GetChannelItems(
+            IChannel channel,
+            User user,
+            string externalFolderId,
+            CancellationToken cancellationToken)
+        {
+            var query = new InternalChannelItemQuery
+            {
+                UserId = user?.Id ?? Guid.Empty,
+                FolderId = externalFolderId
+            };
+
+            var result = await channel.GetChannelItems(query, cancellationToken).ConfigureAwait(false);
+
+            if (result is null)
+            {
+                throw new InvalidOperationException("Channel returned a null result from GetChannelItems");
+            }
+
+            return result;
         }
 
         private async Task CacheResponse(ChannelItemResult result, string path)
         {
+            // Written next to the cache file and moved over it, so that the cache file is always complete.
+            var tempPath = path + "." + Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture) + ".tmp";
             try
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-                var createStream = AsyncFile.Create(path);
+                var createStream = AsyncFile.Create(tempPath);
                 await using (createStream.ConfigureAwait(false))
                 {
                     await JsonSerializer.SerializeAsync(createStream, result, _jsonOptions).ConfigureAwait(false);
                 }
+
+                File.Move(tempPath, path, true);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error writing to channel cache file: {Path}", path);
+
+                try
+                {
+                    File.Delete(tempPath);
+                }
+                catch (IOException)
+                {
+                }
             }
         }
 
         private string GetChannelDataCachePath(
             IChannel channel,
             string userId,
-            string externalFolderId,
-            ChannelItemSortField? sortField,
-            bool sortDescending)
+            string externalFolderId)
         {
             var channelId = GetInternalChannelId(channel.Name).ToString("N", CultureInfo.InvariantCulture);
 
@@ -917,16 +919,6 @@ namespace Jellyfin.LiveTv.Channels
             filename += userCacheKey;
 
             var version = ((channel.DataVersion ?? string.Empty) + "2").GetMD5().ToString("N", CultureInfo.InvariantCulture);
-
-            if (sortField.HasValue)
-            {
-                filename += "-sortField-" + sortField.Value;
-            }
-
-            if (sortDescending)
-            {
-                filename += "-sortDescending";
-            }
 
             filename = filename.GetMD5().ToString("N", CultureInfo.InvariantCulture);
 
@@ -1227,7 +1219,7 @@ namespace Jellyfin.LiveTv.Channels
 
             if (disposing)
             {
-                _resourcePool?.Dispose();
+                _folderLocks?.Dispose();
             }
 
             _disposed = true;
