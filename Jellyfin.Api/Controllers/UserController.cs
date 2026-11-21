@@ -408,7 +408,8 @@ public class UserController : BaseJellyfinApiController
     /// <response code="204">User policy updated.</response>
     /// <response code="400">User policy was not supplied.</response>
     /// <response code="403">User policy update forbidden.</response>
-    /// <returns>A <see cref="NoContentResult"/> indicating success or a <see cref="BadRequestResult"/> or a <see cref="ForbidResult"/> on failure..</returns>
+    /// <returns>A <see cref="NoContentResult"/> indicating success or a <see cref="BadRequestResult"/> or
+    /// an <see cref="ObjectResult"/> with a 403 status code when a user policy validation fails.</returns>
     [HttpPost("{userId}/Policy")]
     [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -429,14 +430,35 @@ public class UserController : BaseJellyfinApiController
         {
             if (_userManager.GetUsers().Count(i => i.HasPermission(PermissionKind.IsAdministrator)) == 1)
             {
-                return StatusCode(StatusCodes.Status403Forbidden, "There must be at least one user in the system with administrative access.");
+                return StatusCode(
+                    StatusCodes.Status403Forbidden, new
+                    {
+                        Code = "AtLeastOneAdminUserRequired",
+                        Message = "There must be at least one user in the system with administrative access."
+                    });
             }
+        }
+
+        // If granting admin access, password needs to be set
+        if (newPolicy.IsAdministrator && string.IsNullOrEmpty(user.Password))
+        {
+            return StatusCode(
+                StatusCodes.Status403Forbidden, new
+                {
+                    Code = "AdminPasswordRequired",
+                    Message = "Administrator accounts always need to have a password."
+                });
         }
 
         // If disabling
         if (newPolicy.IsDisabled && user.HasPermission(PermissionKind.IsAdministrator))
         {
-            return StatusCode(StatusCodes.Status403Forbidden, "Administrators cannot be disabled.");
+            return StatusCode(
+                StatusCodes.Status403Forbidden, new
+                {
+                    Code = "CantDisableAdmin",
+                    Message = "Administrators cannot be disabled."
+                });
         }
 
         // If disabling
@@ -444,7 +466,12 @@ public class UserController : BaseJellyfinApiController
         {
             if (_userManager.GetUsers().Count(i => !i.HasPermission(PermissionKind.IsDisabled)) == 1)
             {
-                return StatusCode(StatusCodes.Status403Forbidden, "There must be at least one enabled user in the system.");
+                return StatusCode(
+                    StatusCodes.Status403Forbidden, new
+                    {
+                        Code = "AtLeastOneEnabledUserRequired",
+                        Message = "There must be at least one enabled user in the system."
+                    });
             }
 
             var currentToken = User.GetToken();
