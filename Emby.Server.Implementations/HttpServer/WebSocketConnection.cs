@@ -133,7 +133,7 @@ namespace Emby.Server.Implementations.HttpServer
                     // down underneath us (e.g. by the keep-alive watchdog after the connection
                     // was declared lost). Fall through so Closed is still raised and the
                     // session can release this connection.
-                    _logger.LogWarning("WS {IP} error receiving data: {Message}", RemoteEndPoint, ex.Message);
+                    _logger.Log(GetDisconnectLogLevel(ex), "WS {IP} error receiving data: {Message}", RemoteEndPoint, ex.Message);
                     break;
                 }
 
@@ -164,7 +164,7 @@ namespace Emby.Server.Implementations.HttpServer
                     }
                     catch (Exception ex) when (IsConnectionGone(ex))
                     {
-                        _logger.LogWarning("WS {IP} error sending data: {Message}", RemoteEndPoint, ex.Message);
+                        _logger.Log(GetDisconnectLogLevel(ex), "WS {IP} error sending data: {Message}", RemoteEndPoint, ex.Message);
                         break;
                     }
                 }
@@ -195,6 +195,12 @@ namespace Emby.Server.Implementations.HttpServer
 
         private static bool IsConnectionGone(Exception ex)
             => ex is WebSocketException or ObjectDisposedException or OperationCanceledException;
+
+        private static LogLevel GetDisconnectLogLevel(Exception ex)
+            => ex is ObjectDisposedException or OperationCanceledException
+                or WebSocketException { WebSocketErrorCode: WebSocketError.ConnectionClosedPrematurely }
+                    ? LogLevel.Debug
+                    : LogLevel.Warning;
 
         private async Task ProcessInternal(PipeReader reader)
         {
