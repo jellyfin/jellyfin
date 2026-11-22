@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Locking;
@@ -79,11 +80,11 @@ public sealed class MigrateRatingLevelsTests : IDisposable
     }
 
     [Fact]
-    public void Perform_UnratedSeasonAndEpisode_InheritTheSeriesRating()
+    public async Task Perform_UnratedSeasonAndEpisode_InheritTheSeriesRating()
     {
         SeedSeries(seriesRating: "TV-MA", seriesCustomRating: null, inherited: null);
 
-        Perform();
+        await PerformAsync();
 
         using var context = CreateDbContext();
         AssertRating(context, _seriesId, 17, 1);
@@ -93,12 +94,12 @@ public sealed class MigrateRatingLevelsTests : IDisposable
     }
 
     [Fact]
-    public void Perform_AlreadyMigrated_KeepsTheInheritedRating()
+    public async Task Perform_AlreadyMigrated_KeepsTheInheritedRating()
     {
         // A second run over a database the first run and a scan already brought up to date.
         SeedSeries(seriesRating: "TV-MA", seriesCustomRating: null, inherited: new ParentalRatingScore(17, 1));
 
-        Perform();
+        await PerformAsync();
 
         using var context = CreateDbContext();
         AssertRating(context, _seasonId, 17, 1);
@@ -106,11 +107,11 @@ public sealed class MigrateRatingLevelsTests : IDisposable
     }
 
     [Fact]
-    public void Perform_CustomRatingOnSeries_WinsOverTheOfficialOne()
+    public async Task Perform_CustomRatingOnSeries_WinsOverTheOfficialOne()
     {
         SeedSeries(seriesRating: "TV-14", seriesCustomRating: "TV-MA", inherited: null);
 
-        Perform();
+        await PerformAsync();
 
         using var context = CreateDbContext();
         AssertRating(context, _seriesId, 17, 1);
@@ -118,11 +119,11 @@ public sealed class MigrateRatingLevelsTests : IDisposable
     }
 
     [Fact]
-    public void Perform_UnratedSeries_ClearsTheInheritedRating()
+    public async Task Perform_UnratedSeries_ClearsTheInheritedRating()
     {
         SeedSeries(seriesRating: null, seriesCustomRating: null, inherited: new ParentalRatingScore(14, null));
 
-        Perform();
+        await PerformAsync();
 
         using var context = CreateDbContext();
         AssertRating(context, _seriesId, null, null);
@@ -130,12 +131,12 @@ public sealed class MigrateRatingLevelsTests : IDisposable
     }
 
     [Fact]
-    public void Perform_LibraryCountry_ScoresInheritedRatingsInThatCountry()
+    public async Task Perform_LibraryCountry_ScoresInheritedRatingsInThatCountry()
     {
         SeedSeries(seriesRating: "TV-14", seriesCustomRating: null, inherited: null);
         SeedLibrary(folderCountryCode: null, optionsCountryCode: "DE");
 
-        Perform();
+        await PerformAsync();
 
         using var context = CreateDbContext();
         AssertRating(context, _seriesId, 16, null);
@@ -143,12 +144,12 @@ public sealed class MigrateRatingLevelsTests : IDisposable
     }
 
     [Fact]
-    public void Perform_CountryOnTheSeries_WinsOverTheLibraryCountry()
+    public async Task Perform_CountryOnTheSeries_WinsOverTheLibraryCountry()
     {
         SeedSeries(seriesRating: "TV-14", seriesCustomRating: null, inherited: null, seriesCountryCode: "GB");
         SeedLibrary(folderCountryCode: "DE", optionsCountryCode: "DE");
 
-        Perform();
+        await PerformAsync();
 
         using var context = CreateDbContext();
         AssertRating(context, _seriesId, 15, null);
@@ -156,7 +157,7 @@ public sealed class MigrateRatingLevelsTests : IDisposable
     }
 
     [Fact]
-    public void Perform_LibraryUnderTheDataPath_ScoresInheritedRatingsInThatCountry()
+    public async Task Perform_LibraryUnderTheDataPath_ScoresInheritedRatingsInThatCountry()
     {
         SeedSeries(seriesRating: "TV-14", seriesCustomRating: null, inherited: null);
         SeedLibrary(folderCountryCode: null, optionsCountryCode: "DE", location: "/var/lib/jellyfin/data/shows");
@@ -165,7 +166,7 @@ public sealed class MigrateRatingLevelsTests : IDisposable
             context.BaseItems.Where(e => e.Id.Equals(_libraryId)).ExecuteUpdate(f => f.SetProperty(e => e.Path, "%AppDataPath%/shows"));
         }
 
-        Perform();
+        await PerformAsync();
 
         using var assertContext = CreateDbContext();
         AssertRating(assertContext, _seriesId, 16, null);
@@ -173,7 +174,7 @@ public sealed class MigrateRatingLevelsTests : IDisposable
     }
 
     [Fact]
-    public void Perform_RatedCollectionFolder_UsesItsOwnLibraryCountryCode()
+    public async Task Perform_RatedCollectionFolder_UsesItsOwnLibraryCountryCode()
     {
         var userRootId = Guid.Parse("77777777-7777-7777-7777-777777777777");
         using (var context = CreateDbContext())
@@ -189,7 +190,7 @@ public sealed class MigrateRatingLevelsTests : IDisposable
                 ParentId = userRootId,
                 CustomRating = "TV-14"
             });
-            context.SaveChanges();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
         }
 
         _libraryManager.Setup(m => m.GetVirtualFolders(false)).Returns(
@@ -203,7 +204,7 @@ public sealed class MigrateRatingLevelsTests : IDisposable
             }
         ]);
 
-        Perform();
+        await PerformAsync();
 
         using var assertContext = CreateDbContext();
         AssertRating(assertContext, _collectionFolderId, 16, null);
@@ -221,12 +222,18 @@ public sealed class MigrateRatingLevelsTests : IDisposable
         Assert.Equal(subScore, item.InheritedParentalRatingSubValue);
     }
 
-    private void Perform()
+    private Task PerformAsync()
     {
         var factory = new Mock<IDbContextFactory<JellyfinDbContext>>();
         factory.Setup(f => f.CreateDbContext()).Returns(CreateDbContext);
 
-        new MigrateRatingLevels(factory.Object, new StartupLogger<MigrateRatingLevels>(NullLogger<MigrateRatingLevels>.Instance), _localizationManager.Object, _libraryManager.Object, _appHost.Object).Perform();
+        var migration = new MigrateRatingLevels(
+            factory.Object,
+            new StartupLogger<MigrateRatingLevels>(NullLogger<MigrateRatingLevels>.Instance),
+            _localizationManager.Object,
+            _libraryManager.Object,
+            _appHost.Object);
+        return migration.PerformAsync(TestContext.Current.CancellationToken);
     }
 
     private JellyfinDbContext CreateDbContext() => new(

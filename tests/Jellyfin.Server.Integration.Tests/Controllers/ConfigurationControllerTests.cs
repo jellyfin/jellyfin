@@ -64,7 +64,10 @@ public sealed class ConfigurationControllerTests : IDisposable
                 {
                     options.AddPolicy(Policies.RequiresElevation, policy => policy.RequireAuthenticatedUser());
                 });
-                services.AddJellyfinApi(Array.Empty<Assembly>(), new NetworkConfiguration());
+                services.AddJellyfinApi(
+                    Array.Empty<Assembly>(),
+                    (NetworkConfiguration)_configurations["network"],
+                    _configurationManager.Object.Configuration);
             })
             .Configure(app =>
             {
@@ -136,7 +139,14 @@ public sealed class ConfigurationControllerTests : IDisposable
 
         var body = JsonNode.Parse(await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken))!.AsObject();
         var expected = JsonSerializer.SerializeToNode(_configurations[key], JsonDefaults.Options)!.AsObject();
-        Assert.True(JsonNode.DeepEquals(expected, body));
+        var expectedResponse = expected.DeepClone().AsObject();
+        if (key.Length == 0)
+        {
+            // This server-side switch is outside the public configuration DTO.
+            expectedResponse.Remove(nameof(ServerConfiguration.EnableObsoleteEndpoints));
+        }
+
+        Assert.True(JsonNode.DeepEquals(expectedResponse, body));
 
         body[property] = JsonNode.Parse(value);
         expected[property] = JsonNode.Parse(value);
