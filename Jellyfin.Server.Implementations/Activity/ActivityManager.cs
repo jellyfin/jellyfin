@@ -163,7 +163,7 @@ public class ActivityManager : IActivityManager
     {
         if (sorting is null || sorting.Count == 0)
         {
-            return query.OrderByDescending(e => e.ActivityLog.DateCreated);
+            return query.OrderByDescending(e => e.ActivityLog.DateCreated).ThenByDescending(e => e.ActivityLog.Id);
         }
 
         IOrderedQueryable<ExpandedActivityLog> ordered = null!;
@@ -186,7 +186,8 @@ public class ActivityManager : IActivityManager
             }
         }
 
-        return ordered;
+        // Id breaks ties so paging through the log neither repeats nor skips entries.
+        return ordered.ThenByDescending(e => e.ActivityLog.Id);
     }
 
     private Expression<Func<ExpandedActivityLog, object?>> MapOrderBy(ActivityLogSortBy sortBy)
