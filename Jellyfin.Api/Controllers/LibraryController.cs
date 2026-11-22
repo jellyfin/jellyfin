@@ -107,6 +107,7 @@ public class LibraryController : BaseJellyfinApiController
     /// Get the original file of an item.
     /// </summary>
     /// <param name="itemId">The item id.</param>
+    /// <param name="playSessionId">Optional. The playback session identifier.</param>
     /// <response code="200">File stream returned.</response>
     /// <response code="404">Item not found.</response>
     /// <returns>A <see cref="FileStreamResult"/> with the original file.</returns>
@@ -115,7 +116,9 @@ public class LibraryController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesFile("video/*", "audio/*")]
-    public ActionResult GetFile([FromRoute, Required] Guid itemId)
+    public ActionResult GetFile(
+        [FromRoute, Required] Guid itemId,
+        [FromQuery(Name = "PlaySessionId"), ModelBinder(typeof(CommaJoinedStringModelBinder))] string? playSessionId = null)
     {
         var item = _libraryManager.GetItemById<BaseItem>(itemId, User.GetUserId());
         if (item is null)
@@ -134,7 +137,7 @@ public class LibraryController : BaseJellyfinApiController
             }
         }
 
-        using var playback = _videoPlaybackHelper.Acquire(HttpContext, item.Id, Request.Query["PlaySessionId"]);
+        using var playback = _videoPlaybackHelper.Acquire(HttpContext, item.Id, playSessionId);
         return VideoPlaybackHelper.Wrap(PhysicalFile(filePath, MimeTypes.GetMimeType(filePath), true), playback);
     }
 

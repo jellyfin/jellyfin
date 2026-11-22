@@ -20,6 +20,8 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Net;
+using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Streaming;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
@@ -27,6 +29,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -43,6 +46,72 @@ public sealed class VideoPlaybackStreamingTests : IClassFixture<VideoPlaybackStr
     public VideoPlaybackStreamingTests(PlaybackFactory factory)
     {
         _factory = factory;
+    }
+
+    public static TheoryData<string, string?> FilePlaybackSessionQueries => new()
+    {
+        { string.Empty, null },
+        { "?PlaySessionId=", null },
+        { "?PlaySessionId=%20%20", null },
+        { "?PlaySessionId=&PlaySessionId=", null },
+        { "?PlaySessionId[0]=indexed", null },
+        { "?PlaySessionId=single", "single" },
+        { "?playSessionId=camel-case", "camel-case" },
+        { "?PlaySessionId%3Dlegacy-encoded", "legacy-encoded" },
+        { "?playSessionId%3Dlegacy-encoded", null },
+        { "?PlaySessionId=first&playSessionId=second", "first,second" },
+        { "?PlaySessionId=one&PlaySessionId=two&PlaySessionId=three", "one,two,three" },
+        { "?PlaySessionId=comma%2Cvalue&PlaySessionId=&PlaySessionId=%20%20&PlaySessionId=tail", "comma,value,  ,tail" },
+        { $"?PlaySessionId={new string('a', 128)}", new string('a', 128) },
+        { $"?PlaySessionId={new string('a', 129)}", new string('a', 129) },
+        { $"?PlaySessionId={new string('b', 126)}&PlaySessionId=c", new string('b', 126) + ",c" },
+        { $"?PlaySessionId={new string('b', 127)}&PlaySessionId=c", new string('b', 127) + ",c" }
+    };
+
+    [Theory]
+    [MemberData(nameof(FilePlaybackSessionQueries))]
+    public async Task GetFile_PreservesPlaybackSessionRegistrationAndAdmission(string query, string? expectedAlias)
+    {
+        var clients = await CreatePlaybackClientsAsync().ConfigureAwait(true);
+        using var first = clients.First;
+        using var second = clients.Second;
+        var movie = _factory.CreateMovie();
+        var path = $"Items/{movie.Id}/File";
+        var authRequest = new DefaultHttpContext().Request;
+        authRequest.Headers[AuthHelper.AuthHeaderName] = Assert.Single(first.DefaultRequestHeaders.GetValues(AuthHelper.AuthHeaderName));
+        var authorization = await _factory.Services.GetRequiredService<IAuthorizationContext>().GetAuthorizationInfo(authRequest).ConfigureAwait(true);
+        var owner = Assert.IsType<string>(authorization.PlaybackOwnerId);
+        var userId = authorization.UserId;
+        var playback = new VideoPlaybackContext(userId, owner, movie.Id, VideoPlaybackContext.CreateLegacyId(userId, owner, movie.Id));
+        var coordinator = _factory.Services.GetRequiredService<IVideoPlaybackCoordinator>();
+
+        using var response = await first.GetAsync(path + query, TestContext.Current.CancellationToken).ConfigureAwait(true);
+        if (expectedAlias?.Length > 128)
+        {
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.Equal(VideoPlaybackStatus.NotFound, coordinator.ResolvePlayback(playback, out _));
+            using var available = await second.GetAsync(path, TestContext.Current.CancellationToken).ConfigureAwait(true);
+            Assert.Equal(HttpStatusCode.OK, available.StatusCode);
+            return;
+        }
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(PlaybackFactory.MediaBytes, await response.Content.ReadAsByteArrayAsync(TestContext.Current.CancellationToken).ConfigureAwait(true));
+        Assert.Equal(VideoPlaybackStatus.Success, coordinator.ResolvePlayback(playback, out var registeredAlias));
+        if (expectedAlias is null)
+        {
+            Assert.True(Guid.TryParseExact(registeredAlias, "N", out _));
+        }
+        else
+        {
+            Assert.Equal(expectedAlias, registeredAlias);
+            using var borrowed = await second.GetAsync(path + query, TestContext.Current.CancellationToken).ConfigureAwait(true);
+            Assert.Equal(HttpStatusCode.Forbidden, borrowed.StatusCode);
+            Assert.False(borrowed.Headers.Contains("X-Jellyfin-Error-Code"));
+        }
+
+        using var denied = await second.GetAsync(path, TestContext.Current.CancellationToken).ConfigureAwait(true);
+        await AssertLimitReachedAsync(denied).ConfigureAwait(true);
     }
 
     [Theory]
