@@ -513,6 +513,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var args = extractChapters
                 ? "{0} -i {1} -threads {2} -v warning -print_format json -show_streams -show_chapters -show_format"
                 : "{0} -i {1} -threads {2} -v warning -print_format json -show_streams -show_format";
+            
+            args += " -allowed_extensions ALL -allowed_segment_extensions ALL -extension_picky 0";
 
             if (protocol == MediaProtocol.File && !isAudio && _proberSupportsFirstVideoFrame)
             {

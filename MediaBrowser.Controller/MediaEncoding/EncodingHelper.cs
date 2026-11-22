@@ -7489,6 +7489,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                 inputModifier += " -stream_loop -1 -reconnect_at_eof 1 -reconnect_streamed 1 -reconnect_delay_max 2";
             }
 
+            if (string.Equals(state.InputContainer, "hls", StringComparison.OrdinalIgnoreCase))
+            {
+                inputModifier += " -allowed_extensions ALL -allowed_segment_extensions ALL -extension_picky 0";
+            }
+
             return inputModifier;
         }
 

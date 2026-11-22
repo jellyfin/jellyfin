@@ -22,6 +22,7 @@
  - [ckcr4lyf](https://github.com/ckcr4lyf)
  - [cocool97](https://github.com/cocool97)
  - [ConfusedPolarBear](https://github.com/ConfusedPolarBear)
+ - [corrmaan](https://github.com/corrmaan)
  - [crankdoofus](https://github.com/crankdoofus)
  - [crobibero](https://github.com/crobibero)
  - [cromefire](https://github.com/cromefire)
