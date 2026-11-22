@@ -12,6 +12,7 @@ using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
@@ -271,6 +272,7 @@ namespace Emby.Server.Implementations.Collections
                 collection.UpdateRatingToItems(linkedChildrenList);
 
                 await collection.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+                await UpdateFranchiseSortNamesAsync(linkedChildrenList).ConfigureAwait(false);
 
                 refreshOptions.ForceSave = true;
                 _providerManager.QueueRefresh(collection.Id, refreshOptions, RefreshPriority.High);
@@ -279,6 +281,27 @@ namespace Emby.Server.Implementations.Collections
                 {
                     ItemsAddedToCollection?.Invoke(this, new CollectionModifiedEventArgs(collection, itemList));
                 }
+            }
+        }
+
+        /// <summary>
+        /// Recomputes the sort names of movies and series whose franchise may have changed because a collection changed,
+        /// so chronological franchise sorting takes effect without waiting for a metadata refresh.
+        /// </summary>
+        private async Task UpdateFranchiseSortNamesAsync(IEnumerable<BaseItem> items)
+        {
+            foreach (var item in items)
+            {
+                if (item is not (Movie or Series)
+                    || !string.IsNullOrEmpty(item.ForcedSortName)
+                    || !(_libraryManager.GetLibraryOptions(item)?.EnableChronologicalFranchiseSorting ?? false))
+                {
+                    continue;
+                }
+
+                // The stored sort name is not loaded with the item, so always recompute and save it.
+                item.SortName = null;
+                await item.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
             }
         }
 
@@ -319,6 +342,7 @@ namespace Emby.Server.Implementations.Collections
             }
 
             await collection.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+            await UpdateFranchiseSortNamesAsync(collection.GetLinkedChildren(DtoOptions.StoredColumnsOnly).Concat(itemList)).ConfigureAwait(false);
             _providerManager.QueueRefresh(
                 collection.Id,
                 new MetadataRefreshOptions(new DirectoryService(_fileSystem))

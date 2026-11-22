@@ -698,6 +698,7 @@ namespace Emby.Server.Implementations
             BaseItem.ItemRepository = Resolve<IItemRepository>();
             BaseItem.ItemCountService = Resolve<IItemCountService>();
             BaseItem.LibraryManager = Resolve<ILibraryManager>();
+            BaseItem.LinkedChildrenService = Resolve<ILinkedChildrenService>();
             BaseItem.LocalizationManager = Resolve<ILocalizationManager>();
             BaseItem.Logger = Resolve<ILogger<BaseItem>>();
             BaseItem.MediaSegmentManager = Resolve<IMediaSegmentManager>();

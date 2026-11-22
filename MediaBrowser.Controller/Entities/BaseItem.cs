@@ -511,6 +511,11 @@ namespace MediaBrowser.Controller.Entities
 
         public static ILibraryManager LibraryManager { get; set; }
 
+        /// <summary>
+        /// Gets or sets the linked children service, used to find the collections an item belongs to.
+        /// </summary>
+        public static ILinkedChildrenService LinkedChildrenService { get; set; }
+
         public static IServerConfigurationManager ConfigurationManager { get; set; }
 
         public static IProviderManager ProviderManager { get; set; }
@@ -967,6 +972,119 @@ namespace MediaBrowser.Controller.Entities
         protected virtual string CreateSortName()
         {
             return GetSortName(Name, EnableAlphaNumericSorting, ConfigurationManager.Configuration);
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the library containing this item sorts franchises chronologically.
+        /// </summary>
+        /// <returns><c>true</c> if <see cref="LibraryOptions.EnableChronologicalFranchiseSorting"/> is enabled for this item's library.</returns>
+        protected bool IsChronologicalFranchiseSortingEnabled()
+        {
+            return LibraryManager?.GetLibraryOptions(this)?.EnableChronologicalFranchiseSorting ?? false;
+        }
+
+        /// <summary>
+        /// Gets the franchise name for a collection name, e.g. "Example Collection" becomes "Example".
+        /// </summary>
+        /// <param name="collectionName">The collection name.</param>
+        /// <returns>The franchise name.</returns>
+        public static string GetCollectionFranchiseName(string collectionName)
+        {
+            var name = collectionName.Trim();
+            const string Suffix = " Collection";
+            return name.EndsWith(Suffix, StringComparison.OrdinalIgnoreCase) && name.Length > Suffix.Length
+                ? name[..^Suffix.Length].TrimEnd()
+                : name;
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether a title is named after a franchise, i.e. the title starts with the
+        /// franchise name as whole words, ignoring case, punctuation and a leading article.
+        /// "Example: Part Two" and "Example Origins" are named after "Example"; "Examples" is not.
+        /// </summary>
+        /// <param name="title">The title.</param>
+        /// <param name="franchise">The franchise name.</param>
+        /// <returns><c>true</c> if <paramref name="title"/> is named after <paramref name="franchise"/>.</returns>
+        public static bool IsNamedAfterFranchise(string title, string franchise)
+        {
+            var t = NormalizeFranchiseWords(title);
+            var f = NormalizeFranchiseWords(franchise);
+            return f.Length > 0 && (t == f || t.StartsWith(f + " ", StringComparison.Ordinal));
+        }
+
+        private static string NormalizeFranchiseWords(string value)
+        {
+            var words = new List<string>();
+            var word = new StringBuilder();
+            foreach (var c in (value ?? string.Empty).ToLowerInvariant())
+            {
+                if (char.IsLetterOrDigit(c))
+                {
+                    word.Append(c);
+                }
+                else if (c != '\'' && c != '\u2019' && word.Length > 0)
+                {
+                    words.Add(word.ToString());
+                    word.Clear();
+                }
+            }
+
+            if (word.Length > 0)
+            {
+                words.Add(word.ToString());
+            }
+
+            if (words.Count > 1 && words[0] is "the" or "a" or "an")
+            {
+                words.RemoveAt(0);
+            }
+
+            return string.Join(' ', words);
+        }
+
+        /// <summary>
+        /// Gets the franchise of the first collection (by name) this item was added to that is named after the franchise,
+        /// i.e. at least one item in it is named after the collection. Themed collections (holidays, favorites, genres)
+        /// are therefore ignored, while a collection named after a franchise also keeps spin-offs with unrelated titles together.
+        /// </summary>
+        /// <returns>The franchise name, or <c>null</c> if the item is not in such a collection.</returns>
+        protected string GetFranchiseFromCollections()
+        {
+            if (LinkedChildrenService is null || LibraryManager is null || Id.IsEmpty())
+            {
+                return null;
+            }
+
+            string best = null;
+            foreach (var collectionId in LinkedChildrenService.GetManualLinkedParentIds(Id, BaseItemKind.BoxSet))
+            {
+                if (LibraryManager.GetItemById(collectionId) is not Folder collection || string.IsNullOrWhiteSpace(collection.Name))
+                {
+                    continue;
+                }
+
+                var franchise = GetCollectionFranchiseName(collection.Name);
+                if ((best is null || string.Compare(franchise, best, StringComparison.OrdinalIgnoreCase) < 0)
+                    && collection.GetLinkedChildren(DtoOptions.StoredColumnsOnly).Any(i => IsNamedAfterFranchise(i.Name, franchise)))
+                {
+                    best = franchise;
+                }
+            }
+
+            return best;
+        }
+
+        /// <summary>
+        /// Creates a sort name that keeps the entries of a franchise together, ordered by release date.
+        /// </summary>
+        /// <param name="franchise">The franchise name the entry belongs to.</param>
+        /// <returns>The sort name.</returns>
+        protected string CreateChronologicalSortName(string franchise)
+        {
+            var released = PremiereDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
+                ?? ProductionYear?.ToString(CultureInfo.InvariantCulture);
+            var key = string.IsNullOrEmpty(released) ? franchise : franchise + " " + released;
+            return GetSortName(key, EnableAlphaNumericSorting, ConfigurationManager.Configuration);
         }
 
         /// <summary>

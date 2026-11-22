@@ -68,12 +68,58 @@ namespace MediaBrowser.Controller.Entities.TV
         /// <value>The status.</value>
         public SeriesStatus? Status { get; set; }
 
+        /// <summary>
+        /// Gets the franchise name used for chronological sorting: the part of a series name before the first colon or spaced dash,
+        /// without a trailing year, e.g. "Example: Part Two" becomes "Example".
+        /// </summary>
+        /// <param name="seriesName">The series name.</param>
+        /// <returns>The franchise name.</returns>
+        public static string GetFranchiseName(string seriesName)
+        {
+            var name = seriesName.Trim();
+            // "Name: Subtitle" or "Name - Subtitle" (spaced dash only, so hyphenated names stay intact)
+            var end = name.IndexOf(':', StringComparison.Ordinal);
+            foreach (var dash in new[] { " - ", " \u2013 ", " \u2014 " })
+            {
+                var i = name.IndexOf(dash, StringComparison.Ordinal);
+                if (i > 0 && (end < 0 || i < end))
+                {
+                    end = i;
+                }
+            }
+
+            if (end > 0)
+            {
+                name = name[..end].TrimEnd();
+            }
+
+            // "Example (2008)" and "Example" are the same franchise
+            if (name.Length > 7 && name[^1] == ')' && name[^6] == '(' && name[^7] == ' '
+                && int.TryParse(name.AsSpan(name.Length - 5, 4), NumberStyles.None, CultureInfo.InvariantCulture, out _))
+            {
+                name = name[..^7];
+            }
+
+            return name;
+        }
+
         public override double GetDefaultPrimaryImageAspectRatio()
         {
             double value = 2;
             value /= 3;
 
             return value;
+        }
+
+        /// <inheritdoc />
+        protected override string CreateSortName()
+        {
+            if (!string.IsNullOrWhiteSpace(Name) && IsChronologicalFranchiseSortingEnabled())
+            {
+                return CreateChronologicalSortName(GetFranchiseFromCollections() ?? GetFranchiseName(Name));
+            }
+
+            return base.CreateSortName();
         }
 
         public override string CreatePresentationUniqueKey()

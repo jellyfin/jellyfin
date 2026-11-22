@@ -57,6 +57,22 @@ namespace MediaBrowser.Controller.Entities.Movies
         }
 
         /// <inheritdoc />
+        protected override string CreateSortName()
+        {
+            if (IsChronologicalFranchiseSortingEnabled())
+            {
+                var franchise = GetFranchiseFromCollections()
+                    ?? (string.IsNullOrWhiteSpace(CollectionName) ? null : GetCollectionFranchiseName(CollectionName));
+                if (franchise is not null)
+                {
+                    return CreateChronologicalSortName(franchise);
+                }
+            }
+
+            return base.CreateSortName();
+        }
+
+        /// <inheritdoc />
         public override UnratedItem GetBlockUnratedType()
         {
             return UnratedItem.Movie;

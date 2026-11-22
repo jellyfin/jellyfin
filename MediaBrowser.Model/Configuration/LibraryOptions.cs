@@ -133,6 +133,16 @@ namespace MediaBrowser.Model.Configuration
 
         public bool AutomaticallyAddToCollection { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether entries of the same franchise sort next to each other in release order.
+        /// </summary>
+        /// <remarks>
+        /// Items are grouped by a collection named after their franchise; otherwise movies by their collection and
+        /// series by the part of their name before the first colon or spaced dash ("Example", "Example: Part Two").
+        /// Only the sort name changes; a forced sort name set by the user still wins.
+        /// </remarks>
+        public bool EnableChronologicalFranchiseSorting { get; set; }
+
         public EmbeddedSubtitleOptions AllowEmbeddedSubtitles { get; set; }
 
         public TypeOptions[] TypeOptions { get; set; }
