@@ -45,6 +45,20 @@ namespace MediaBrowser.Controller.Entities.Movies
             set => TmdbCollectionName = value;
         }
 
+        /// <summary>
+        /// Gets the franchise name used for chronological sorting from a collection name, e.g. "Indiana Jones Collection" becomes "Indiana Jones".
+        /// </summary>
+        /// <param name="collectionName">The collection name.</param>
+        /// <returns>The franchise name.</returns>
+        public static string GetFranchiseName(string collectionName)
+        {
+            var name = collectionName.Trim();
+            const string Suffix = " Collection";
+            return name.EndsWith(Suffix, StringComparison.OrdinalIgnoreCase) && name.Length > Suffix.Length
+                ? name[..^Suffix.Length].TrimEnd()
+                : name;
+        }
+
         public override double GetDefaultPrimaryImageAspectRatio()
         {
             // hack for tv plugins
@@ -57,6 +71,17 @@ namespace MediaBrowser.Controller.Entities.Movies
         }
 
         /// <inheritdoc />
+        /// <inheritdoc />
+        protected override string CreateSortName()
+        {
+            if (!string.IsNullOrWhiteSpace(CollectionName) && IsChronologicalFranchiseSortingEnabled())
+            {
+                return CreateChronologicalSortName(GetFranchiseName(CollectionName));
+            }
+
+            return base.CreateSortName();
+        }
+
         public override UnratedItem GetBlockUnratedType()
         {
             return UnratedItem.Movie;

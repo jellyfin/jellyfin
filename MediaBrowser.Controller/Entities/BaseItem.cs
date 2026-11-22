@@ -970,6 +970,28 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
+        /// Gets a value indicating whether the library containing this item sorts franchises chronologically.
+        /// </summary>
+        /// <returns><c>true</c> if <see cref="LibraryOptions.EnableChronologicalFranchiseSorting"/> is enabled for this item's library.</returns>
+        protected bool IsChronologicalFranchiseSortingEnabled()
+        {
+            return LibraryManager?.GetLibraryOptions(this)?.EnableChronologicalFranchiseSorting ?? false;
+        }
+
+        /// <summary>
+        /// Creates a sort name that keeps the entries of a franchise together, ordered by release date.
+        /// </summary>
+        /// <param name="franchise">The franchise name the entry belongs to.</param>
+        /// <returns>The sort name.</returns>
+        protected string CreateChronologicalSortName(string franchise)
+        {
+            var released = PremiereDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
+                ?? ProductionYear?.ToString(CultureInfo.InvariantCulture);
+            var key = string.IsNullOrEmpty(released) ? franchise : franchise + " " + released;
+            return GetSortName(key, EnableAlphaNumericSorting, ConfigurationManager.Configuration);
+        }
+
+        /// <summary>
         /// Turns an item-by-name entity's name into a folder name every supported filesystem accepts.
         /// </summary>
         /// <param name="name">The entity's name.</param>

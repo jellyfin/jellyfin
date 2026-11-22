@@ -68,12 +68,48 @@ namespace MediaBrowser.Controller.Entities.TV
         /// <value>The status.</value>
         public SeriesStatus? Status { get; set; }
 
+        /// <summary>
+        /// Gets the franchise name used for chronological sorting: the part of a series name before the first colon,
+        /// without a trailing year, e.g. "Star Trek: The Next Generation" becomes "Star Trek".
+        /// </summary>
+        /// <param name="seriesName">The series name.</param>
+        /// <returns>The franchise name.</returns>
+        public static string GetFranchiseName(string seriesName)
+        {
+            var name = seriesName.Trim();
+            var colon = name.IndexOf(':', StringComparison.Ordinal);
+            if (colon > 0)
+            {
+                name = name[..colon].TrimEnd();
+            }
+
+            // "Merlin (2008)" and "Merlin" are the same franchise
+            if (name.Length > 7 && name[^1] == ')' && name[^6] == '(' && name[^7] == ' '
+                && int.TryParse(name.AsSpan(name.Length - 5, 4), NumberStyles.None, CultureInfo.InvariantCulture, out _))
+            {
+                name = name[..^7];
+            }
+
+            return name;
+        }
+
         public override double GetDefaultPrimaryImageAspectRatio()
         {
             double value = 2;
             value /= 3;
 
             return value;
+        }
+
+        /// <inheritdoc />
+        protected override string CreateSortName()
+        {
+            if (!string.IsNullOrWhiteSpace(Name) && IsChronologicalFranchiseSortingEnabled())
+            {
+                return CreateChronologicalSortName(GetFranchiseName(Name));
+            }
+
+            return base.CreateSortName();
         }
 
         public override string CreatePresentationUniqueKey()
