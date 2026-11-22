@@ -104,7 +104,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasKey("ItemId", "ParentItemId");
 
-                    b.HasIndex("ParentItemId");
+                    b.HasIndex("ParentItemId", "ItemId");
 
                     b.ToTable("AncestorIds");
 

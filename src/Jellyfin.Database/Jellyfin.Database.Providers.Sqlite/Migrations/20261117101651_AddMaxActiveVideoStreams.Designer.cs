@@ -107,7 +107,7 @@ namespace Jellyfin.Database.Providers.Sqlite.Migrations
 
                     b.HasKey("ItemId", "ParentItemId");
 
-                    b.HasIndex("ParentItemId");
+                    b.HasIndex("ParentItemId", "ItemId");
 
                     b.ToTable("AncestorIds");
 

@@ -107,10 +107,13 @@ public sealed class JellyfinMigrationServiceTests : IDisposable
         Assert.Equal(applied, await GetAppliedMigrationIdsAsync());
     }
 
-    [Fact]
-    public async Task MigrateStepAsync_MaxActiveVideoStreams_PreservesExistingUserAndIsIdempotent()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task MigrateStepAsync_MaxActiveVideoStreams_PreservesExistingUserAndIsIdempotent(bool ancestorIndexAlreadyUpgraded)
     {
         const string previousMigration = "20261002210711_MakeOwnerIdIndexesPartial";
+        const string ancestorIndexMigration = "20261024092111_CoverAncestorIdsParentIndex";
         const string newMigration = "20261117101651_AddMaxActiveVideoStreams";
         // Seed completed code migrations without applying the pending database migration.
         WriteServerConfiguration(wizardCompleted: false);
@@ -119,7 +122,9 @@ public sealed class JellyfinMigrationServiceTests : IDisposable
 
         await using (var context = await CreateDbContextAsync())
         {
-            await context.GetService<IMigrator>().MigrateAsync(previousMigration, TestContext.Current.CancellationToken);
+            await context.GetService<IMigrator>().MigrateAsync(
+                ancestorIndexAlreadyUpgraded ? ancestorIndexMigration : previousMigration,
+                TestContext.Current.CancellationToken);
             await context.Database.ExecuteSqlRawAsync(
                 """
                 INSERT INTO "Users" (
@@ -166,11 +171,18 @@ public sealed class JellyfinMigrationServiceTests : IDisposable
         }
 
         Assert.Equal(0L, Assert.IsType<long>(userAfter["MaxActiveVideoStreams"]));
-        Assert.Single(historyAfter, row => row.MigrationId == newMigration);
-        Assert.Equal(historyBefore, historyAfter.Where(row => row.MigrationId != newMigration));
+        Assert.Equal(historyBefore, historyAfter.Take(historyBefore.Length));
+        Assert.Equal(
+            ancestorIndexAlreadyUpgraded ? [newMigration] : new[] { ancestorIndexMigration, newMigration },
+            historyAfter.Skip(historyBefore.Length).Select(row => row.MigrationId));
 
         await using (var context = await CreateDbContextAsync())
         {
+            var indexColumns = await context.Database.SqlQueryRaw<string>(
+                "SELECT name AS Value FROM pragma_index_info('IX_AncestorIds_ParentItemId_ItemId') ORDER BY seqno")
+                .ToArrayAsync(TestContext.Current.CancellationToken);
+            Assert.Equal(["ParentItemId", "ItemId"], indexColumns);
+            Assert.False(context.Database.HasPendingModelChanges());
             await context.Database.ExecuteSqlRawAsync("UPDATE \"Users\" SET \"MaxActiveVideoStreams\" = 2;", TestContext.Current.CancellationToken);
         }
 
