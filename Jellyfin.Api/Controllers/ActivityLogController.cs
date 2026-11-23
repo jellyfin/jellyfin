@@ -48,6 +48,12 @@ public class ActivityLogController : BaseJellyfinApiController
     /// <param name="itemId">Filter by item id.</param>
     /// <param name="username">Filter by username.</param>
     /// <param name="severity">Filter by log severity.</param>
+    /// <param name="excludeName">Exclude entries matching this name.</param>
+    /// <param name="excludeOverview">Exclude entries matching this overview.</param>
+    /// <param name="excludeShortOverview">Exclude entries matching this short overview.</param>
+    /// <param name="excludeType">Exclude entries matching this type.</param>
+    /// <param name="excludeUsername">Exclude entries matching this username.</param>
+    /// <param name="excludeSeverity">Exclude entries matching this log severity.</param>
     /// <param name="sortBy">Specify one or more sort orders. Format: SortBy=Name,Type.</param>
     /// <param name="sortOrder">Sort Order..</param>
     /// <response code="200">Activity log returned.</response>
@@ -67,6 +73,12 @@ public class ActivityLogController : BaseJellyfinApiController
         [FromQuery] Guid? itemId,
         [FromQuery] string? username,
         [FromQuery] LogLevel? severity,
+        [FromQuery] string? excludeName,
+        [FromQuery] string? excludeOverview,
+        [FromQuery] string? excludeShortOverview,
+        [FromQuery] string? excludeType,
+        [FromQuery] string? excludeUsername,
+        [FromQuery] LogLevel? excludeSeverity,
         [FromQuery] ActivityLogSortBy[]? sortBy,
         [FromQuery] SortOrder[]? sortOrder)
     {
@@ -84,6 +96,12 @@ public class ActivityLogController : BaseJellyfinApiController
             ItemId = itemId,
             Username = username,
             Severity = severity,
+            ExcludeName = excludeName,
+            ExcludeOverview = excludeOverview,
+            ExcludeShortOverview = excludeShortOverview,
+            ExcludeType = excludeType,
+            ExcludeUsername = excludeUsername,
+            ExcludeSeverity = excludeSeverity,
             OrderBy = RequestHelpers.GetOrderBy(sortBy ?? [], sortOrder ?? []),
         };
 
