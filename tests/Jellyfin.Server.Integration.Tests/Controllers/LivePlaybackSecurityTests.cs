@@ -12,9 +12,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.MediaInfoDtos;
 using Jellyfin.Api.Models.UserDtos;
+using Jellyfin.Data.Queries;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
@@ -22,9 +24,11 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
+using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
@@ -231,6 +235,60 @@ public sealed class LivePlaybackSecurityTests : IClassFixture<LivePlaybackSecuri
     }
 
     [Fact]
+    public async Task Open_RadioWithLegacyTokenAndMetadataAliasDoesNotRequireAVideoSlot()
+    {
+        var actors = await CreateActorsAsync(1);
+        using var first = actors.First;
+        using var second = actors.Second;
+        var video = _factory.CreateLiveItem();
+        var radio = _factory.CreateLiveItem(radio: true);
+        var videoMetadata = await MetadataAsync(first, video, "video-player");
+        var videoAlias = videoMetadata.PlaySessionId!;
+        var openedVideo = await OpenAsync(first, video, videoAlias);
+        await ReadPayloadAsync(first, openedVideo.MediaSource.Path);
+        var radioMetadata = await MetadataAsync(first, radio, "radio-player");
+        Assert.Null(radioMetadata.PlaybackInstanceId);
+
+        var calls = _factory.OpenCalls;
+        var request = new OpenLiveStreamDto { OpenToken = radio.OpenToken, PlaySessionId = videoAlias };
+        using var denied = await second.PostAsJsonAsync("LiveStreams/Open", request, JsonDefaults.Options, TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.Forbidden, denied.StatusCode);
+        Assert.Equal(calls, _factory.OpenCalls);
+        Assert.Equal(0, _factory.Consumers(radio));
+
+        request.PlaySessionId = radioMetadata.PlaySessionId;
+        request.OpenToken = radio.OpenToken + "_unadvertised";
+        using var invalid = await first.PostAsJsonAsync("LiveStreams/Open", request, JsonDefaults.Options, TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.Forbidden, invalid.StatusCode);
+        Assert.Equal(calls, _factory.OpenCalls);
+
+        request.OpenToken = radio.OpenToken;
+        using var response = await first.PostAsJsonAsync("LiveStreams/Open", request, JsonDefaults.Options, TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var openedRadio = await response.Content.ReadFromJsonAsync<LiveStreamResponse>(JsonDefaults.Options, TestContext.Current.CancellationToken);
+        Assert.NotNull(openedRadio);
+        Assert.Equal(radio.LiveStreamId, openedRadio.MediaSource.LiveStreamId);
+        await ReadPayloadAsync(first, openedRadio.MediaSource.Path);
+        Assert.Equal(1, _factory.Consumers(video));
+        Assert.Equal(1, _factory.Consumers(radio));
+
+        var coordinator = _factory.Services.GetRequiredService<IVideoPlaybackCoordinator>();
+        var user = await AuthHelper.GetUserDtoAsync(first);
+        var device = Assert.Single(_factory.Services.GetRequiredService<IDeviceManager>()
+            .GetDevices(new DeviceQuery { UserId = user.Id, DeviceId = "live-device-a" }).Items);
+        var ownerId = device.Id.ToString(CultureInfo.InvariantCulture);
+        Assert.Equal(VideoPlaybackStatus.Success, coordinator.ResolvePlaySession(user.Id, ownerId, video.Item.Id, videoAlias, out var videoPlayback));
+        Assert.Equal(VideoPlaybackStatus.Success, coordinator.Stop(videoPlayback, videoAlias));
+
+        calls = _factory.OpenCalls;
+        request.PlaySessionId = videoAlias;
+        using var stopped = await first.PostAsJsonAsync("LiveStreams/Open", request, JsonDefaults.Options, TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.Forbidden, stopped.StatusCode);
+        Assert.Equal(calls, _factory.OpenCalls);
+    }
+
+    [Fact]
     public async Task Open_AdvertisedTokenOfAnotherItemCannotOpenTheRequestedContent()
     {
         var actors = await CreateActorsAsync(0);
@@ -392,7 +450,7 @@ public sealed class LivePlaybackSecurityTests : IClassFixture<LivePlaybackSecuri
         public string AccessToken { get; set; } = string.Empty;
     }
 
-    public sealed record LiveItem(Movie Item, string OpenToken, string LiveStreamId, string UniqueId);
+    public sealed record LiveItem(BaseItem Item, string OpenToken, string LiveStreamId, string UniqueId);
 
     public sealed class PlaybackFactory : JellyfinApplicationFactory
     {
@@ -403,15 +461,18 @@ public sealed class LivePlaybackSecurityTests : IClassFixture<LivePlaybackSecuri
 
         public int OpenCalls => Volatile.Read(ref _openCalls);
 
-        public LiveItem CreateLiveItem()
+        public LiveItem CreateLiveItem(bool radio = false)
         {
             Directory.CreateDirectory(_mediaPath);
             var id = Guid.NewGuid();
             var path = Path.Combine(_mediaPath, id.ToString("N", CultureInfo.InvariantCulture) + ".ts");
             File.WriteAllBytes(path, Payload);
-            var movie = new Movie { Id = id, Name = "Live input security fixture", Path = path };
-            Services.GetRequiredService<ILibraryManager>().CreateItem(movie, null);
-            var item = new LiveItem(movie, $"channel_{id:N}", $"live_{id:N}", $"raw_{id:N}");
+            BaseItem libraryItem = radio ? new LiveTvChannel { ChannelType = ChannelType.Radio } : new Movie();
+            libraryItem.Id = id;
+            libraryItem.Name = "Live input security fixture";
+            libraryItem.Path = path;
+            Services.GetRequiredService<ILibraryManager>().CreateItem(libraryItem, null);
+            var item = new LiveItem(libraryItem, $"channel_{id:N}", $"live_{id:N}", $"raw_{id:N}");
             Assert.True(_inputs.TryAdd(id, new Input(item, CreateOpenedSource(item))));
             return item;
         }
@@ -521,7 +582,15 @@ public sealed class LivePlaybackSecurityTests : IClassFixture<LivePlaybackSecuri
         }
 
         private MediaSourceInfo CreateOpenedSource(LiveItem item)
-            => new()
+        {
+            var streams = new List<MediaStream>();
+            if (item.Item is not LiveTvChannel { ChannelType: ChannelType.Radio })
+            {
+                streams.Add(new MediaStream { Index = 0, Type = MediaStreamType.Video, Codec = "h264", Width = 16, Height = 16, BitRate = 100_000, RealFrameRate = 24 });
+            }
+
+            streams.Add(new MediaStream { Index = streams.Count, Type = MediaStreamType.Audio, Codec = "aac", SampleRate = 48_000, Channels = 2, BitRate = 128_000 });
+            return new MediaSourceInfo
             {
                 Id = item.Item.Id.ToString("N", CultureInfo.InvariantCulture),
                 OpenToken = item.OpenToken,
@@ -537,13 +606,10 @@ public sealed class LivePlaybackSecurityTests : IClassFixture<LivePlaybackSecuri
                 SupportsDirectStream = true,
                 SupportsTranscoding = true,
                 RequiresClosing = true,
-                DefaultAudioStreamIndex = 1,
-                MediaStreams =
-                [
-                    new MediaStream { Index = 0, Type = MediaStreamType.Video, Codec = "h264", Width = 16, Height = 16, BitRate = 100_000, RealFrameRate = 24 },
-                    new MediaStream { Index = 1, Type = MediaStreamType.Audio, Codec = "aac", SampleRate = 48_000, Channels = 2, BitRate = 128_000 }
-                ]
+                DefaultAudioStreamIndex = streams[^1].Index,
+                MediaStreams = streams
             };
+        }
 
         private static MediaSourceInfo Clone(MediaSourceInfo source)
             => JsonSerializer.Deserialize<MediaSourceInfo>(JsonSerializer.SerializeToUtf8Bytes(source))!;

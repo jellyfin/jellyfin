@@ -625,9 +625,14 @@ public class MediaInfoHelper
         ArgumentException.ThrowIfNullOrWhiteSpace(request.OpenToken);
         var userId = context.User.GetUserId();
         var user = userId.Equals(Guid.Empty) ? null : _userManager.GetUserById(userId);
+        var requiresAudioToken = false;
         if (request.ItemId.Equals(Guid.Empty) && !string.IsNullOrWhiteSpace(request.PlaySessionId))
         {
-            request.ItemId = _videoPlaybackHelper.ResolvePlayback(context, null, request.PlaySessionId).ItemId;
+            requiresAudioToken = !_videoPlaybackHelper.TryResolvePlayback(context, null, request.PlaySessionId, out var playback);
+            if (!requiresAudioToken)
+            {
+                request.ItemId = playback.ItemId;
+            }
         }
 
         BaseItem? item = null;
@@ -647,7 +652,9 @@ public class MediaInfoHelper
                 }
 
                 var candidateItem = _libraryManager.GetItemById<BaseItem>(candidate, user);
-                if (candidateItem is not null && await HasOpenToken(candidateItem, user, request.OpenToken, context.RequestAborted).ConfigureAwait(false))
+                if (candidateItem is not null
+                    && (!requiresAudioToken || candidateItem.MediaType == MediaType.Audio)
+                    && await HasOpenToken(candidateItem, user, request.OpenToken, context.RequestAborted).ConfigureAwait(false))
                 {
                     item = candidateItem;
                     request.ItemId = item.Id;
@@ -658,6 +665,11 @@ public class MediaInfoHelper
 
         if (item is null)
         {
+            if (requiresAudioToken)
+            {
+                throw new SecurityException("The live source has no verified playback alias or audio open token.");
+            }
+
             throw new ResourceNotFoundException("An accessible live playback item is required.");
         }
 

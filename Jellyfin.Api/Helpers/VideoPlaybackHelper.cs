@@ -321,14 +321,28 @@ public sealed class VideoPlaybackHelper
     /// <returns>The verified context.</returns>
     public VideoPlaybackContext ResolvePlayback(HttpContext context, Guid? itemId, string playSessionId)
     {
-        var ownerId = context.User.GetPlaybackOwnerId();
-        if (string.IsNullOrEmpty(ownerId))
+        EnsureSuccess(ResolvePlaybackStatus(context, itemId, playSessionId, out var playback));
+        return playback;
+    }
+
+    /// <summary>
+    /// Resolves a registered video alias, allowing the caller to handle an unknown alias separately.
+    /// </summary>
+    /// <param name="context">The authenticated request.</param>
+    /// <param name="itemId">The expected item, or null to resolve it from the alias.</param>
+    /// <param name="playSessionId">The requested playback alias.</param>
+    /// <param name="playback">The verified context, when registered.</param>
+    /// <returns>Whether the alias was registered and valid.</returns>
+    internal bool TryResolvePlayback(HttpContext context, Guid? itemId, string playSessionId, out VideoPlaybackContext playback)
+    {
+        var status = ResolvePlaybackStatus(context, itemId, playSessionId, out playback);
+        if (status == VideoPlaybackStatus.NotFound)
         {
-            throw new SecurityException("A verified playback owner is required.");
+            return false;
         }
 
-        EnsureSuccess(_coordinator.ResolvePlaySession(context.User.GetUserId(), ownerId, itemId, playSessionId, out var playback));
-        return playback;
+        EnsureSuccess(status);
+        return true;
     }
 
     /// <summary>
@@ -444,6 +458,17 @@ public sealed class VideoPlaybackHelper
         }
 
         EnsureSuccess(status);
+    }
+
+    private VideoPlaybackStatus ResolvePlaybackStatus(HttpContext context, Guid? itemId, string playSessionId, out VideoPlaybackContext playback)
+    {
+        var ownerId = context.User.GetPlaybackOwnerId();
+        if (string.IsNullOrEmpty(ownerId))
+        {
+            throw new SecurityException("A verified playback owner is required.");
+        }
+
+        return _coordinator.ResolvePlaySession(context.User.GetUserId(), ownerId, itemId, playSessionId, out playback);
     }
 
     private VideoPlaybackContext? GetContext(HttpContext context, Guid itemId, string? playbackInstanceId)
