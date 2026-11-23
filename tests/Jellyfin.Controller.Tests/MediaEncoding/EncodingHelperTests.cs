@@ -403,6 +403,28 @@ public class EncodingHelperTests
         Assert.Equal(expected, args);
     }
 
+    [Theory]
+    [InlineData(false, "-ss 605000000 -noaccurate_seek")] // the seek goes past the keyframe, so the audio keeps what the accurate seek would cut
+    [InlineData(true, "-ss 600000000")] // the seek goes to the keyframe itself, and the accurate seek starts the audio there
+    public void GetFastSeekCommandLineParameter_HlsRemuxWithTranscodedAudio_KeepsAccurateSeekOnKnownKeyframe(bool startsOnKnownKeyframe, string expected)
+    {
+        var state = BuildState(subtitle: null, deliveryMethod: null);
+        state.TranscodingType = TranscodingJobType.Hls;
+        state.OutputVideoCodec = "copy";
+        state.OutputAudioCodec = "aac";
+        state.AudioStream = new MediaStream { Codec = "ac3", Type = MediaStreamType.Audio, Channels = 6 };
+        state.InputContainer = "mkv";
+        state.RunTimeTicks = 1_800_000_000L;
+        state.BaseRequest.StartTimeTicks = 600_000_000L;
+        state.HlsRemuxStartsOnKnownKeyframe = startsOnKnownKeyframe;
+        var mediaEncoder = new Mock<IMediaEncoder>();
+        mediaEncoder.Setup(e => e.GetTimeParameter(It.IsAny<long>())).Returns<long>(ticks => ticks.ToString(CultureInfo.InvariantCulture));
+
+        var args = CreateHelper(mediaEncoder).GetFastSeekCommandLineParameter(state, new EncodingOptions(), "mp4");
+
+        Assert.Equal(expected, args);
+    }
+
     private static EncodingHelper CreateHelper(Mock<IMediaEncoder>? mediaEncoder = null)
     {
         var appPaths = Mock.Of<IApplicationPaths>();
