@@ -159,6 +159,26 @@ public sealed class DynamicHlsSegmentTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task GetHlsAudioSegment_PackedStartOffset_PreservesLegacyPlaylistCompatibility()
+    {
+        var legacyOptions = new string[15];
+        legacyOptions[14] = TimeSpan.TicksPerSecond.ToString(CultureInfo.InvariantCulture);
+        var request = Request(9, TestContext.Current.CancellationToken, legacyParams: string.Join(';', legacyOptions));
+
+        AssertSegment(9, await AwaitResult(request.Result));
+        await request.Complete();
+    }
+
+    [Fact]
+    public async Task GetHlsAudioSegment_ExplicitStartOffset_IsRejected()
+    {
+        var request = Request(9, TestContext.Current.CancellationToken, startTimeTicks: TimeSpan.TicksPerSecond);
+
+        await Assert.ThrowsAsync<ArgumentException>(() => AwaitResult(request.Result));
+        Assert.Equal(0, _job.ActiveRequestCount);
+    }
+
+    [Fact]
     public async Task CancelReadinessWait_ReleasesRequestWithoutCancelingSharedJob()
     {
         using var abort = new CancellationTokenSource();
@@ -309,7 +329,12 @@ public sealed class DynamicHlsSegmentTests : IAsyncLifetime
         return context;
     }
 
-    private (Task<ActionResult> Result, Func<Task> Complete) Request(int segment, CancellationToken token, bool failResponseRegistration = false)
+    private (Task<ActionResult> Result, Func<Task> Complete) Request(
+        int segment,
+        CancellationToken token,
+        bool failResponseRegistration = false,
+        string? legacyParams = null,
+        long? startTimeTicks = null)
     {
         var completions = new List<Func<Task>>();
         var response = new Mock<IHttpResponseFeature>();
@@ -335,7 +360,7 @@ public sealed class DynamicHlsSegmentTests : IAsyncLifetime
             runtimeTicks: TimeSpan.FromSeconds(segment * 6).Ticks,
             actualSegmentLengthTicks: TimeSpan.FromSeconds(6).Ticks,
             @static: null,
-            @params: null,
+            @params: legacyParams,
             tag: null,
             deviceProfileId: null,
             playSessionId: "session",
@@ -359,7 +384,7 @@ public sealed class DynamicHlsSegmentTests : IAsyncLifetime
             framerate: null,
             maxFramerate: null,
             copyTimestamps: null,
-            startTimeTicks: null,
+            startTimeTicks: startTimeTicks,
             width: null,
             height: null,
             videoBitRate: null,

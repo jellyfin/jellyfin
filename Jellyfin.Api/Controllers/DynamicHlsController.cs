@@ -1446,11 +1446,13 @@ public class DynamicHlsController : BaseJellyfinApiController
 
     private async Task<ActionResult> GetDynamicSegment(StreamingRequestDto streamingRequest, int segmentId)
     {
-        StreamingHelpers.NormalizeRequest(streamingRequest);
         if ((streamingRequest.StartTimeTicks ?? 0) > 0)
         {
             throw new ArgumentException("StartTimeTicks is not allowed.");
         }
+
+        // Legacy playlists can carry a packed start offset. Encoding starts at the requested segment's runtime.
+        StreamingHelpers.NormalizeRequest(streamingRequest);
 
         var cancellationToken = HttpContext.RequestAborted;
 
