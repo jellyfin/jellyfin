@@ -213,7 +213,10 @@ public class SkiaEncoder : IImageEncoder
             }
         }
 
-        var safePath = NormalizePath(path);
+        // The temporary copy (if any) is removed when this goes out of scope, including
+        // the early returns below (zero-byte image, unsupported format, decode failure).
+        using var normalizedPath = NormalizePath(path);
+        var safePath = normalizedPath.Path;
         if (new FileInfo(safePath).Length == 0)
         {
             _logger.LogDebug("Skip zero‑byte image {FilePath}", path);
@@ -221,7 +224,6 @@ public class SkiaEncoder : IImageEncoder
         }
 
         SKCodec? codec = null;
-        bool isSafePathTemp = !string.Equals(Path.GetFullPath(safePath), Path.GetFullPath(path), StringComparison.OrdinalIgnoreCase);
         try
         {
             codec = SKCodec.Create(safePath, out var result);
@@ -269,21 +271,6 @@ public class SkiaEncoder : IImageEncoder
             {
                 _logger.LogDebug(ex, "Error by closing codec for {FilePath}", safePath);
             }
-
-            if (isSafePathTemp)
-            {
-                try
-                {
-                    if (File.Exists(safePath))
-                    {
-                        File.Delete(safePath);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogDebug(ex, "Unable to remove temporary file '{TempPath}'", safePath);
-                }
-            }
         }
     }
 
@@ -321,19 +308,77 @@ public class SkiaEncoder : IImageEncoder
         return path.HasDiacritics();
     }
 
-    private string NormalizePath(string path)
+    /// <summary>
+    /// A path that is safe to pass to Skia, together with the ownership of the
+    /// temporary entry that may have been created for it. Disposing the value removes
+    /// that entry, so every caller is covered by a single <c>using</c> declaration.
+    /// </summary>
+    private readonly struct NormalizedPath : IDisposable
+    {
+        private readonly ILogger<SkiaEncoder> _logger;
+
+        public NormalizedPath(string path, bool isTemporary, ILogger<SkiaEncoder> logger)
+        {
+            Path = path;
+            IsTemporary = isTemporary;
+            _logger = logger;
+        }
+
+        public string Path { get; }
+
+        public bool IsTemporary { get; }
+
+        public void Dispose()
+        {
+            if (IsTemporary)
+            {
+                TryDelete(Path, _logger);
+            }
+        }
+    }
+
+    private static void TryDelete(string tempPath, ILogger<SkiaEncoder> logger)
+    {
+        try
+        {
+            // Do not gate this on File.Exists: a dangling symlink, or a file already
+            // removed by another thread, must still be unlinked. File.Delete removes
+            // the link itself and never follows it to the original image.
+            File.Delete(tempPath);
+        }
+        catch (Exception ex)
+        {
+            logger.LogDebug(ex, "Unable to remove temporary file '{TempPath}'", tempPath);
+        }
+    }
+
+    /// <summary>
+    /// Returns a path with characters that Skia can open safely. If the original path
+    /// cannot be passed through, the image is copied to the temp directory under an
+    /// ASCII-only name; the returned value owns that copy and removes it on dispose.
+    /// </summary>
+    private NormalizedPath NormalizePath(string path)
     {
         if (!RequiresSpecialCharacterHack(path))
         {
-            return path;
+            return new NormalizedPath(path, false, _logger);
         }
 
         var tempPath = Path.Join(_appPaths.TempDirectory, string.Concat("skia_", Guid.NewGuid().ToString(), Path.GetExtension(path.AsSpan())));
         var directory = Path.GetDirectoryName(tempPath) ?? throw new ResourceNotFoundException($"Provided path ({tempPath}) is not valid.");
         Directory.CreateDirectory(directory);
-        File.Copy(path, tempPath, true);
 
-        return tempPath;
+        try
+        {
+            File.Copy(path, tempPath, true);
+            return new NormalizedPath(tempPath, true, _logger);
+        }
+        catch
+        {
+            // A failed copy can leave a partial file behind.
+            TryDelete(tempPath, _logger);
+            throw;
+        }
     }
 
     private static SKEncodedOrigin GetSKEncodedOrigin(ImageOrientation? orientation)
@@ -361,11 +406,17 @@ public class SkiaEncoder : IImageEncoder
             throw new FileNotFoundException("File not found", path);
         }
 
+        // Decode is reached directly (GetBitmap / EncodeImage / CreateTrickplayTile)
+        // and indirectly (SkiaHelper, collage builders). Normalizing once here covers
+        // every branch, including the recursive retries and all early returns.
+        using var normalizedPath = NormalizePath(path);
+        var safePath = normalizedPath.Path;
+
         var requiresTransparencyHack = _transparentImageTypes.Contains(Path.GetExtension(path));
 
         if (requiresTransparencyHack || forceCleanBitmap)
         {
-            using SKCodec codec = SKCodec.Create(NormalizePath(path), out SKCodecResult res);
+            using SKCodec codec = SKCodec.Create(safePath, out SKCodecResult res);
             if (res != SKCodecResult.Success)
             {
                 origin = GetSKEncodedOrigin(orientation);
@@ -398,7 +449,7 @@ public class SkiaEncoder : IImageEncoder
             }
         }
 
-        var resultBitmap = SKBitmap.Decode(NormalizePath(path));
+        var resultBitmap = SKBitmap.Decode(safePath);
 
         if (resultBitmap is null)
         {
