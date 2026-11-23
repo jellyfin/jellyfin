@@ -943,8 +943,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 var fpsFilterIndex = filterParam.IndexOf("fps=", StringComparison.Ordinal);
                 if (fpsFilterIndex >= 0)
                 {
-                    var inputFrameRate = (imageStream.ReferenceFrameRate.HasValue && imageStream.ReferenceFrameRate > 0)
-                        ? imageStream.ReferenceFrameRate.Value : 30;
+                    var inputFrameRate = GetTrickplayFilterFrameRate(imageStream, options.DeinterlaceDoubleRate);
 
                     var setPtsFilter = string.Create(CultureInfo.InvariantCulture, $"setpts=N/{inputFrameRate:F3}/TB,");
 
@@ -978,6 +977,44 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             return await ExtractVideoImagesOnIntervalInternal(inputArg, filterParam, vidEncoder, threads, qualityScale, priority, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Gets the frame rate of the frames that reach the fps filter during trickplay extraction.
+        /// </summary>
+        /// <remarks>
+        /// The setpts filter that normalizes timestamps counts the frames it receives, so it must use the rate
+        /// of the frames actually arriving. For interlaced sources the fps filter (and setpts) is placed after the
+        /// deinterlace filter, so this is the deinterlacer's output rate rather than the rate reported by the stream.
+        /// </remarks>
+        /// <param name="videoStream">The video stream.</param>
+        /// <param name="deinterlaceDoubleRate">Whether double rate deinterlacing is enabled.</param>
+        /// <returns>The frame rate to use in the setpts filter.</returns>
+        internal static float GetTrickplayFilterFrameRate(MediaStream videoStream, bool deinterlaceDoubleRate)
+        {
+            var referenceFrameRate = videoStream.ReferenceFrameRate;
+            var frameRate = (referenceFrameRate.HasValue && referenceFrameRate > 0) ? referenceFrameRate.Value : 30;
+
+            if (!videoStream.IsInterlaced)
+            {
+                return frameRate;
+            }
+
+            if (frameRate > 30)
+            {
+                // Field-coded streams report the field rate, but the decoder outputs one frame per field pair,
+                // and the deinterlacer does not double the rate for sources above 30 fps.
+                return frameRate / 2;
+            }
+
+            // Double rate deinterlacing outputs one frame per field.
+            // Match EncodingHelper, which only doubles when the reference frame rate is known and at most 30 fps.
+            if (deinterlaceDoubleRate && referenceFrameRate.HasValue && referenceFrameRate > 0)
+            {
+                return frameRate * 2;
+            }
+
+            return frameRate;
         }
 
         private async Task<string> ExtractVideoImagesOnIntervalInternal(
