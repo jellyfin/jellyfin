@@ -294,35 +294,6 @@ public class SkiaEncoder : IImageEncoder
         return BlurHashEncoder.Encode(xComp, yComp, fileStream, 128, 128);
     }
 
-    /// <summary>
-    /// A path that is safe to pass to Skia, together with the ownership of the
-    /// temporary entry that may have been created for it. Disposing the value removes
-    /// that entry, so every caller is covered by a single <c>using</c> declaration.
-    /// </summary>
-    private readonly struct NormalizedPath : IDisposable
-    {
-        private readonly ILogger<SkiaEncoder> _logger;
-
-        public NormalizedPath(string path, bool isTemporary, ILogger<SkiaEncoder> logger)
-        {
-            Path = path;
-            IsTemporary = isTemporary;
-            _logger = logger;
-        }
-
-        public string Path { get; }
-
-        public bool IsTemporary { get; }
-
-        public void Dispose()
-        {
-            if (IsTemporary)
-            {
-                TryDelete(Path, _logger);
-            }
-        }
-    }
-
     private static void TryDelete(string tempPath, ILogger<SkiaEncoder> logger)
     {
         try
@@ -949,5 +920,34 @@ public class SkiaEncoder : IImageEncoder
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// A path that is safe to pass to Skia, together with the ownership of the
+    /// temporary entry that may have been created for it. Disposing the value removes
+    /// that entry, so every caller is covered by a single <c>using</c> declaration.
+    /// </summary>
+    private readonly struct NormalizedPath : IDisposable
+    {
+        private readonly ILogger<SkiaEncoder> _logger;
+
+        public NormalizedPath(string path, bool isTemporary, ILogger<SkiaEncoder> logger)
+        {
+            Path = path;
+            IsTemporary = isTemporary;
+            _logger = logger;
+        }
+
+        public string Path { get; }
+
+        public bool IsTemporary { get; }
+
+        public void Dispose()
+        {
+            if (IsTemporary)
+            {
+                TryDelete(Path, _logger);
+            }
+        }
     }
 }
