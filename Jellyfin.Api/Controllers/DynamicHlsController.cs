@@ -1757,12 +1757,14 @@ public class DynamicHlsController : BaseJellyfinApiController
         // packets before the seek time, so the run starts on the keyframe itself, which the cut times are counted from.
         var copyArguments = isSeeking ? "-copypriorss 0 " : string.Empty;
 
-        var formatArguments = "-segment_format mpegts";
+        // The muxer of a segment sees only the options given here, so avoid_negative_ts is repeated for it. Every MPEG-TS
+        // segment has a muxer of its own, which would otherwise shift a segment that starts with a negative DTS and no other.
+        var formatArguments = "-segment_format mpegts -segment_format_options avoid_negative_ts=disabled";
         if (string.Equals(outputExtension, ".mp4", StringComparison.OrdinalIgnoreCase))
         {
             // The init file is written before the first packet, so no edit list can carry the first frame's composition offset:
             // frag_discont puts the tfdt on the keyframe's PTS and negative_cts_offsets gives that keyframe an offset of 0.
-            // HLS does not use SIDX. The inner mp4 muxer sees only these options, so avoid_negative_ts is repeated here.
+            // HLS does not use SIDX.
             formatArguments = "-segment_format mp4 -segment_format_options movflags=+frag_custom+dash+frag_discont+skip_sidx+negative_cts_offsets:avoid_negative_ts=disabled"
                 + " -segment_header_filename \"" + outputPrefix + "-1" + outputExtension + "\"";
         }

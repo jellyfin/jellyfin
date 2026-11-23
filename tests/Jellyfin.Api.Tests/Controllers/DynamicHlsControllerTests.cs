@@ -159,7 +159,18 @@ namespace Jellyfin.Api.Tests.Controllers
             var args = DynamicHlsController.GetSegmentMuxerArguments(17, isSeeking, "-segment_time 86400", "/transcodes/abc", ".ts");
 
             Assert.Equal(expected, args.StartsWith("-copypriorss 0 -f segment ", StringComparison.Ordinal));
-            Assert.Contains("-f segment -segment_format mpegts -segment_start_number 17 -segment_time 86400 -y", args, StringComparison.Ordinal);
+            Assert.Contains("-f segment -segment_format mpegts -segment_format_options avoid_negative_ts=disabled -segment_start_number 17 -segment_time 86400 -y", args, StringComparison.Ordinal);
+        }
+
+        [Theory]
+        [InlineData(".ts")]
+        [InlineData(".mp4")]
+        public void GetSegmentMuxerArguments_SegmentFormat_KeepsNegativeTimestamps(string outputExtension)
+        {
+            // Each segment's muxer would otherwise shift a segment that starts with a negative DTS, and no other segment
+            var args = DynamicHlsController.GetSegmentMuxerArguments(0, false, "-segment_time 86400", "/transcodes/abc", outputExtension);
+
+            Assert.Matches(@"-segment_format_options \S*avoid_negative_ts=disabled ", args);
         }
 
         [Theory]
