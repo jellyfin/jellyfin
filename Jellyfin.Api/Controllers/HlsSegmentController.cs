@@ -188,9 +188,17 @@ public class HlsSegmentController : BaseJellyfinApiController
     private ActionResult GetVideoFileResult(Guid itemId, string path, string playlistPath)
     {
         var job = _transcodeManager.GetTranscodingJob(playlistPath, TranscodingJobType.Hls);
-        if (job is null || string.IsNullOrWhiteSpace(job.PlaySessionId))
+        if (job is null)
         {
             return NotFound("Hls segment not found.");
+        }
+
+        if (string.IsNullOrWhiteSpace(job.PlaySessionId))
+        {
+            return User.GetIsApiKey() && User.GetUserId().Equals(Guid.Empty)
+                && job.UserId.Equals(Guid.Empty) && job.ItemId.Equals(itemId)
+                ? GetFileResult(path, playlistPath, job)
+                : NotFound("Hls segment not found.");
         }
 
         _videoPlaybackHelper.VerifyPlaySession(HttpContext, job.PlaySessionId);

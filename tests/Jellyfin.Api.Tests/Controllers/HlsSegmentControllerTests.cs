@@ -188,6 +188,45 @@ public sealed class HlsSegmentControllerTests
         Assert.IsType<VideoPlaybackResult>(result);
     }
 
+    [Theory]
+    [InlineData(true, true, true, true)]
+    [InlineData(false, true, true, false)]
+    [InlineData(true, false, true, false)]
+    [InlineData(true, true, false, false)]
+    public void GetHlsVideoSegmentLegacy_WithoutPlaySessionId_RequiresAppApiKeyAndMatchingAppJob(
+        bool isAppApiKey,
+        bool isMatchingItem,
+        bool isAppJob,
+        bool servesSegment)
+    {
+        var job = RegisterJob("playlist123");
+        job.PlaySessionId = null;
+        job.ItemId = isMatchingItem ? _itemId : Guid.NewGuid();
+        job.UserId = isAppJob ? Guid.Empty : _userId;
+        var controller = CreateController("/Videos/abc/hls/playlist123/playlist1230.ts");
+        if (isAppApiKey)
+        {
+            controller.HttpContext.User = new ClaimsPrincipal(new ClaimsIdentity(
+                [new Claim(InternalClaimTypes.IsApiKey, "true")],
+                "test"));
+        }
+
+        var result = controller.GetHlsVideoSegmentLegacy(_itemId.ToString(), "playlist123", "playlist1230", "ts");
+
+        if (servesSegment)
+        {
+            Assert.IsType<PhysicalFileResult>(result);
+        }
+        else
+        {
+            Assert.IsType<NotFoundObjectResult>(result);
+        }
+
+        _transcodeManager.Verify(
+            value => value.OnTranscodeBeginRequest(It.IsAny<string>(), It.IsAny<TranscodingJobType>()),
+            servesSegment ? Times.Once() : Times.Never());
+    }
+
     [Fact]
     public void GetHlsVideoSegmentLegacy_NoMatchingPlaylist_ReturnsNotFound()
     {
