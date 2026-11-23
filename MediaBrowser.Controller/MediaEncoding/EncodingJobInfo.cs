@@ -590,6 +590,15 @@ namespace MediaBrowser.Controller.MediaEncoding
             return (profile ?? string.Empty).Split(_separators, StringSplitOptions.RemoveEmptyEntries);
         }
 
+        public string[] GetRequestedAudioProfiles(string codec)
+        {
+            var profile = !string.IsNullOrEmpty(codec)
+                ? BaseRequest.GetOption(codec, "profile")
+                : null;
+
+            return (profile ?? string.Empty).Split(_separators, StringSplitOptions.RemoveEmptyEntries);
+        }
+
         public string[] GetRequestedRangeTypes(string codec)
         {
             var rangetype = BaseRequest.VideoRangeType;

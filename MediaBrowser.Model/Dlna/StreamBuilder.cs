@@ -1934,7 +1934,6 @@ namespace MediaBrowser.Model.Dlna
                             break;
                         }
 
-                    case ProfileConditionValue.AudioProfile:
                     case ProfileConditionValue.Has64BitOffsets:
                     case ProfileConditionValue.PacketLength:
                     case ProfileConditionValue.NumStreams:
@@ -2019,6 +2018,7 @@ namespace MediaBrowser.Model.Dlna
                             break;
                         }
 
+                    case ProfileConditionValue.AudioProfile:
                     case ProfileConditionValue.VideoProfile:
                         {
                             if (string.IsNullOrEmpty(qualifier))
@@ -2029,7 +2029,7 @@ namespace MediaBrowser.Model.Dlna
                             // Change from split by | to comma
                             // Strip spaces to avoid having to encode
                             var values = value
-                                .Split('|', StringSplitOptions.RemoveEmptyEntries);
+                                .Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
                             if (condition.Condition == ProfileConditionType.Equals)
                             {
@@ -2038,7 +2038,7 @@ namespace MediaBrowser.Model.Dlna
                             else if (condition.Condition == ProfileConditionType.EqualsAny)
                             {
                                 var currentValue = item.GetOption(qualifier, "profile");
-                                if (!string.IsNullOrEmpty(currentValue) && values.Any(value => value == currentValue))
+                                if (!string.IsNullOrEmpty(currentValue) && values.Any(v => string.Equals(v, currentValue, StringComparison.OrdinalIgnoreCase)))
                                 {
                                     item.SetOption(qualifier, "profile", currentValue);
                                 }
