@@ -62,6 +62,36 @@ public class ActivityLogQuery : PaginatedQuery
     public LogLevel? Severity { get; set; }
 
     /// <summary>
+    /// Gets or sets the name exclusion filter.
+    /// </summary>
+    public string? ExcludeName { get; set; }
+
+    /// <summary>
+    /// Gets or sets the overview exclusion filter.
+    /// </summary>
+    public string? ExcludeOverview { get; set; }
+
+    /// <summary>
+    /// Gets or sets the short overview exclusion filter.
+    /// </summary>
+    public string? ExcludeShortOverview { get; set; }
+
+    /// <summary>
+    /// Gets or sets the type exclusion filter.
+    /// </summary>
+    public string? ExcludeType { get; set; }
+
+    /// <summary>
+    /// Gets or sets the username exclusion filter.
+    /// </summary>
+    public string? ExcludeUsername { get; set; }
+
+    /// <summary>
+    /// Gets or sets the log level exclusion filter.
+    /// </summary>
+    public LogLevel? ExcludeSeverity { get; set; }
+
+    /// <summary>
     /// Gets or sets the result ordering.
     /// </summary>
     public IReadOnlyCollection<(ActivityLogSortBy, SortOrder)>? OrderBy { get; set; }

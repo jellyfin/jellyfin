@@ -113,6 +113,36 @@ public class ActivityManager : IActivityManager
                 entries = entries.Where(e => e.ActivityLog.LogSeverity == query.Severity);
             }
 
+            if (!string.IsNullOrEmpty(query.ExcludeName))
+            {
+                entries = entries.Where(e => !EF.Functions.Like(e.ActivityLog.Name, $"%{query.ExcludeName}%"));
+            }
+
+            if (!string.IsNullOrEmpty(query.ExcludeOverview))
+            {
+                entries = entries.Where(e => e.ActivityLog.Overview == null || !EF.Functions.Like(e.ActivityLog.Overview, $"%{query.ExcludeOverview}%"));
+            }
+
+            if (!string.IsNullOrEmpty(query.ExcludeShortOverview))
+            {
+                entries = entries.Where(e => e.ActivityLog.ShortOverview == null || !EF.Functions.Like(e.ActivityLog.ShortOverview, $"%{query.ExcludeShortOverview}%"));
+            }
+
+            if (!string.IsNullOrEmpty(query.ExcludeType))
+            {
+                entries = entries.Where(e => !EF.Functions.Like(e.ActivityLog.Type, $"%{query.ExcludeType}%"));
+            }
+
+            if (!string.IsNullOrEmpty(query.ExcludeUsername))
+            {
+                entries = entries.Where(e => e.Username == null || !EF.Functions.Like(e.Username, $"%{query.ExcludeUsername}%"));
+            }
+
+            if (query.ExcludeSeverity is not null)
+            {
+                entries = entries.Where(e => e.ActivityLog.LogSeverity != query.ExcludeSeverity);
+            }
+
             return new QueryResult<ActivityLogEntry>(
                 query.Skip,
                 await entries.CountAsync().ConfigureAwait(false),
