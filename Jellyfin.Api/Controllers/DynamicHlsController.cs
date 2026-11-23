@@ -1732,11 +1732,12 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// </summary>
     /// <param name="state">The <see cref="StreamState"/>.</param>
     /// <returns>The command line arguments for audio transcoding.</returns>
-    private string GetAudioArguments(StreamState state)
+    internal string GetAudioArguments(StreamState state)
     {
         if (state.AudioStream is null)
         {
-            return string.Empty;
+            // FFmpeg may auto-select a video stream when there is no audio to map.
+            return state.IsOutputVideo ? string.Empty : "-vn";
         }
 
         var audioCodec = _encodingHelper.GetAudioEncoder(state);
