@@ -181,7 +181,11 @@ namespace MediaBrowser.Model.Users
         /// <summary>
         /// Gets or sets the maximum number of simultaneous video playbacks. A value of 0 means unlimited.
         /// </summary>
-        /// <remarks>Omitting this value when updating the policy preserves the current limit.</remarks>
+        /// <remarks>
+        /// Independent playbacks of the same item can share one slot when a legacy client uses the
+        /// same access token without sending a stable playback instance identifier.
+        /// Omitting this value when updating the policy preserves the current limit.
+        /// </remarks>
         [Range(0, int.MaxValue)]
         public int MaxActiveVideoStreams
         {
