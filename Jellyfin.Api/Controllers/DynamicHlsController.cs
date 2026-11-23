@@ -1507,11 +1507,11 @@ public class DynamicHlsController : BaseJellyfinApiController
                                 segmentId = 0;
                             }
 
-                            var (startSegment, startTimeTicks, segmentStarts) = GetRunStartPosition(state, segmentId, streamingRequest.CurrentRuntimeTicks);
+                            var (startSegment, startTimeTicks, segmentCutArguments) = GetRunStartPosition(state, segmentId, streamingRequest.CurrentRuntimeTicks);
                             streamingRequest.StartTimeTicks = startTimeTicks;
-                            state.HlsRemuxStartsOnKnownKeyframe = segmentStarts is not null;
+                            state.HlsRemuxStartsOnKnownKeyframe = segmentCutArguments is not null;
 
-                            if (segmentStarts is not null)
+                            if (segmentCutArguments is not null)
                             {
                                 // The segment muxer creates a segment's file when it starts writing it, and GetSegmentResult serves
                                 // segment N once N + 1 exists. A segment an earlier run left behind would make the new run's
@@ -1526,7 +1526,7 @@ public class DynamicHlsController : BaseJellyfinApiController
                             job = await _transcodeManager.StartFfMpeg(
                                 state,
                                 playlistPath,
-                                GetCommandLineArguments(playlistPath, state, false, startSegment, segmentStarts),
+                                GetCommandLineArguments(playlistPath, state, false, startSegment, segmentCutArguments),
                                 Request.HttpContext.User.GetUserId(),
                                 TranscodingJobType,
                                 cancellationTokenSource).ConfigureAwait(false);
@@ -1614,7 +1614,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         return segments;
     }
 
-    private string GetCommandLineArguments(string outputPath, StreamState state, bool isEventPlaylist, int startNumber, long[]? segmentStarts = null)
+    private string GetCommandLineArguments(string outputPath, StreamState state, bool isEventPlaylist, int startNumber, string? segmentCutArguments = null)
     {
         var videoCodec = _encodingHelper.GetVideoEncoder(state, _encodingOptions);
         var threads = EncodingHelper.GetNumberOfThreads(state, _encodingOptions, videoCodec);
@@ -1633,8 +1633,9 @@ public class DynamicHlsController : BaseJellyfinApiController
             ? _encodingOptions.MaxMuxingQueueSize.ToString(CultureInfo.InvariantCulture)
             : "128";
 
-        var muxerArguments = segmentStarts is not null
-            ? GetSegmentMuxerArguments(startNumber, segmentStarts[startNumber] > 0, GetSegmentCutArguments(segmentStarts, startNumber), outputPrefix, outputExtension)
+        // A segment-muxer run from any segment but the first one seeks
+        var muxerArguments = segmentCutArguments is not null
+            ? GetSegmentMuxerArguments(startNumber, startNumber > 0, segmentCutArguments, outputPrefix, outputExtension)
             : GetHlsMuxerArguments(state, isEventPlaylist, startNumber, outputPath, outputPrefix, outputExtension);
 
         return string.Format(
@@ -1708,17 +1709,18 @@ public class DynamicHlsController : BaseJellyfinApiController
             outputPath.EscapeProcessArgument());
     }
 
-    private bool TryGetSegmentMuxerSegmentStarts(StreamState state, [NotNullWhen(true)] out long[]? segmentStarts)
+    private bool TryGetSegmentMuxerSegmentStarts(StreamState state, [NotNullWhen(true)] out long[]? segmentStarts, out long firstKeyframeTicks)
     {
         // The hls muxer cuts from wherever ffmpeg restarted, so after a seek its segments drift from the keyframe playlist.
         // The segment muxer cuts at the playlist's own times, relative to its first packet since FFmpeg 6.0, which requires
         // a playlist cut at keyframes: the even grid of a file without keyframe data is not.
         segmentStarts = null;
+        firstKeyframeTicks = 0;
         if (!state.IsOutputVideo
             || !EncodingHelper.IsCopyCodec(state.OutputVideoCodec)
             || _mediaEncoder.EncoderVersion < _minFFmpegSegmentTimesFromFirstPacket
             || !CanWriteInitSegmentBeforePackets(state.Request.SegmentContainer, state.OutputAudioCodec, state.AudioStream?.Codec)
-            || !_dynamicHlsPlaylistGenerator.TryGetKeyframeSegmentLengths(GetMainPlaylistRequest(state, string.Empty, string.Empty), out var segmentLengths)
+            || !_dynamicHlsPlaylistGenerator.TryGetKeyframeSegmentLengths(GetMainPlaylistRequest(state, string.Empty, string.Empty), out var segmentLengths, out firstKeyframeTicks)
             || segmentLengths.Count == 0)
         {
             return false;
@@ -1727,7 +1729,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         // The muxers write different init files, so a stream keeps one muxer: if the cut list from the first segment
         // does not fit in a command line, every run uses the hls muxer.
         var starts = GetSegmentStartTicks(segmentLengths);
-        if (GetSegmentCutArguments(starts, 0).Length > MaxSegmentCutArgumentsLength)
+        if (GetSegmentCutArguments(starts, 0, firstKeyframeTicks).Length > MaxSegmentCutArgumentsLength)
         {
             return false;
         }
@@ -1775,11 +1777,13 @@ public class DynamicHlsController : BaseJellyfinApiController
             (outputPrefix + "%d" + outputExtension).EscapeProcessArgument());
     }
 
-    internal static string GetSegmentCutArguments(IReadOnlyList<long> segmentStarts, int startSegment)
+    internal static string GetSegmentCutArguments(IReadOnlyList<long> segmentStarts, int startSegment, long firstKeyframeTicks)
     {
-        // Cut times are relative to the first packet, the keyframe the run starts on. They are rounded to the millisecond,
-        // so segment_time_delta allows a cut that much before its time: each cut is the first keyframe from there on.
-        var startTicks = segmentStarts[startSegment];
+        // Cut times are relative to the first video packet, the keyframe the run starts on. A run from the first segment
+        // does not seek and starts on the first keyframe of the file, which can be later than that segment's start of 0.
+        // The times are rounded to the millisecond, so segment_time_delta allows a cut that much before its time: each cut
+        // is the first keyframe from there on.
+        var startTicks = startSegment == 0 ? firstKeyframeTicks : segmentStarts[startSegment];
         var cutTimes = segmentStarts
             .Skip(startSegment + 1)
             .Select(ticks => TimeSpan.FromTicks(ticks - startTicks).TotalSeconds.ToString("0.000", CultureInfo.InvariantCulture))
@@ -1793,12 +1797,13 @@ public class DynamicHlsController : BaseJellyfinApiController
         return "-segment_times " + string.Join(',', cutTimes) + " -segment_time_delta 0.001";
     }
 
-    private (int SegmentId, long StartTimeTicks, long[]? SegmentStarts) GetRunStartPosition(StreamState state, int segmentId, long currentRuntimeTicks)
+    private (int SegmentId, long StartTimeTicks, string? SegmentCutArguments) GetRunStartPosition(StreamState state, int segmentId, long currentRuntimeTicks)
     {
-        if (TryGetSegmentMuxerSegmentStarts(state, out var segmentStarts) && IsPlaylistSegment(segmentStarts, segmentId, currentRuntimeTicks))
+        if (TryGetSegmentMuxerSegmentStarts(state, out var segmentStarts, out var firstKeyframeTicks)
+            && IsPlaylistSegment(segmentStarts, segmentId, currentRuntimeTicks))
         {
             var startSegment = GetSeekableSegment(segmentStarts, segmentId, state.RunTimeTicks ?? 0);
-            return (startSegment, segmentStarts[startSegment], segmentStarts);
+            return (startSegment, segmentStarts[startSegment], GetSegmentCutArguments(segmentStarts, startSegment, firstKeyframeTicks));
         }
 
         return (segmentId, currentRuntimeTicks, null);

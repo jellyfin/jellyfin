@@ -20,6 +20,7 @@ public interface IDynamicHlsPlaylistGenerator
     /// </summary>
     /// <param name="request">An instance of the <see cref="CreateMainPlaylistRequest"/> class.</param>
     /// <param name="segmentLengths">The segment lengths in seconds, in playlist order.</param>
+    /// <param name="firstKeyframeTicks">The time of the file's first keyframe in ticks. The first segment starts at 0 even when this is later.</param>
     /// <returns><c>true</c> if the playlist is cut at keyframes, <c>false</c> if it uses equal lengths because the video is transcoded or has no keyframe data.</returns>
-    bool TryGetKeyframeSegmentLengths(CreateMainPlaylistRequest request, [NotNullWhen(true)] out IReadOnlyList<double>? segmentLengths);
+    bool TryGetKeyframeSegmentLengths(CreateMainPlaylistRequest request, [NotNullWhen(true)] out IReadOnlyList<double>? segmentLengths, out long firstKeyframeTicks);
 }

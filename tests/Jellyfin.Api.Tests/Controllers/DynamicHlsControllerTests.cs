@@ -143,7 +143,7 @@ namespace Jellyfin.Api.Tests.Controllers
             CultureInfo.CurrentCulture = new CultureInfo("de-DE");
             try
             {
-                Assert.Equal("-segment_times 10.177,14.585 -segment_time_delta 0.001", DynamicHlsController.GetSegmentCutArguments(segmentStarts, 1));
+                Assert.Equal("-segment_times 10.177,14.585 -segment_time_delta 0.001", DynamicHlsController.GetSegmentCutArguments(segmentStarts, 1, 0));
             }
             finally
             {
@@ -162,12 +162,23 @@ namespace Jellyfin.Api.Tests.Controllers
             Assert.Contains("-f segment -segment_format mpegts -segment_start_number 17 -segment_time 86400 -y", args, StringComparison.Ordinal);
         }
 
+        [Theory]
+        [InlineData(0, 0, "-segment_times 165.415,175.592,180.000 -segment_time_delta 0.001")]
+        [InlineData(0, 210_000, "-segment_times 165.394,175.571,179.979 -segment_time_delta 0.001")] // the run starts on the first keyframe, at 0.021 s
+        [InlineData(1, 210_000, "-segment_times 10.177,14.585 -segment_time_delta 0.001")] // a seek starts on the segment's own keyframe
+        public void GetSegmentCutArguments_FirstKeyframeAfterZero_CountsFromFirstPacket(int startSegment, long firstKeyframeTicks, string expected)
+        {
+            long[] segmentStarts = [0, 1_654_150_000, 1_755_920_000, 1_800_000_000];
+
+            Assert.Equal(expected, DynamicHlsController.GetSegmentCutArguments(segmentStarts, startSegment, firstKeyframeTicks));
+        }
+
         [Fact]
         public void GetSegmentCutArguments_NothingLeftToCut_UsesSegmentTime()
         {
             long[] segmentStarts = [0, 1_654_150_000, 1_755_920_000];
 
-            Assert.Equal("-segment_time 86400", DynamicHlsController.GetSegmentCutArguments(segmentStarts, 2));
+            Assert.Equal("-segment_time 86400", DynamicHlsController.GetSegmentCutArguments(segmentStarts, 2, 0));
         }
 
         [Fact]
@@ -176,18 +187,19 @@ namespace Jellyfin.Api.Tests.Controllers
             // A 6 hour file with 6.123 s segments: the list from the first segment does not fit in a Windows command line, the one for its last hour does
             var segmentStarts = Enumerable.Range(0, 3528).Select(i => i * 61_234_567L).ToArray();
 
-            Assert.True(DynamicHlsController.GetSegmentCutArguments(segmentStarts, 0).Length > 24_000);
-            Assert.True(DynamicHlsController.GetSegmentCutArguments(segmentStarts, 2940).Length <= 24_000);
+            Assert.True(DynamicHlsController.GetSegmentCutArguments(segmentStarts, 0, 0).Length > 24_000);
+            Assert.True(DynamicHlsController.GetSegmentCutArguments(segmentStarts, 2940, 0).Length <= 24_000);
             Assert.True(DynamicHlsController.MaxSegmentCutArgumentsLength >= 24_000);
         }
 
         [Fact]
         public void GetSegmentStartTicks_MatchesPlaylistRuntimeTicks()
         {
-            // Uneven keyframe gaps with odd tick counts, so the segment lengths have fractional ticks that must round the way the playlist does
+            // Uneven keyframe gaps with odd tick counts, so the segment lengths have fractional ticks that must round the way the playlist does.
+            // The first keyframe is at 0.021 s; the first segment still starts at 0.
             long[] gaps = [23_560_001, 34_560_002, 13_780_004, 28_140_002, 17_960_002, 27_330_002];
             var keyframeTicks = new List<long>();
-            for (long tick = 0, i = 0; tick < 1_800_000_000; tick += gaps[i++ % gaps.Length])
+            for (long tick = 210_000, i = 0; tick < 1_800_000_000; tick += gaps[i++ % gaps.Length])
             {
                 keyframeTicks.Add(tick);
             }
@@ -207,7 +219,8 @@ namespace Jellyfin.Api.Tests.Controllers
                 .Where(line => line.Length > 0 && line[0] != '#')
                 .Select(line => long.Parse(Regex.Match(line, @"runtimeTicks=(\d+)").Groups[1].Value, CultureInfo.InvariantCulture))
                 .ToArray();
-            Assert.True(generator.TryGetKeyframeSegmentLengths(request, out var lengths));
+            Assert.True(generator.TryGetKeyframeSegmentLengths(request, out var lengths, out var firstKeyframeTicks));
+            Assert.Equal(keyframeTicks[0], firstKeyframeTicks);
             var computed = DynamicHlsController.GetSegmentStartTicks(lengths);
 
             // The keyframe path, not the even 6 s grid, is what makes the rounding matter
