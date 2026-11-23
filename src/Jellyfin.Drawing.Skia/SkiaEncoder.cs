@@ -1,7 +1,6 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -295,19 +294,6 @@ public class SkiaEncoder : IImageEncoder
         return BlurHashEncoder.Encode(xComp, yComp, fileStream, 128, 128);
     }
 
-    private bool RequiresSpecialCharacterHack(string path)
-    {
-        for (int i = 0; i < path.Length; i++)
-        {
-            if (char.GetUnicodeCategory(path[i]) == UnicodeCategory.OtherLetter)
-            {
-                return true;
-            }
-        }
-
-        return path.HasDiacritics();
-    }
-
     /// <summary>
     /// A path that is safe to pass to Skia, together with the ownership of the
     /// temporary entry that may have been created for it. Disposing the value removes
@@ -353,13 +339,15 @@ public class SkiaEncoder : IImageEncoder
     }
 
     /// <summary>
-    /// Returns a path with characters that Skia can open safely. If the original path
-    /// cannot be passed through, the image is copied to the temp directory under an
-    /// ASCII-only name; the returned value owns that copy and removes it on dispose.
+    /// Resolves the path to hand to Skia. SkiaSharp exposes
+    /// <c>SKFileStream.IsPathSupported</c> as the authoritative check for native file
+    /// paths, so use that instead of inspecting Unicode categories ourselves.
+    /// If the path is unsupported, the image is copied to the temp directory under an
+    /// ASCII-only name; the returned value owns that copy and removes it when disposed.
     /// </summary>
     private NormalizedPath NormalizePath(string path)
     {
-        if (!RequiresSpecialCharacterHack(path))
+        if (SKFileStream.IsPathSupported(path))
         {
             return new NormalizedPath(path, false, _logger);
         }
