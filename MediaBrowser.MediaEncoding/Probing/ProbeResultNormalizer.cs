@@ -170,8 +170,10 @@ namespace MediaBrowser.MediaEncoding.Probing
                 FFProbeHelpers.GetDictionaryDateTime(tags, "retail date") ??
                 FFProbeHelpers.GetDictionaryDateTime(tags, "retail_date") ??
                 FFProbeHelpers.GetDictionaryDateTime(tags, "date_released") ??
-                FFProbeHelpers.GetDictionaryDateTime(tags, "date") ??
-                FFProbeHelpers.GetDictionaryDateTime(tags, "creation_time");
+                FFProbeHelpers.GetDictionaryDateTime(tags, "date");
+
+            // creation_time is when the file was written, not a release date
+            info.ContainerCreationDate = FFProbeHelpers.GetDictionaryDateTime(tags, "creation_time");
 
             // Set common metadata for music (audio) and music videos (video)
             info.Album = tags.GetValueOrDefault("album");
@@ -1110,6 +1112,12 @@ namespace MediaBrowser.MediaEncoding.Probing
                     && width > 0
                     && height > 0))
             {
+                // Live TV and other early probes can report neither a usable display aspect ratio nor the frame size
+                if (info.Width is not > 0 || info.Height is not > 0)
+                {
+                    return original;
+                }
+
                 width = info.Width.Value;
                 height = info.Height.Value;
             }

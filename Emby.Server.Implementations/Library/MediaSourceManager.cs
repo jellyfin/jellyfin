@@ -388,7 +388,13 @@ namespace Emby.Server.Implementations.Library
         {
             ArgumentNullException.ThrowIfNull(item);
 
-            var hasMediaSources = (IHasMediaSources)item;
+            // Clients can ask for the sources of an item that has none (a container queued by mistake).
+            if (item is not IHasMediaSources hasMediaSources)
+            {
+                throw new ArgumentException(
+                    string.Format(CultureInfo.InvariantCulture, "{0} {1} has no media sources and cannot be played.", item.GetType().Name, item.Id),
+                    nameof(item));
+            }
 
             var sources = hasMediaSources.GetMediaSources(enablePathSubstitution);
 
@@ -479,13 +485,7 @@ namespace Emby.Server.Implementations.Library
                 return [];
             }
 
-            var culture = _localizationManager.FindLanguageInfo(language);
-            if (culture is not null)
-            {
-                return culture.Name.Contains('-', StringComparison.OrdinalIgnoreCase) ? [culture.Name] : culture.ThreeLetterISOLanguageNames;
-            }
-
-            return [language];
+            return _localizationManager.GetMediaStreamLanguageCodes(language);
         }
 
         private void SetDefaultSubtitleStreamIndex(MediaSourceInfo source, UserItemData userData, User user, bool allowRememberingSelection)
@@ -498,7 +498,12 @@ namespace Emby.Server.Implementations.Library
             {
                 var index = userData.SubtitleStreamIndex.Value;
                 // Make sure the saved index is still valid
-                if (index == -1 || source.MediaStreams.Any(i => i.Type == MediaStreamType.Subtitle && i.Index == index))
+                var savedStream = source.MediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Subtitle && i.Index == index);
+                // "Only forced" rules out full tracks entirely, so a remembered one must not resurrect them.
+                // The client reports whatever is playing, so an index remembered under another mode sticks forever otherwise.
+                if (index == -1
+                    || (savedStream is not null
+                        && (user.SubtitleMode != SubtitlePlaybackMode.OnlyForced || savedStream.IsForced)))
                 {
                     source.DefaultSubtitleStreamIndex = index;
                     return;

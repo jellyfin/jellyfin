@@ -5,6 +5,8 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
@@ -47,7 +49,14 @@ public class MigrateKeyframeData : IDatabaseMigrationRoutine
     private string KeyframeCachePath => Path.Combine(_appPaths.DataPath, "keyframes");
 
     /// <inheritdoc />
-    public void Perform()
+    public Task PerformAsync(CancellationToken cancellationToken)
+    {
+        // This routine predates the async interface and has not been ported to async database access yet.
+        PerformCore();
+        return Task.CompletedTask;
+    }
+
+    private void PerformCore()
     {
         const int Limit = 5000;
         int itemCount = 0, offset = 0;

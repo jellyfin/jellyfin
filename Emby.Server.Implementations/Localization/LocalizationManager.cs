@@ -53,6 +53,16 @@ namespace Emby.Server.Implementations.Localization
 
         private FrozenDictionary<string, string> _iso6392BtoT = null!;
 
+        // Jellyfin's own pre-12.0 codes for region qualified languages and the legacy OpenSubtitles
+        // ones, still stored in existing configuration and common in file names (movie.pob.srt).
+        private static readonly FrozenDictionary<string, string> _legacyLanguageAliases = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "pob", "pt-br" },
+            { "pb", "pt-br" },
+            { "pop", "pt-pt" },
+            { "es-mx", "es-419" },
+        }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
+
         /// <summary>
         /// Initializes a new instance of the <see cref="LocalizationManager" /> class.
         /// </summary>
@@ -139,7 +149,8 @@ namespace Emby.Server.Implementations.Localization
                     var ratingSystem = await JsonSerializer.DeserializeAsync<ParentalRatingSystem>(stream, _jsonOptions).ConfigureAwait(false)
                                 ?? throw new InvalidOperationException($"Invalid resource path: '{CountriesPath}'");
 
-                    var dict = new Dictionary<string, ParentalRatingScore?>();
+                    // Rating strings are compared case insensitively, providers are not consistent about casing (e.g. "VM18" vs "vm18")
+                    var dict = new Dictionary<string, ParentalRatingScore?>(StringComparer.OrdinalIgnoreCase);
                     if (ratingSystem.Ratings is not null)
                     {
                         foreach (var ratingEntry in ratingSystem.Ratings)
@@ -169,6 +180,7 @@ namespace Emby.Server.Implementations.Localization
         {
             List<CultureDto> list = [];
             Dictionary<string, string> iso6392BtoTdict = new Dictionary<string, string>();
+            HashSet<string> claimedCodes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             using var stream = _assembly.GetManifestResourceStream(CulturesPath);
             if (stream is null)
@@ -222,6 +234,16 @@ namespace Emby.Server.Implementations.Localization
                         iso6392BtoTdict.TryAdd(parts[1], parts[0]);
                     }
 
+                    // Variants (pt-br, es-419, zh-cn, ze, ...) share the ISO 639-2 code of their base
+                    // language, but clients key their language pickers on ThreeLetterISOLanguageName and
+                    // would collapse them onto one option. The first entry to claim a code keeps it, which
+                    // is the same one FindLanguageInfo resolves that code to; the rest fall back to their
+                    // own tag.
+                    if (!claimedCodes.Add(parts[0]) && !string.IsNullOrEmpty(twoCharName))
+                    {
+                        threeLetterNames = [twoCharName, .. threeLetterNames];
+                    }
+
                     list.Add(new CultureDto(name, displayname, twoCharName, threeLetterNames));
                 }
 
@@ -243,6 +265,11 @@ namespace Emby.Server.Implementations.Localization
                 language,
                 static (lang, cultures) =>
                 {
+                    if (_legacyLanguageAliases.TryGetValue(lang, out var alias))
+                    {
+                        lang = alias;
+                    }
+
                     // TODO language should ideally be a ReadOnlySpan but moq cannot mock ref structs
                     for (var i = 0; i < cultures.Count; i++)
                     {
@@ -374,33 +401,71 @@ namespace Emby.Server.Implementations.Localization
         {
             ArgumentException.ThrowIfNullOrEmpty(rating);
 
+            // Handle unrated content. This has to happen before the split below,
+            // because some of the unrated values contain a '/' themselves (e.g. "n/a").
+            if (IsUnrated(rating))
+            {
+                return null;
+            }
+
+            // Several rating systems contain a '/' inside a single rating (e.g. "M/12" in PT,
+            // "U/A 13+" in IN, "7/i/fig" in ES), so the value as a whole always wins over the split below.
+            var wholeValueScore = GetSingleRatingScore(rating, countryCode);
+            if (wholeValueScore is not null)
+            {
+                return wholeValueScore;
+            }
+
             // Some providers may list multiple ratings separated by '/' (e.g. "SE:15 / SE:15+ / SE:Från 15 år").
             // Try each one in order and use the first that resolves.
             var ratingValues = rating.Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            if (ratingValues.Length == 1)
+            {
+                return null;
+            }
 
+            var hasUnknownRating = false;
             foreach (var ratingValue in ratingValues)
             {
-                var score = GetSingleRatingScore(ratingValue, countryCode);
+                // A single entry of such a list may be unrated while a later one still resolves
+                if (IsUnrated(ratingValue))
+                {
+                    continue;
+                }
+
+                // An unknown entry is not worth a warning of its own as long as another entry still resolves
+                var score = GetSingleRatingScore(ratingValue, countryCode, logUnknownRating: false);
                 if (score is not null)
                 {
                     return score;
                 }
+
+                hasUnknownRating = true;
+            }
+
+            if (hasUnknownRating)
+            {
+                _logger.LogWarning(
+                    "None of the ratings in '{Rating}' were found in a known rating system, treating as unrated",
+                    rating);
             }
 
             return null;
         }
 
         /// <summary>
+        /// Checks whether a rating value marks the content as unrated.
+        /// </summary>
+        /// <param name="rating">Rating value to check.</param>
+        /// <returns>Returns true if the value is an unrated marker.</returns>
+        private static bool IsUnrated(ReadOnlySpan<char> rating)
+            => _unratedValues.Contains(rating.Trim(), StringComparison.OrdinalIgnoreCase);
+
+        /// <summary>
         /// Resolves a single rating value to a score.
         /// </summary>
-        private ParentalRatingScore? GetSingleRatingScore(string rating, string? countryCode)
+        private ParentalRatingScore? GetSingleRatingScore(string rating, string? countryCode, bool logUnknownRating = true)
         {
-            // Handle unrated content
-            if (_unratedValues.Contains(rating.AsSpan(), StringComparison.OrdinalIgnoreCase))
-            {
-                return null;
-            }
-
             // Convert ints directly
             // This may override some of the locale specific age ratings (but those always map to the same age)
             if (TryParseRatingAsScore(rating, out var ratingAge))
@@ -455,9 +520,11 @@ namespace Emby.Server.Implementations.Localization
                 }
             }
 
-            // Try splitting by country prefix separator to handle "US:PG-13", "Germany: FSK-18", "DE-FSK-18"
-            if (TryGetRatingScoreBySeparator(rating, ':', out var result)
-                || TryGetRatingScoreBySeparator(rating, '-', out result))
+            // Try splitting by country prefix separator to handle "US:PG-13", "Germany: FSK-18", "DE-FSK-18".
+            // A '/' marks a list of ratings, which this would split into the first entry's country and the last entry's rating
+            if (!rating.Contains('/', StringComparison.Ordinal)
+                && (TryGetRatingScoreBySeparator(rating, ':', logUnknownRating, out var result)
+                    || TryGetRatingScoreBySeparator(rating, '-', logUnknownRating, out result)))
             {
                 return result;
             }
@@ -465,7 +532,7 @@ namespace Emby.Server.Implementations.Localization
             return null;
         }
 
-        private bool TryGetRatingScoreBySeparator(string rating, char separator, out ParentalRatingScore? result)
+        private bool TryGetRatingScoreBySeparator(string rating, char separator, bool logUnknownRating, out ParentalRatingScore? result)
         {
             result = null;
 
@@ -512,10 +579,19 @@ namespace Emby.Server.Implementations.Localization
                     return true;
                 }
 
-                _logger.LogWarning(
-                    "Rating '{Rating}' not found in the '{CountryCode}' rating system, treating as unrated",
-                    rating,
-                    resolvedCountryCode);
+                // Explicitly unrated content (e.g. "IT-NR") is unrated by definition, not a lookup failure
+                if (IsUnrated(ratingPart))
+                {
+                    return true;
+                }
+
+                if (logUnknownRating)
+                {
+                    _logger.LogWarning(
+                        "Rating '{Rating}' not found in the '{CountryCode}' rating system, treating as unrated",
+                        rating,
+                        resolvedCountryCode);
+                }
 
                 return true;
             }
@@ -527,14 +603,16 @@ namespace Emby.Server.Implementations.Localization
         }
 
         /// <summary>
-        /// Tries to parse a rating as a number, allowing an optional trailing '+' (e.g. "16" or "18+").
+        /// Tries to parse a rating as a number, allowing an optional trailing '+' (e.g. "16" or "18+")
+        /// or a leading '-' (e.g. the French "-12").
         /// </summary>
         /// <param name="ratingValue">Rating value to parse.</param>
         /// <param name="score">Parsed score.</param>
         /// <returns>Returns true if parsing was successful.</returns>
         private static bool TryParseRatingAsScore(ReadOnlySpan<char> ratingValue, out int score)
         {
-            var trimmed = ratingValue.TrimEnd('+');
+            // A leading '-' marks a minimum age ("-12" is French for "not for under 12s"), never a negative score
+            var trimmed = ratingValue.TrimStart('-').TrimEnd('+');
             return int.TryParse(trimmed, out score);
         }
 

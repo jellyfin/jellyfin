@@ -1130,5 +1130,45 @@ namespace Jellyfin.Naming.Tests.Video
             Assert.Equal(2, result[0].Files.Count);
             Assert.Single(result[0].AlternateVersions);
         }
+
+        [Fact]
+        public void TestMultiVersionEpisodeAbsoluteNumberingWithNumberInSeriesTitle()
+        {
+            // Every one of these parses as episode 2, because the expressions read the "2" of the
+            // series title as an absolute episode number. They are distinct episodes all the same.
+            var files = new[]
+            {
+                "/anime/IS Infinite Stratos 2/IS Infinite Stratos 2 - 01 - The Memory of a Summer (b6f40849).mkv",
+                "/anime/IS Infinite Stratos 2/IS Infinite Stratos 2 - 02 - Heart Pain Killer (d8c0896c).mkv",
+                "/anime/IS Infinite Stratos 2/IS Infinite Stratos 2 - 03 - Translucent Chord (4ecce3dd).mkv",
+                "/anime/IS Infinite Stratos 2/IS Infinite Stratos 2 - 04 - The Mysterious Lady (837a1909).mkv"
+            };
+
+            var result = _videoListResolver.Resolve(
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
+                collectionType: CollectionType.tvshows).ToList();
+
+            Assert.Equal(4, result.Count);
+            Assert.All(result, r => Assert.Empty(r.AlternateVersions));
+        }
+
+        [Fact]
+        public void TestMultiVersionEpisodeAbsoluteNumberingDontCollapse()
+        {
+            // Plain absolute numbering: no season number is available, so the files stay separate.
+            var files = new[]
+            {
+                "/anime/Bleach/Bleach - 001 - The Day I Became a Shinigami.mkv",
+                "/anime/Bleach/Bleach - 002 - The Shinigami's Work.mkv",
+                "/anime/Bleach/Bleach - 003 - The Older Brother's Wish.mkv"
+            };
+
+            var result = _videoListResolver.Resolve(
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
+                collectionType: CollectionType.tvshows).ToList();
+
+            Assert.Equal(3, result.Count);
+            Assert.All(result, r => Assert.Empty(r.AlternateVersions));
+        }
     }
 }

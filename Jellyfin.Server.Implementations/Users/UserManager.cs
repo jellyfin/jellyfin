@@ -847,14 +847,16 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public async Task UpdatePolicyAsync(Guid userId, UserPolicy policy)
         {
+            User user;
             using (await _userLock.LockAsync(userId).ConfigureAwait(false))
             {
                 var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
                 await using (dbContext.ConfigureAwait(false))
                 {
-                    var user = UserQuery(dbContext)
+                    user = await UserQuery(dbContext)
                         .AsTracking()
-                        .FirstOrDefault(u => u.Id.Equals(userId))
+                        .FirstOrDefaultAsync(u => u.Id.Equals(userId))
+                        .ConfigureAwait(false)
                         ?? throw new ArgumentException("No user exists with given Id!");
 
                     // The default number of login attempts is 3, but for some god forsaken reason it's sent to the server as "0"
@@ -919,6 +921,10 @@ namespace Jellyfin.Server.Implementations.Users
                     await dbContext.SaveChangesAsync().ConfigureAwait(false);
                 }
             }
+
+            var eventArgs = new UserUpdatedEventArgs(user);
+            await _eventManager.PublishAsync(eventArgs).ConfigureAwait(false);
+            OnUserUpdated?.Invoke(this, eventArgs);
         }
 
         /// <inheritdoc/>

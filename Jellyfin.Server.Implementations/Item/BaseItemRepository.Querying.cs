@@ -593,10 +593,34 @@ public sealed partial class BaseItemRepository
 
             return dbContext.BaseItems
                     .Where(e => descendantIds.Contains(e.Id) && !e.IsFolder && !e.IsVirtualItem)
-                    .All(f => f.UserData!.Any(e => e.UserId == user.Id && e.Played));
+                    .All(BuildLeafIsPlayedFilter(dbContext, user.Id));
         }
 
-        return dbContext.BaseItems.Where(e => e.ParentId == id).All(f => f.UserData!.Any(e => e.UserId == user.Id && e.Played));
+        return dbContext.BaseItems.Where(e => e.ParentId == id).All(BuildLeafIsPlayedFilter(dbContext, user.Id));
+    }
+
+    /// <inheritdoc />
+    public IReadOnlyList<int> GetYears(InternalItemsQuery filter)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+        PrepareFilterQuery(filter);
+
+        using var context = _dbProvider.CreateDbContext();
+        var baseQuery = PrepareItemQuery(context, filter);
+        baseQuery = TranslateQuery(baseQuery, context, filter);
+        return GetYears(baseQuery);
+    }
+
+    /// <inheritdoc />
+    public IReadOnlyList<string> GetOfficialRatings(InternalItemsQuery filter)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+        PrepareFilterQuery(filter);
+
+        using var context = _dbProvider.CreateDbContext();
+        var baseQuery = PrepareItemQuery(context, filter);
+        baseQuery = TranslateQuery(baseQuery, context, filter);
+        return GetOfficialRatings(baseQuery);
     }
 
     /// <inheritdoc />
@@ -610,20 +634,8 @@ public sealed partial class BaseItemRepository
         baseQuery = TranslateQuery(baseQuery, context, filter);
 
         var matchingItemIds = baseQuery.Select(e => e.Id);
-
-        var years = baseQuery
-            .Where(e => e.ProductionYear != null && e.ProductionYear > 0)
-            .Select(e => e.ProductionYear!.Value)
-            .Distinct()
-            .OrderBy(y => y)
-            .ToArray();
-
-        var officialRatings = baseQuery
-            .Where(e => e.OfficialRating != null && e.OfficialRating != string.Empty)
-            .Select(e => e.OfficialRating!)
-            .Distinct()
-            .OrderBy(r => r)
-            .ToArray();
+        var years = GetYears(baseQuery);
+        var officialRatings = GetOfficialRatings(baseQuery);
 
         var tags = context.ItemValuesMap
             .Join(
@@ -658,5 +670,25 @@ public sealed partial class BaseItemRepository
             Tags = tags,
             Genres = genres
         };
+    }
+
+    private static IReadOnlyList<int> GetYears(IQueryable<BaseItemEntity> query)
+    {
+        return query
+            .Where(e => e.ProductionYear != null && e.ProductionYear > 0)
+            .Select(e => e.ProductionYear!.Value)
+            .Distinct()
+            .OrderBy(y => y)
+            .ToArray();
+    }
+
+    private static IReadOnlyList<string> GetOfficialRatings(IQueryable<BaseItemEntity> query)
+    {
+        return query
+            .Where(e => e.OfficialRating != null && e.OfficialRating != string.Empty)
+            .Select(e => e.OfficialRating!)
+            .Distinct()
+            .OrderBy(r => r)
+            .ToArray();
     }
 }

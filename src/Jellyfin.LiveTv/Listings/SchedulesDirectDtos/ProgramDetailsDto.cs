@@ -22,6 +22,19 @@ namespace Jellyfin.LiveTv.Listings.SchedulesDirectDtos
         public string? ProgramId { get; set; }
 
         /// <summary>
+        /// Gets or sets the error code. Set when this entry is a per-program error
+        /// (for example INVALID_PROGRAMID) instead of a program.
+        /// </summary>
+        [JsonPropertyName("code")]
+        public int? Code { get; set; }
+
+        /// <summary>
+        /// Gets or sets the error message that goes with <see cref="Code"/>.
+        /// </summary>
+        [JsonPropertyName("message")]
+        public string? Message { get; set; }
+
+        /// <summary>
         /// Gets or sets the list of titles.
         /// </summary>
         [JsonPropertyName("titles")]

@@ -29,6 +29,14 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         // differ in weight by orders of magnitude.
         private const int CacheSizeLimit = 100_000;
 
+        private static readonly Dictionary<string, string> ThumbnailSizes = new Dictionary<string, string>
+        {
+            { "Primary", "w500" },
+            { "Backdrop", "w780" },
+            { "Thumb", "w780" },
+            { "Logo", "w500" },
+        };
+
         private readonly MemoryCache _memoryCache;
         private readonly TMDbClient _tmDbClient;
 
@@ -162,53 +170,31 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         }
 
         /// <summary>
-        /// Gets a tv show episode group from the TMDb API based on the show id and the display order.
+        /// Gets a tv show episode group from the TMDb API based on the episode group.
         /// </summary>
-        /// <param name="tvShowId">The tv show's TMDb id.</param>
-        /// <param name="displayOrder">The display order.</param>
+        /// <param name="episodeGroupId">The Tmdb episode group.</param>
+        /// <param name="seasonNumber">The season number of the episode group.</param>
         /// <param name="language">The tv show's language.</param>
         /// <param name="imageLanguages">A comma-separated list of image languages.</param>
         /// <param name="countryCode">The country code, ISO 3166-1.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The TMDb tv show episode group information or null if not found.</returns>
-        private async Task<TvGroupCollection?> GetSeriesGroupAsync(int tvShowId, string displayOrder, string? language, string? imageLanguages, string? countryCode, CancellationToken cancellationToken)
+        public async Task<TvGroup?> GetSeriesGroupAsync(string episodeGroupId, int seasonNumber, string? language, string? imageLanguages, string? countryCode, CancellationToken cancellationToken)
         {
-            TvGroupType? groupType =
-                string.Equals(displayOrder, "originalAirDate", StringComparison.Ordinal) ? TvGroupType.OriginalAirDate :
-                string.Equals(displayOrder, "absolute", StringComparison.Ordinal) ? TvGroupType.Absolute :
-                string.Equals(displayOrder, "dvd", StringComparison.Ordinal) ? TvGroupType.DVD :
-                string.Equals(displayOrder, "digital", StringComparison.Ordinal) ? TvGroupType.Digital :
-                string.Equals(displayOrder, "storyArc", StringComparison.Ordinal) ? TvGroupType.StoryArc :
-                string.Equals(displayOrder, "production", StringComparison.Ordinal) ? TvGroupType.Production :
-                string.Equals(displayOrder, "tv", StringComparison.Ordinal) ? TvGroupType.TV :
-                null;
-
-            if (groupType is null)
-            {
-                return null;
-            }
-
-            var key = $"group-{tvShowId.ToString(CultureInfo.InvariantCulture)}-{displayOrder}-{language}";
-            if (_memoryCache.TryGetValue(key, out TvGroupCollection? group))
+            var key = $"group-{episodeGroupId}-{seasonNumber.ToString(CultureInfo.InvariantCulture)}-{language}";
+            if (_memoryCache.TryGetValue(key, out TvGroup? group))
             {
                 return group;
             }
 
             await EnsureClientConfigAsync().ConfigureAwait(false);
 
-            var series = await GetSeriesAsync(tvShowId, language, imageLanguages, countryCode, cancellationToken).ConfigureAwait(false);
-            var episodeGroupId = series?.EpisodeGroups?.Results?.Find(g => g.Type == groupType)?.Id;
-
-            if (episodeGroupId is null)
-            {
-                return null;
-            }
-
-            group = await _tmDbClient.GetTvEpisodeGroupsAsync(
+            var groups = await _tmDbClient.GetTvEpisodeGroupsAsync(
                 episodeGroupId,
                 language: TmdbUtils.NormalizeLanguage(language, countryCode),
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
+            group = groups?.Groups?.Find(s => s.Order == seasonNumber);
             if (group is not null)
             {
                 Cache(key, group);
@@ -254,20 +240,20 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         }
 
         /// <summary>
-        /// Gets a movie from the TMDb API based on the tv show's TMDb id.
+        /// Gets an episode from the TMDb API based on the tv show's TMDb id.
         /// </summary>
         /// <param name="tvShowId">The tv show's TMDb id.</param>
         /// <param name="seasonNumber">The season number.</param>
         /// <param name="episodeNumber">The episode number.</param>
-        /// <param name="displayOrder">The display order.</param>
+        /// <param name="episodeGroup">The containing episode group.</param>
         /// <param name="language">The episode's language.</param>
         /// <param name="imageLanguages">A comma-separated list of image languages.</param>
         /// <param name="countryCode">The country code, ISO 3166-1.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The TMDb tv episode information or null if not found.</returns>
-        public async Task<TvEpisode?> GetEpisodeAsync(int tvShowId, int seasonNumber, long episodeNumber, string displayOrder, string? language, string? imageLanguages, string? countryCode, CancellationToken cancellationToken)
+        public async Task<TvEpisode?> GetEpisodeAsync(int tvShowId, int seasonNumber, long episodeNumber, string? episodeGroup, string? language, string? imageLanguages, string? countryCode, CancellationToken cancellationToken)
         {
-            var key = $"episode-{tvShowId.ToString(CultureInfo.InvariantCulture)}-s{seasonNumber.ToString(CultureInfo.InvariantCulture)}e{episodeNumber.ToString(CultureInfo.InvariantCulture)}-{displayOrder}-{language}";
+            var key = $"episode-{tvShowId.ToString(CultureInfo.InvariantCulture)}-s{seasonNumber.ToString(CultureInfo.InvariantCulture)}e{episodeNumber.ToString(CultureInfo.InvariantCulture)}-{episodeGroup}-{language}";
             if (_memoryCache.TryGetValue(key, out TvEpisode? episode))
             {
                 return episode;
@@ -275,12 +261,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             await EnsureClientConfigAsync().ConfigureAwait(false);
 
-            var group = await GetSeriesGroupAsync(tvShowId, displayOrder, language, imageLanguages, countryCode, cancellationToken).ConfigureAwait(false);
-            if (group is not null)
+            if (!string.IsNullOrWhiteSpace(episodeGroup))
             {
-                var season = group.Groups?.Find(s => s.Order == seasonNumber);
-                // Episode order starts at 0
-                var ep = season?.Episodes?.Find(e => e.Order == episodeNumber - 1);
+                var group = await GetSeriesGroupAsync(episodeGroup, seasonNumber, language, imageLanguages, countryCode, cancellationToken).ConfigureAwait(false);
+                var ep = group?.Episodes?.Find(e => e.Order == episodeNumber - 1);
                 if (ep is not null)
                 {
                     seasonNumber = ep.SeasonNumber;
@@ -326,7 +310,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             person = await _tmDbClient.GetPersonAsync(
                 personTmdbId,
                 TmdbUtils.NormalizeLanguage(language, countryCode),
-                PersonMethods.TvCredits | PersonMethods.MovieCredits | PersonMethods.Images | PersonMethods.ExternalIds,
+                PersonMethods.Images | PersonMethods.ExternalIds,
                 cancellationToken).ConfigureAwait(false);
 
             if (person is not null)
@@ -508,19 +492,19 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         }
 
         /// <summary>
-        /// Gets a single page of similar movies for a movie from the TMDb API.
+        /// Gets a single page of recommended movies for a movie from the TMDb API.
         /// </summary>
         /// <param name="tmdbId">The TMDb id of the movie.</param>
         /// <param name="page">The page number to fetch (1-based).</param>
         /// <param name="language">The language for results.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>A tuple containing the list of similar movies and the total number of pages available.</returns>
-        public async Task<(IReadOnlyList<SearchMovie> Results, int TotalPages)> GetMovieSimilarPageAsync(int tmdbId, int page, string? language, CancellationToken cancellationToken)
+        /// <returns>A tuple containing the list of recommended movies and the total number of pages available.</returns>
+        public async Task<(IReadOnlyList<SearchMovie> Results, int TotalPages)> GetMovieRecommendationsPageAsync(int tmdbId, int page, string? language, CancellationToken cancellationToken)
         {
             await EnsureClientConfigAsync().ConfigureAwait(false);
 
             var searchResults = await _tmDbClient
-                .GetMovieSimilarAsync(tmdbId, language, page, cancellationToken)
+                .GetMovieRecommendationsAsync(tmdbId, language, page, cancellationToken)
                 .ConfigureAwait(false);
 
             if (searchResults?.Results is null || searchResults.Results.Count == 0)
@@ -532,19 +516,19 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         }
 
         /// <summary>
-        /// Gets a single page of similar TV shows for a series from the TMDb API.
+        /// Gets a single page of recommended TV shows for a series from the TMDb API.
         /// </summary>
         /// <param name="tmdbId">The TMDb id of the TV show.</param>
         /// <param name="page">The page number to fetch (1-based).</param>
         /// <param name="language">The language for results.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>A tuple containing the list of similar TV shows and the total number of pages available.</returns>
-        public async Task<(IReadOnlyList<SearchTv> Results, int TotalPages)> GetSeriesSimilarPageAsync(int tmdbId, int page, string? language, CancellationToken cancellationToken)
+        /// <returns>A tuple containing the list of recommended TV shows and the total number of pages available.</returns>
+        public async Task<(IReadOnlyList<SearchTv> Results, int TotalPages)> GetSeriesRecommendationsPageAsync(int tmdbId, int page, string? language, CancellationToken cancellationToken)
         {
             await EnsureClientConfigAsync().ConfigureAwait(false);
 
             var searchResults = await _tmDbClient
-                .GetTvShowSimilarAsync(tmdbId, language, page, cancellationToken)
+                .GetTvShowRecommendationsAsync(tmdbId, language, page, cancellationToken)
                 .ConfigureAwait(false);
 
             if (searchResults?.Results is null || searchResults.Results.Count == 0)
@@ -568,8 +552,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 return null;
             }
 
-            // Use "original" as default size if size is null or empty to prevent malformed URLs
-            var imageSize = string.IsNullOrEmpty(size) ? "original" : size;
+            // Use the original size as default if size is null or empty to prevent malformed URLs
+            var imageSize = string.IsNullOrEmpty(size) ? TmdbUtils.OriginalImageSize : size;
 
             return _tmDbClient.GetImageUrl(imageSize, path, true).ToString();
         }
@@ -660,14 +644,14 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         private IEnumerable<RemoteImageInfo> ConvertToRemoteImageInfo(IReadOnlyList<ImageData> images, string? size, ImageType type, string requestLanguage)
         {
             // sizes provided are for original resolution, don't store them when downloading scaled images
-            var scaleImage = !string.Equals(size, "original", StringComparison.OrdinalIgnoreCase);
+            var scaleImage = !TmdbUtils.IsOriginalImageSize(size);
 
             for (var i = 0; i < images.Count; i++)
             {
                 var image = images[i];
 
                 var imageType = type;
-                var language = TmdbUtils.AdjustImageLanguage(image.Iso_639_1, requestLanguage);
+                var language = TmdbUtils.GetImageLanguage(image.Iso_639_1, image.Iso_3166_1, requestLanguage);
 
                 // Return Backdrops with a language specified (it has text) as Thumb.
                 if (imageType == ImageType.Backdrop && !string.IsNullOrEmpty(language))
@@ -678,6 +662,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 yield return new RemoteImageInfo
                 {
                     Url = GetUrl(size, image.FilePath),
+                    ThumbnailUrl = GetUrl(ThumbnailSizes.GetValueOrDefault(type.ToString(), string.Empty), image.FilePath),
                     CommunityRating = image.VoteAverage,
                     VoteCount = image.VoteCount,
                     Width = scaleImage ? null : image.Width,

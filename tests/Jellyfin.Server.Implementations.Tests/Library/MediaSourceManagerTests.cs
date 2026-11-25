@@ -9,7 +9,9 @@ using Castle.Components.DictionaryAdapter;
 using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Library;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaSegments;
@@ -229,6 +231,98 @@ namespace Jellyfin.Server.Implementations.Tests.Library
         }
 
         [Fact]
+        public void SetDefaultAudioStreamIndex_VariantPreference_MatchesBaseCodeTrack()
+        {
+            _mockLocalizationManager
+                .Setup(m => m.FindLanguageInfo("pt-br"))
+                .Returns(new CultureDto("pt-br", "Portuguese (Brazil)", "pt-br", ["pt-br", "por"]));
+
+            var mediaInfo = new MediaSourceInfo
+            {
+                MediaStreams = new MediaStream[]
+                {
+                    new() { Index = 0, Type = MediaStreamType.Video, IsDefault = true },
+                    new() { Index = 1, Type = MediaStreamType.Audio, Language = "eng", IsDefault = true },
+                    new() { Index = 2, Type = MediaStreamType.Audio, Language = "por", IsDefault = false }
+                }
+            };
+
+            _user.AudioLanguagePreference = "pt-br";
+            _user.PlayDefaultAudioTrack = false;
+
+            _mediaSourceManager.SetDefaultAudioAndSubtitleStreamIndices(_item, mediaInfo, _user);
+
+            Assert.Equal(2, mediaInfo.DefaultAudioStreamIndex);
+        }
+
+        [Theory]
+        // A remembered full track must not survive a switch to "only forced" (it falls through to
+        // the forced track here); a remembered forced track and "off" still must.
+        [InlineData(SubtitlePlaybackMode.OnlyForced, 2, 3)]
+        [InlineData(SubtitlePlaybackMode.OnlyForced, 3, 3)]
+        [InlineData(SubtitlePlaybackMode.OnlyForced, -1, -1)]
+        [InlineData(SubtitlePlaybackMode.Default, 2, 2)]
+        [InlineData(SubtitlePlaybackMode.Always, 2, 2)]
+        [InlineData(SubtitlePlaybackMode.Smart, 2, 2)]
+        [InlineData(SubtitlePlaybackMode.None, 2, null)]
+        public void SetDefaultSubtitleStreamIndex_RememberedSelection_RespectsSubtitleMode(
+            SubtitlePlaybackMode mode,
+            int rememberedIndex,
+            int? expectedIndex)
+        {
+            _mockUserDataManager
+                .Setup(m => m.GetUserData(It.IsAny<User>(), It.IsAny<BaseItem>()))
+                .Returns(new UserItemData { Key = "key", SubtitleStreamIndex = rememberedIndex });
+
+            var mediaInfo = new MediaSourceInfo
+            {
+                MediaStreams = new MediaStream[]
+                {
+                    new() { Index = 0, Type = MediaStreamType.Video, IsDefault = true },
+                    new() { Index = 1, Type = MediaStreamType.Audio, Language = "eng", IsDefault = true },
+                    new() { Index = 2, Type = MediaStreamType.Subtitle, Language = "eng", IsDefault = true, IsForced = false },
+                    new() { Index = 3, Type = MediaStreamType.Subtitle, Language = "eng", IsDefault = false, IsForced = true }
+                }
+            };
+
+            _user.SubtitleMode = mode;
+            _user.SubtitleLanguagePreference = string.Empty;
+            _user.RememberSubtitleSelections = true;
+            _user.AudioLanguagePreference = string.Empty;
+
+            _mediaSourceManager.SetDefaultAudioAndSubtitleStreamIndices(_item, mediaInfo, _user);
+
+            Assert.Equal(expectedIndex, mediaInfo.DefaultSubtitleStreamIndex);
+        }
+
+        [Fact]
+        public void SetDefaultSubtitleStreamIndex_OnlyForcedRemembersFullTrackWithNoForcedStream_SelectsNothing()
+        {
+            _mockUserDataManager
+                .Setup(m => m.GetUserData(It.IsAny<User>(), It.IsAny<BaseItem>()))
+                .Returns(new UserItemData { Key = "key", SubtitleStreamIndex = 2 });
+
+            var mediaInfo = new MediaSourceInfo
+            {
+                MediaStreams = new MediaStream[]
+                {
+                    new() { Index = 0, Type = MediaStreamType.Video, IsDefault = true },
+                    new() { Index = 1, Type = MediaStreamType.Audio, Language = "eng", IsDefault = true },
+                    new() { Index = 2, Type = MediaStreamType.Subtitle, Language = "eng", IsDefault = true, IsForced = false }
+                }
+            };
+
+            _user.SubtitleMode = SubtitlePlaybackMode.OnlyForced;
+            _user.SubtitleLanguagePreference = string.Empty;
+            _user.RememberSubtitleSelections = true;
+            _user.AudioLanguagePreference = string.Empty;
+
+            _mediaSourceManager.SetDefaultAudioAndSubtitleStreamIndices(_item, mediaInfo, _user);
+
+            Assert.Null(mediaInfo.DefaultSubtitleStreamIndex);
+        }
+
+        [Fact]
         public void GetStaticMediaSources_PrimaryQueried_DefaultsToMostRecentlyPlayedVersion()
         {
             var (primary, alt1, alt2) = SetupVersionGroup();
@@ -271,6 +365,14 @@ namespace Jellyfin.Server.Implementations.Tests.Library
             var sources = _mediaSourceManager.GetStaticMediaSources(primary, false, _user);
 
             Assert.Equal(primary.Id.ToString("N"), sources[0].Id);
+        }
+
+        [Fact]
+        public void GetStaticMediaSources_ItemWithoutMediaSources_ThrowsArgumentException()
+        {
+            // A container queued by mistake is a bad request, not a server fault.
+            Assert.Throws<ArgumentException>(
+                () => _mediaSourceManager.GetStaticMediaSources(new MusicArtist { Id = Guid.NewGuid() }, false, _user));
         }
 
         [Fact]

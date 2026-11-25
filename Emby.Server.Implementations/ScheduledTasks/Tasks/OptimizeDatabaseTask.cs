@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.ScheduledTasks.Tasks;
 
 /// <summary>
-/// Optimizes Jellyfin's database by issuing a VACUUM command.
+/// Optimizes Jellyfin's database by issuing VACUUM and ANALYZE commands.
 /// </summary>
 public class OptimizeDatabaseTask : IScheduledTask, IConfigurableScheduledTask
 {
@@ -82,7 +82,7 @@ public class OptimizeDatabaseTask : IScheduledTask, IConfigurableScheduledTask
             return;
         }
 
-        _logger.LogInformation("Optimizing and vacuuming jellyfin.db...");
+        _logger.LogInformation("Vacuuming and analyzing jellyfin.db...");
 
         try
         {

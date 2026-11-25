@@ -254,6 +254,7 @@ namespace MediaBrowser.Providers.Manager
             }
             catch (Exception ex)
             {
+                result.Failures++;
                 result.ErrorMessage = ex.Message;
                 _logger.LogError(ex, "Error in {Provider} for {Item}", provider.Name, item.Path ?? item.Name);
             }
@@ -338,6 +339,7 @@ namespace MediaBrowser.Providers.Manager
             }
             catch (Exception ex)
             {
+                result.Failures++;
                 result.ErrorMessage = ex.Message;
                 _logger.LogError(ex, "Error in {Provider} for {Item}", provider.Name, item.Path ?? item.Name);
             }
@@ -461,8 +463,9 @@ namespace MediaBrowser.Providers.Manager
                     {
                         var newDateModified = _fileSystem.GetLastWriteTimeUtc(image.FileInfo);
 
-                        // If date changed then we need to reset saved image dimensions
-                        if (currentImage.DateModified != newDateModified && (currentImage.Width > 0 || currentImage.Height > 0))
+                        // If date changed then we need to reset saved image dimensions. Stores such as PostgreSQL keep
+                        // only microseconds, so an exact comparison would treat every unchanged image as modified.
+                        if (Math.Abs((currentImage.DateModified - newDateModified).TotalSeconds) > 1 && (currentImage.Width > 0 || currentImage.Height > 0))
                         {
                             currentImage.Width = 0;
                             currentImage.Height = 0;

@@ -129,6 +129,13 @@ public interface IItemRepository
     public IReadOnlyList<string> GetMediaStreamLanguages(InternalItemsQuery filter, MediaStreamType mediaStreamType);
 
     /// <summary>
+    /// Gets all distinct tags of the matching base items.
+    /// </summary>
+    /// <param name="filter">The query filter.</param>
+    /// <returns>The list of tags.</returns>
+    IReadOnlyList<string> GetTagNames(InternalItemsQuery filter);
+
+    /// <summary>
     /// Gets all artist names.
     /// </summary>
     /// <returns>The list of artist names.</returns>
@@ -140,6 +147,20 @@ public interface IItemRepository
     /// <param name="filter">The query filter.</param>
     /// <returns>Aggregated filter values.</returns>
     QueryFiltersLegacy GetQueryFiltersLegacy(InternalItemsQuery filter);
+
+    /// <summary>
+    /// Gets the distinct, sorted production years of the matching items.
+    /// </summary>
+    /// <param name="filter">The query filter.</param>
+    /// <returns>The production years.</returns>
+    IReadOnlyList<int> GetYears(InternalItemsQuery filter);
+
+    /// <summary>
+    /// Gets the distinct, sorted official ratings of the matching items.
+    /// </summary>
+    /// <param name="filter">The query filter.</param>
+    /// <returns>The official ratings.</returns>
+    IReadOnlyList<string> GetOfficialRatings(InternalItemsQuery filter);
 
     /// <summary>
     /// Gets whether all children of the requested item have been played.

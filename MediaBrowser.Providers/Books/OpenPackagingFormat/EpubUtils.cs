@@ -1,4 +1,3 @@
-using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Xml.Linq;
@@ -17,7 +16,7 @@ namespace MediaBrowser.Providers.Books.OpenPackagingFormat
         /// <returns>The content file path.</returns>
         public static string? ReadContentFilePath(ZipArchive epub)
         {
-            var container = epub.GetEntry(Path.Combine("META-INF", "container.xml"));
+            var container = epub.GetEntry("META-INF/container.xml");
             if (container == null)
             {
                 return null;

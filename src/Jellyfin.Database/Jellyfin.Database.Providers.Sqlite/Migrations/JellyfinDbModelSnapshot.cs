@@ -15,7 +15,7 @@ namespace Jellyfin.Server.Implementations.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.11");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.12");
 
             modelBuilder.Entity("Jellyfin.Database.Implementations.Entities.AccessSchedule", b =>
                 {
@@ -104,7 +104,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasKey("ItemId", "ParentItemId");
 
-                    b.HasIndex("ParentItemId");
+                    b.HasIndex("ParentItemId", "ItemId");
 
                     b.ToTable("AncestorIds");
 
@@ -365,7 +365,8 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("Name");
 
-                    b.HasIndex("OwnerId");
+                    b.HasIndex("OwnerId")
+                        .HasFilter("\"OwnerId\" IS NOT NULL");
 
                     b.HasIndex("ParentId");
 
@@ -382,7 +383,8 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("SeriesName");
 
-                    b.HasIndex("ExtraType", "OwnerId");
+                    b.HasIndex("ExtraType", "OwnerId")
+                        .HasFilter("\"ExtraType\" IS NOT NULL");
 
                     b.HasIndex("TopParentId", "Id");
 

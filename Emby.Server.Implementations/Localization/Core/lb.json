@@ -83,7 +83,7 @@
     "NewVersionIsAvailable": "Nei Versioun fir Jellyfin Server ass verfügbar.",
     "PluginInstalledWithName": "{0} installéiert",
     "TaskMoveTrickplayImagesDescription": "Verschëfft existent Trickplay-Dateien no de Bibliothéik-Astellungen.",
-    "AppDeviceValues": "App: {0}, Geräter: {1}",
+    "AppDeviceValues": "App: {0}, Apparater: {1}",
     "FailedLoginAttemptWithUserName": "Net Gelongen Umeldung {0}",
     "HeaderLiveTV": "LiveTV",
     "NotificationOptionServerRestartRequired": "Server Restart Erfuerderlech",

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
@@ -15,6 +16,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
 using PlaylistsNET.Content;
+using UtfUnknown;
 
 namespace MediaBrowser.Providers.Playlists;
 
@@ -26,6 +28,11 @@ public class PlaylistItemsProvider : ILocalMetadataProvider<Playlist>,
     IForcedProvider,
     IHasItemChangeMonitor
 {
+    /// <summary>
+    /// Minimum confidence required before a detected encoding is preferred over UTF-8.
+    /// </summary>
+    private const float MinimumEncodingConfidence = 0.5f;
+
     private readonly IFileSystem _fileSystem;
     private readonly ILibraryManager _libraryManager;
     private readonly ILogger<PlaylistItemsProvider> _logger;
@@ -136,21 +143,36 @@ public class PlaylistItemsProvider : ILocalMetadataProvider<Playlist>,
     private IEnumerable<LinkedChild> GetPlsItems(Stream stream, string playlistPath, List<string> libraryRoots)
     {
         var content = new PlsContent();
-        var playlist = content.GetFromStream(stream);
+        var playlist = content.GetFromStream(stream, DetectEncoding(stream, playlistPath));
 
         return playlist.PlaylistEntries
                 .Select(i => GetLinkedChild(i.Path, playlistPath, libraryRoots))
                 .Where(i => i is not null);
     }
 
-    private IEnumerable<LinkedChild> GetM3uItems(Stream stream, string playlistPath, List<string> libraryRoots)
+    internal IEnumerable<LinkedChild> GetM3uItems(Stream stream, string playlistPath, List<string> libraryRoots)
     {
         var content = new M3uContent();
-        var playlist = content.GetFromStream(stream);
+        var playlist = content.GetFromStream(stream, DetectEncoding(stream, playlistPath));
 
         return playlist.PlaylistEntries
                 .Select(i => GetLinkedChild(i.Path, playlistPath, libraryRoots))
                 .Where(i => i is not null);
+    }
+
+    private Encoding DetectEncoding(Stream stream, string playlistPath)
+    {
+        var detected = CharsetDetector.DetectFromStream(stream).Detected;
+        stream.Seek(0, SeekOrigin.Begin);
+
+        if (detected?.Encoding is null || detected.Confidence < MinimumEncodingConfidence)
+        {
+            _logger.LogDebug("Could not detect the encoding of playlist {Path}, assuming UTF-8", playlistPath);
+            return Encoding.UTF8;
+        }
+
+        _logger.LogDebug("Detected encoding {Encoding} for playlist {Path}", detected.Encoding.WebName, playlistPath);
+        return detected.Encoding;
     }
 
     private IEnumerable<LinkedChild> GetZplItems(Stream stream, string playlistPath, List<string> libraryRoots)
@@ -191,7 +213,7 @@ public class PlaylistItemsProvider : ILocalMetadataProvider<Playlist>,
     {
         item = null;
         string pathToCheck = _fileSystem.MakeAbsolutePath(Path.GetDirectoryName(playlistPath), itemPath);
-        if (!File.Exists(pathToCheck))
+        if (!File.Exists(pathToCheck) && !TryNormalizePath(ref pathToCheck))
         {
             return false;
         }
@@ -202,6 +224,36 @@ public class PlaylistItemsProvider : ILocalMetadataProvider<Playlist>,
             {
                 item = _libraryManager.FindByPath(pathToCheck, null);
                 return item is not null;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool TryNormalizePath(ref string path)
+    {
+        foreach (var form in new[] { NormalizationForm.FormC, NormalizationForm.FormD })
+        {
+            string normalized;
+            try
+            {
+                if (path.IsNormalized(form))
+                {
+                    continue;
+                }
+
+                normalized = path.Normalize(form);
+            }
+            catch (ArgumentException)
+            {
+                // The path is not valid Unicode, there is nothing to normalize.
+                return false;
+            }
+
+            if (File.Exists(normalized))
+            {
+                path = normalized;
+                return true;
             }
         }
 

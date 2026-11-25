@@ -34,6 +34,40 @@ public static class BaseItemMapper
     /// </summary>
     private static readonly ConcurrentDictionary<string, Type?> _typeMap = new ConcurrentDictionary<string, Type?>();
 
+    private static UserData[] DetachUserData(BaseItemEntity entity)
+    {
+        if (entity.UserData is null || entity.UserData.Count == 0)
+        {
+            return [];
+        }
+
+        var detached = new UserData[entity.UserData.Count];
+        var index = 0;
+        foreach (var userData in entity.UserData)
+        {
+            detached[index++] = new UserData
+            {
+                ItemId = userData.ItemId,
+                Item = null,
+                UserId = userData.UserId,
+                User = null,
+                CustomDataKey = userData.CustomDataKey,
+                Rating = userData.Rating,
+                PlaybackPositionTicks = userData.PlaybackPositionTicks,
+                PlayCount = userData.PlayCount,
+                IsFavorite = userData.IsFavorite,
+                LastPlayedDate = userData.LastPlayedDate,
+                Played = userData.Played,
+                AudioStreamIndex = userData.AudioStreamIndex,
+                SubtitleStreamIndex = userData.SubtitleStreamIndex,
+                Likes = userData.Likes,
+                RetentionDate = userData.RetentionDate
+            };
+        }
+
+        return detached;
+    }
+
     /// <summary>
     /// Maps a Entity to the DTO.
     /// </summary>
@@ -87,7 +121,7 @@ public static class BaseItemMapper
         dto.OwnerId = entity.OwnerId ?? Guid.Empty;
         dto.Width = entity.Width.GetValueOrDefault();
         dto.Height = entity.Height.GetValueOrDefault();
-        dto.UserData = entity.UserData;
+        dto.UserData = DetachUserData(entity);
 
         if (entity.Provider is not null)
         {

@@ -455,25 +455,34 @@ namespace MediaBrowser.Controller.Entities
             {
                 var itemList = filtered.ToList();
                 var folderIds = itemList.OfType<Folder>().Select(f => f.Id).ToList();
+                var leaves = itemList.Where(i => i is not Folder).ToList();
+                var isPlayedValue = query.IsPlayed.Value;
 
-                if (folderIds.Count > 0)
+                var counts = folderIds.Count > 0
+                    ? libraryManager.GetPlayedAndTotalCountBatch(folderIds, user)
+                    : null;
+
+                // A movie held as several files is watched once any of its versions is watched.
+                var resumeData = leaves.Count > 0
+                    ? userDataManager.GetResumeUserDataBatch(leaves, user)
+                    : null;
+
+                return itemList.Where(item =>
                 {
-                    var counts = libraryManager.GetPlayedAndTotalCountBatch(folderIds, user);
-                    var isPlayedValue = query.IsPlayed.Value;
-
-                    return itemList.Where(item =>
+                    if (item is Folder)
                     {
-                        if (item is Folder)
-                        {
-                            var itemCount = counts.GetValueOrDefault(item.Id);
-                            return (itemCount.Played >= itemCount.Total) == isPlayedValue;
-                        }
+                        var itemCount = counts?.GetValueOrDefault(item.Id) ?? default;
+                        return (itemCount.Played >= itemCount.Total) == isPlayedValue;
+                    }
 
-                        return true;
-                    });
-                }
+                    var played = userDataManager.GetUserData(user, item)?.Played ?? false;
+                    if (!played && resumeData is not null && resumeData.TryGetValue(item.Id, out var versionData))
+                    {
+                        played = versionData.UserData.Played;
+                    }
 
-                return itemList;
+                    return played == isPlayedValue;
+                });
             }
 
             return filtered;
@@ -522,18 +531,22 @@ namespace MediaBrowser.Controller.Entities
             IUserDataManager userDataManager,
             ILibraryManager libraryManager)
         {
-            if (!string.IsNullOrEmpty(query.NameStartsWith) && !item.SortName.StartsWith(query.NameStartsWith, StringComparison.InvariantCultureIgnoreCase))
+            if (!string.IsNullOrEmpty(query.NameStartsWith)
+                && !item.SortName.StartsWith(BaseItem.NormalizeSortNameFilter(query.NameStartsWith), StringComparison.InvariantCultureIgnoreCase)
+                && !item.SortName.TrimStart('0').StartsWith(query.NameStartsWith, StringComparison.InvariantCultureIgnoreCase))
             {
                 return false;
             }
 
 #pragma warning disable CA1309 // Use ordinal string comparison
-            if (!string.IsNullOrEmpty(query.NameStartsWithOrGreater) && string.Compare(query.NameStartsWithOrGreater, item.SortName, StringComparison.InvariantCultureIgnoreCase) == 1)
+            if (!string.IsNullOrEmpty(query.NameStartsWithOrGreater)
+                && string.Compare(BaseItem.NormalizeSortNameFilter(query.NameStartsWithOrGreater), item.SortName, StringComparison.InvariantCultureIgnoreCase) == 1)
             {
                 return false;
             }
 
-            if (!string.IsNullOrEmpty(query.NameLessThan) && string.Compare(query.NameLessThan, item.SortName, StringComparison.InvariantCultureIgnoreCase) != 1)
+            if (!string.IsNullOrEmpty(query.NameLessThan)
+                && string.Compare(BaseItem.NormalizeSortNameFilter(query.NameLessThan), item.SortName, StringComparison.InvariantCultureIgnoreCase) != 1)
 #pragma warning restore CA1309 // Use ordinal string comparison
             {
                 return false;
@@ -606,19 +619,7 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            if (query.IsPlayed.HasValue)
-            {
-                // Folder.IsPlayed() hits the DB per-item (N+1 queries).
-                // Folders are batch-filtered by the collection Filter() overload.
-                if (!item.IsFolder)
-                {
-                    userData ??= userDataManager.GetUserData(user, item);
-                    if (item.IsPlayed(user, userData) != query.IsPlayed.Value)
-                    {
-                        return false;
-                    }
-                }
-            }
+            // IsPlayed is answered by the collection Filter() overload for folders and leaves alike.
 
             if (query.IsLocked.HasValue)
             {

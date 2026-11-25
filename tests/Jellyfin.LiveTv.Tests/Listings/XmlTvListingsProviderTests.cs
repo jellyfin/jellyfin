@@ -90,6 +90,49 @@ public class XmlTvListingsProviderTests
         AssertXmlTvEtag(program.Etag);
     }
 
+    [Theory]
+    [InlineData("Test Data/LiveTv/Listings/XmlTv/no-optional-elements.xml")]
+    [InlineData("https://example.com/no-optional-elements.xml")]
+    public async Task GetProgramsAsync_NoOptionalElements_Success(string path)
+    {
+        var info = new ListingsProviderInfo()
+        {
+            Id = "no-optional-elements-programs",
+            Path = path
+        };
+
+        var startDate = new DateTime(2022, 11, 4, 0, 0, 0, DateTimeKind.Utc);
+        var programs = await _xmlTvListingsProvider.GetProgramsAsync(info, "3297", startDate, startDate.AddDays(1), CancellationToken.None);
+        var program = Assert.Single(programs.ToList());
+        Assert.Equal("Programme Without Icon Or Rating", program.Name);
+        Assert.False(program.HasImage);
+        Assert.Null(program.ImageUrl);
+        Assert.Null(program.ThumbImageUrl);
+        Assert.Null(program.BackdropImageUrl);
+        Assert.Null(program.OfficialRating);
+        Assert.Null(program.CommunityRating);
+        AssertXmlTvEtag(program.Etag);
+    }
+
+    [Theory]
+    [InlineData("Test Data/LiveTv/Listings/XmlTv/no-optional-elements.xml")]
+    [InlineData("https://example.com/no-optional-elements.xml")]
+    public async Task GetChannels_NoOptionalElements_Success(string path)
+    {
+        var info = new ListingsProviderInfo()
+        {
+            Id = "no-optional-elements-channels",
+            Path = path
+        };
+
+        var channels = await _xmlTvListingsProvider.GetChannels(info, CancellationToken.None);
+        var channel = Assert.Single(channels);
+        Assert.Equal("3297", channel.Id);
+        Assert.Equal("Channel Without Icon", channel.Name);
+        Assert.Equal("3297", channel.Number);
+        Assert.Null(channel.ImageUrl);
+    }
+
     [Fact]
     public async Task GetProgramsAsync_Etag_SameContentIsStable()
     {

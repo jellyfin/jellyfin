@@ -1,10 +1,14 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.BaseItemManager;
 using MediaBrowser.Controller.Configuration;
@@ -16,12 +20,14 @@ using MediaBrowser.Controller.MediaSegments;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Providers.Manager;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
+using Moq.Protected;
 using Xunit;
 
 // Allow Moq to see internal class
@@ -377,6 +383,146 @@ namespace Jellyfin.Providers.Tests.Manager
             GetMetadataProviders_CanRefreshMetadata_Tester(providerType, expected, ownedItem: true);
         }
 
+        [Fact]
+        public async Task QueueRefresh_ManyItemsQueuedFromManyThreads_ProcessesEveryOne()
+        {
+            const int ItemCount = 2000;
+
+            var queued = Enumerable.Range(0, ItemCount).Select(_ => Guid.NewGuid()).ToArray();
+            var processed = new ConcurrentBag<Guid>();
+            var allProcessed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var libraryManager = new Mock<ILibraryManager>();
+            libraryManager.Setup(i => i.GetItemById(It.IsAny<Guid>()))
+                .Returns((Guid id) =>
+                {
+                    // Returning null drains the entry without the whole refresh machinery.
+                    processed.Add(id);
+                    if (processed.Count == ItemCount)
+                    {
+                        allProcessed.TrySetResult();
+                    }
+
+                    return null;
+                });
+
+            using var providerManager = GetProviderManager(libraryManager: libraryManager.Object);
+
+            await Parallel.ForEachAsync(
+                queued,
+                TestContext.Current.CancellationToken,
+                (id, _) =>
+                {
+                    providerManager.QueueRefresh(id, new MetadataRefreshOptions(Mock.Of<IDirectoryService>()), RefreshPriority.Normal);
+                    return ValueTask.CompletedTask;
+                });
+
+            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+            timeout.CancelAfter(TimeSpan.FromSeconds(30));
+
+            try
+            {
+                await allProcessed.Task.WaitAsync(timeout.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                // Fall through so the assertions report what was lost.
+            }
+
+            Assert.Empty(providerManager.GetRefreshQueue());
+            Assert.Equal(queued.Order().ToArray(), processed.Order().ToArray());
+        }
+
+        [Fact]
+        public async Task QueueRefresh_RefreshCancelsForItsOwnReasons_KeepsDrainingTheQueue()
+        {
+            // A provider timeout arrives as an OperationCanceledException, indistinguishable from
+            // a shutdown; treating it as one would strand the rest of the queue.
+            const int ItemCount = 200;
+
+            var queued = Enumerable.Range(0, ItemCount).Select(_ => Guid.NewGuid()).ToArray();
+            var processed = new ConcurrentBag<Guid>();
+            var allProcessed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            using var allQueued = new ManualResetEventSlim(false);
+            var cancelledOnce = false;
+
+            var libraryManager = new Mock<ILibraryManager>();
+            libraryManager.Setup(i => i.GetItemById(It.IsAny<Guid>()))
+                .Returns((Guid id) =>
+                {
+                    if (!cancelledOnce)
+                    {
+                        cancelledOnce = true;
+
+                        // Hold the first entry until the whole batch is queued.
+                        allQueued.Wait(TimeSpan.FromSeconds(30));
+                        throw new OperationCanceledException("provider timed out");
+                    }
+
+                    processed.Add(id);
+                    if (processed.Count == ItemCount - 1)
+                    {
+                        allProcessed.TrySetResult();
+                    }
+
+                    return null;
+                });
+
+            using var providerManager = GetProviderManager(libraryManager: libraryManager.Object);
+
+            foreach (var id in queued)
+            {
+                providerManager.QueueRefresh(id, new MetadataRefreshOptions(Mock.Of<IDirectoryService>()), RefreshPriority.Normal);
+            }
+
+            allQueued.Set();
+
+            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+            timeout.CancelAfter(TimeSpan.FromSeconds(30));
+
+            try
+            {
+                await allProcessed.Task.WaitAsync(timeout.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                // Fall through so the assertions report what was stranded.
+            }
+
+            Assert.Empty(providerManager.GetRefreshQueue());
+            Assert.Equal(ItemCount - 1, processed.Count);
+        }
+
+        [Theory]
+        [InlineData(HttpStatusCode.OK, "application/json", HttpStatusCode.NotFound)]
+        [InlineData(HttpStatusCode.Forbidden, "application/json", HttpStatusCode.Forbidden)]
+        public async Task SaveImage_ProviderRefusesWithBody_KeepsTheBody(HttpStatusCode status, string contentType, HttpStatusCode expectedStatus)
+        {
+            // Schedules Direct reports an exhausted image quota as HTTP 200 with a JSON body, and
+            // only the code in that body tells the guide refresh to stop requesting images.
+            const string Body = "{\"response\":\"MAX_IMAGE_DOWNLOADS\",\"code\":5002}";
+
+            var messageHandler = new Mock<HttpMessageHandler>();
+            messageHandler.Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(() => new HttpResponseMessage(status)
+                {
+                    Content = new StringContent(Body, Encoding.UTF8, contentType)
+                });
+
+            var httpClientFactory = new Mock<IHttpClientFactory>();
+            httpClientFactory.Setup(x => x.CreateClient(It.IsAny<string>()))
+                .Returns(() => new HttpClient(messageHandler.Object));
+
+            using var providerManager = GetProviderManager(httpClientFactory: httpClientFactory.Object);
+
+            var ex = await Assert.ThrowsAsync<HttpResponseBodyException>(
+                () => providerManager.SaveImage(new Movie(), "https://json.schedulesdirect.org/20141201/image/a.jpg", ImageType.Primary, null, CancellationToken.None));
+
+            Assert.Equal(expectedStatus, ex.StatusCode);
+            Assert.Equal(Body, ex.ResponseBody);
+        }
+
         private static void GetMetadataProviders_CanRefreshMetadata_Tester(
             string providerType,
             bool expected,
@@ -554,25 +700,33 @@ namespace Jellyfin.Providers.Tests.Manager
         private static ProviderManager GetProviderManager(
             ServerConfiguration? serverConfiguration = null,
             LibraryOptions? libraryOptions = null,
-            IBaseItemManager? baseItemManager = null)
+            IBaseItemManager? baseItemManager = null,
+            ILibraryManager? libraryManager = null,
+            IHttpClientFactory? httpClientFactory = null)
         {
             var serverConfigurationManager = new Mock<IServerConfigurationManager>(MockBehavior.Strict);
             serverConfigurationManager.Setup(i => i.Configuration)
                 .Returns(serverConfiguration ?? new ServerConfiguration());
 
-            var libraryManager = new Mock<ILibraryManager>(MockBehavior.Strict);
-            libraryManager.Setup(i => i.GetLibraryOptions(It.IsAny<BaseItem>()))
-                .Returns(libraryOptions ?? new LibraryOptions());
+            if (libraryManager is null)
+            {
+                var libraryManagerMock = new Mock<ILibraryManager>(MockBehavior.Strict);
+                libraryManagerMock.Setup(i => i.GetLibraryOptions(It.IsAny<BaseItem>()))
+                    .Returns(libraryOptions ?? new LibraryOptions());
+                libraryManagerMock.Setup(i => i.GetCollectionFolders(It.IsAny<BaseItem>()))
+                    .Returns(new List<Folder>());
+                libraryManager = libraryManagerMock.Object;
+            }
 
             var providerManager = new ProviderManager(
-                Mock.Of<IHttpClientFactory>(),
+                httpClientFactory ?? Mock.Of<IHttpClientFactory>(),
                 Mock.Of<ISubtitleManager>(),
                 serverConfigurationManager.Object,
                 Mock.Of<ILibraryMonitor>(),
                 _logger,
                 Mock.Of<IFileSystem>(),
                 Mock.Of<IServerApplicationPaths>(),
-                libraryManager.Object,
+                libraryManager,
                 baseItemManager!,
                 Mock.Of<ILyricManager>(),
                 Mock.Of<IMemoryCache>(),

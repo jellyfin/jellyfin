@@ -47,6 +47,20 @@ namespace MediaBrowser.Controller.Dto
         }
 
         /// <summary>
+        /// Gets options that populate nothing beyond the item's own stored columns.
+        /// </summary>
+        /// <remarks>
+        /// Each enabled field group is a collection the item query left-joins, so the rows returned are
+        /// the product of the item's provider, image and user data counts. Never use this for items that
+        /// get saved back: saving rewrites the owned rows from what the instance holds.
+        /// </remarks>
+        public static DtoOptions StoredColumnsOnly => new(false)
+        {
+            EnableImages = false,
+            EnableUserData = false
+        };
+
+        /// <summary>
         /// Gets or sets the fields to populate on the DTO.
         /// </summary>
         public IReadOnlyList<ItemFields> Fields { get; set; }

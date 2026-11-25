@@ -156,6 +156,7 @@ internal class ConsolidateLocalizedUserViews : IAsyncMigrationRoutine
 
         await MoveAncestorsAsync(dbContext, canonicalId, staleIds, cancellationToken).ConfigureAwait(false);
         await MoveUserSettingsAsync(dbContext, canonicalId, sourceId, staleIds, cancellationToken).ConfigureAwait(false);
+        await MoveRemainingReferencesAsync(dbContext, newParentId, staleIds, cancellationToken).ConfigureAwait(false);
 
         // Nothing points at them any more, and BaseItems cascades on ParentId, so this has to come last.
         await dbContext.BaseItems
@@ -169,6 +170,31 @@ internal class ConsolidateLocalizedUserViews : IAsyncMigrationRoutine
             staleIds.Length,
             viewType,
             canonicalId);
+    }
+
+    private static async Task MoveRemainingReferencesAsync(
+        JellyfinDbContext dbContext,
+        Guid? canonicalId,
+        IReadOnlyList<Guid> staleIds,
+        CancellationToken cancellationToken)
+    {
+        await dbContext.BaseItems
+            .Where(e => e.OwnerId.HasValue)
+            .WhereOneOrMany(staleIds, e => e.OwnerId!.Value)
+            .ExecuteUpdateAsync(e => e.SetProperty(f => f.OwnerId, canonicalId), cancellationToken)
+            .ConfigureAwait(false);
+
+        // Keyed by (ParentId, SortOrder), so these cannot be repointed onto the canonical view
+        // without risking a collision, and a view listing linked children is meaningless anyway.
+        await dbContext.LinkedChildren
+            .WhereOneOrMany(staleIds, e => e.ParentId)
+            .ExecuteDeleteAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        await dbContext.LinkedChildren
+            .WhereOneOrMany(staleIds, e => e.ChildId)
+            .ExecuteDeleteAsync(cancellationToken)
+            .ConfigureAwait(false);
     }
 
     private async Task<UserView> PickSourceAsync(
@@ -294,8 +320,10 @@ internal class ConsolidateLocalizedUserViews : IAsyncMigrationRoutine
         IReadOnlyList<Guid> staleIds,
         CancellationToken cancellationToken)
     {
+        // Ancestry recorded against items that no longer exist is dead weight.
         var items = await dbContext.AncestorIds
             .WhereOneOrMany(staleIds, e => e.ParentItemId)
+            .Where(e => dbContext.BaseItems.Any(item => item.Id.Equals(e.ItemId)))
             .Select(e => e.ItemId)
             .Distinct()
             .ToListAsync(cancellationToken)

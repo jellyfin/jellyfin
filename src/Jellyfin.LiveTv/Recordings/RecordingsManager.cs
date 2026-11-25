@@ -286,7 +286,7 @@ public sealed class RecordingsManager : IRecordingsManager, IDisposable
 
         if (requiresRefresh)
         {
-            await _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None).ConfigureAwait(false);
+            _libraryManager.QueueLibraryScan();
         }
     }
 
