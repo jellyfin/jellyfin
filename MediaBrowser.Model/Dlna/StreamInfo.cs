@@ -298,7 +298,9 @@ public class StreamInfo
     /// Gets the video stream that will be used in the output stream.
     /// </summary>
     /// <value>The video stream.</value>
-    public MediaStream? TargetVideoStream => MediaSource?.VideoStream;
+    public MediaStream? TargetVideoStream => VideoStreamIndex.HasValue
+        ? MediaSource?.GetMediaStream(MediaStreamType.Video, VideoStreamIndex.Value) ?? MediaSource?.VideoStream
+        : MediaSource?.VideoStream;
 
     /// <summary>
     /// Gets the audio sample rate that will be in the output stream.

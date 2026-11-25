@@ -410,6 +410,47 @@ namespace Jellyfin.Model.Tests
             Assert.Null(query["SubtitleMethod"]);
         }
 
+        [Theory]
+        [InlineData(null, PlayMethod.DirectPlay, null, 0)]
+        [InlineData(0, PlayMethod.DirectPlay, null, 0)]
+        [InlineData(1, PlayMethod.DirectPlay, null, 0)] // Audio stream, falls back to the default video stream
+        [InlineData(9, PlayMethod.DirectPlay, null, 0)] // Unknown stream
+        [InlineData(3, PlayMethod.Transcode, 3, 3)]
+        public async Task BuildVideoItemWithRequestedVideoStream(int? videoStreamIndex, PlayMethod expectedPlayMethod, int? expectedVideoStreamIndex, int expectedTargetIndex)
+        {
+            var options = await GetMediaOptions("Chrome", "mp4-h264-aac-vtt-2600k");
+            var mediaSource = options.MediaSources[0];
+            mediaSource.MediaStreams =
+            [
+                .. mediaSource.MediaStreams,
+                new MediaStream
+                {
+                    Index = 3,
+                    Type = MediaStreamType.Video,
+                    Codec = "h264",
+                    Profile = "High",
+                    Level = 41,
+                    Width = 1280,
+                    Height = 720,
+                    BitDepth = 8,
+                    AverageFrameRate = 23.976f,
+                    RealFrameRate = 23.976f
+                }
+            ];
+            options.VideoStreamIndex = videoStreamIndex;
+
+            var streamInfo = GetStreamBuilder().GetOptimalVideoStream(options);
+
+            Assert.NotNull(streamInfo);
+            Assert.Equal(expectedPlayMethod, streamInfo.PlayMethod);
+            Assert.Equal(expectedVideoStreamIndex, streamInfo.VideoStreamIndex);
+            Assert.Equal(expectedTargetIndex, streamInfo.TargetVideoStream?.Index);
+
+            var queryString = streamInfo.ToUrl("media:", "ACCESSTOKEN", null).Split('?', 2).ElementAtOrDefault(1);
+            var query = System.Web.HttpUtility.ParseQueryString(queryString ?? string.Empty);
+            Assert.Equal(expectedVideoStreamIndex?.ToString(System.Globalization.CultureInfo.InvariantCulture), query["VideoStreamIndex"]);
+        }
+
         private StreamInfo? BuildVideoItemSimpleTest(MediaOptions options, PlayMethod? playMethod, TranscodeReason why, string transcodeMode, string transcodeProtocol)
         {
             if (string.IsNullOrEmpty(transcodeProtocol))
