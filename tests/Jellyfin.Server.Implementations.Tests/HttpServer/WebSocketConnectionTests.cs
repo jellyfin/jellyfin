@@ -7,13 +7,58 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.HttpServer;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Moq;
 using Xunit;
 
 namespace Jellyfin.Server.Implementations.Tests.HttpServer
 {
     public class WebSocketConnectionTests
     {
+        [Theory]
+        [InlineData(false, "premature", LogLevel.Debug)]
+        [InlineData(true, "premature", LogLevel.Debug)]
+        [InlineData(false, "disposed", LogLevel.Debug)]
+        [InlineData(true, "disposed", LogLevel.Debug)]
+        [InlineData(false, "cancelled", LogLevel.Debug)]
+        [InlineData(true, "cancelled", LogLevel.Debug)]
+        [InlineData(false, "protocol", LogLevel.Warning)]
+        [InlineData(true, "protocol", LogLevel.Warning)]
+        [InlineData(false, "state", LogLevel.Warning)]
+        [InlineData(true, "state", LogLevel.Warning)]
+        public async Task ReceiveAsync_Disconnect_LogsAtExpectedLevelAndRaisesClosed(bool duringSend, string failure, LogLevel expectedLevel)
+        {
+            Exception exception = failure switch
+            {
+                "premature" => new WebSocketException(WebSocketError.ConnectionClosedPrematurely),
+                "disposed" => new ObjectDisposedException("socket"),
+                "cancelled" => new OperationCanceledException(),
+                "protocol" => new WebSocketException(WebSocketError.HeaderError),
+                _ => new WebSocketException(WebSocketError.InvalidState)
+            };
+            var logger = new Mock<ILogger<WebSocketConnection>>();
+            var socket = new DisconnectingWebSocket(exception, duringSend);
+            var connection = new WebSocketConnection(logger.Object, socket, null!, null!)
+            {
+                OnReceive = _ => Task.CompletedTask
+            };
+            var closed = 0;
+            connection.Closed += (_, _) => closed++;
+
+            await connection.ReceiveAsync(TestContext.Current.CancellationToken);
+
+            Assert.Equal(1, closed);
+            logger.Verify(
+                value => value.Log(
+                    expectedLevel,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((message, _) => message.ToString()!.Contains(duringSend ? "error sending data" : "error receiving data", StringComparison.Ordinal)),
+                    null,
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                Times.Once);
+        }
+
         [Fact]
         public void DeserializeWebSocketMessage_SingleSegment_Success()
         {
@@ -135,6 +180,61 @@ namespace Jellyfin.Server.Implementations.Tests.HttpServer
                 return new WebSocketException(
                     WebSocketError.InvalidState,
                     "The WebSocket is in an invalid state ('Closed') for this operation. Valid states are: 'Open, CloseReceived'");
+            }
+        }
+
+        private sealed class DisconnectingWebSocket(Exception failure, bool duringSend) : WebSocket
+        {
+            private bool _failed;
+
+            public override WebSocketCloseStatus? CloseStatus => null;
+
+            public override string? CloseStatusDescription => null;
+
+            public override string? SubProtocol => null;
+
+            public override WebSocketState State => _failed ? WebSocketState.Closed : WebSocketState.Open;
+
+            public override void Abort()
+            {
+            }
+
+            public override void Dispose()
+            {
+            }
+
+            public override Task CloseAsync(WebSocketCloseStatus closeStatus, string? statusDescription, CancellationToken cancellationToken)
+                => Task.CompletedTask;
+
+            public override Task CloseOutputAsync(WebSocketCloseStatus closeStatus, string? statusDescription, CancellationToken cancellationToken)
+                => Task.CompletedTask;
+
+            public override ValueTask<ValueWebSocketReceiveResult> ReceiveAsync(Memory<byte> buffer, CancellationToken cancellationToken)
+            {
+                if (!duringSend)
+                {
+                    _failed = true;
+                    throw failure;
+                }
+
+                var message = Encoding.UTF8.GetBytes("{\"MessageType\":\"KeepAlive\"}");
+                message.CopyTo(buffer);
+                return ValueTask.FromResult(new ValueWebSocketReceiveResult(message.Length, WebSocketMessageType.Text, true));
+            }
+
+            public override Task<WebSocketReceiveResult> ReceiveAsync(ArraySegment<byte> buffer, CancellationToken cancellationToken)
+                => throw new NotSupportedException();
+
+            public override ValueTask SendAsync(ReadOnlyMemory<byte> buffer, WebSocketMessageType messageType, bool endOfMessage, CancellationToken cancellationToken)
+            {
+                _failed = true;
+                throw failure;
+            }
+
+            public override Task SendAsync(ArraySegment<byte> buffer, WebSocketMessageType messageType, bool endOfMessage, CancellationToken cancellationToken)
+            {
+                _failed = true;
+                throw failure;
             }
         }
 

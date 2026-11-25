@@ -64,7 +64,7 @@ public sealed class ConfigurationControllerTests : IDisposable
                 {
                     options.AddPolicy(Policies.RequiresElevation, policy => policy.RequireAuthenticatedUser());
                 });
-                services.AddJellyfinApi(Array.Empty<Assembly>(), new NetworkConfiguration());
+                services.AddJellyfinApi(Array.Empty<Assembly>(), new NetworkConfiguration(), _configurationManager.Object.Configuration);
             })
             .Configure(app =>
             {
