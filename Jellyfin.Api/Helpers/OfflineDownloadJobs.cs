@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -24,7 +25,13 @@ internal sealed class OfflineDownloadJobs : IDisposable
 
     internal const string StatusFailed = "Failed";
 
+    internal const int MaxSlotsPerUser = 2;
+
+    internal const int MaxTotalSlots = 4;
+
     internal static readonly TimeSpan Retention = TimeSpan.FromHours(24);
+
+    internal static readonly TimeSpan DefaultSweepInterval = TimeSpan.FromSeconds(30);
 
     private readonly object _sync = new();
 
@@ -44,30 +51,74 @@ internal sealed class OfflineDownloadJobs : IDisposable
 
     private bool _disposed;
 
-    internal OfflineDownloadJobs(string transcodeRoot, Func<DateTimeOffset>? clock = null, Func<long>? freeBytes = null, Action<string>? warning = null)
+    internal OfflineDownloadJobs(string transcodeRoot, Func<DateTimeOffset>? clock = null, Func<long>? freeBytes = null, Action<string>? warning = null, TimeSpan? sweepInterval = null)
     {
         _warning = warning;
         _root = Path.Combine(Path.GetFullPath(transcodeRoot), "offline-downloads-v2");
         _clock = clock ?? (() => DateTimeOffset.UtcNow);
-        _freeBytes = freeBytes ?? (() => DriveInfo.GetDrives().Where(drive => _root.StartsWith(drive.Name, StringComparison.Ordinal)).OrderByDescending(drive => drive.Name.Length).First().AvailableFreeSpace);
+        _freeBytes = freeBytes ?? (() => GetAvailableFreeSpace(_root));
         Directory.CreateDirectory(_root);
         RejectLink(_root);
         PrivateDirectory(_root);
         Recover();
-        _timer = new Timer(_ => SweepSafely(), null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
+        var interval = sweepInterval ?? DefaultSweepInterval;
+        _timer = new Timer(_ => SweepSafely(), null, interval, interval);
+    }
+
+    internal static long GetAvailableFreeSpace(string path)
+    {
+        var fullPath = Path.GetFullPath(path);
+        var root = Path.GetPathRoot(fullPath);
+        if (!string.IsNullOrEmpty(root) && !root.StartsWith(@"\\", StringComparison.Ordinal))
+        {
+            try
+            {
+                return new DriveInfo(root).AvailableFreeSpace;
+            }
+            catch (Exception error) when (error is ArgumentException or DriveNotFoundException or IOException)
+            {
+                // Fall back to longest mount-point prefix match below (e.g. Linux nested mounts).
+            }
+        }
+
+        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        DriveInfo? best = null;
+        foreach (var drive in DriveInfo.GetDrives())
+        {
+            if (!fullPath.StartsWith(drive.Name, comparison))
+            {
+                continue;
+            }
+
+            if (best is null || drive.Name.Length > best.Name.Length)
+            {
+                best = drive;
+            }
+        }
+
+        if (best is null)
+        {
+            throw new IOException("Unable to determine available temporary disk space.");
+        }
+
+        return best.AvailableFreeSpace;
     }
 
     internal static bool CanAppend(long bytes, int count) => bytes >= 0 && count > 0 && bytes <= EncoderFileLimit - (1024 * 1024) - count;
 
     internal OfflineDownloadJobInfo Create(Guid owner, Guid item, string fingerprint, string filename, string quality, (int? Audio, int? Subtitle, string Mode) tracks)
     {
+        List<Entry>? toCancel = null;
+        OfflineDownloadJobInfo created;
         lock (_sync)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
-            Sweep();
+            Sweep(ref toCancel);
+
+            // Reclaim any failed jobs belonging to this user first.
             foreach (var failed in _entries.Values.Where(e => e.Data.Owner.Equals(owner) && e.Data.Status == StatusFailed).ToArray())
             {
-                DeleteEntry(failed);
+                DeleteEntry(failed, ref toCancel);
             }
 
             var existing = _entries.Values.FirstOrDefault(e =>
@@ -82,81 +133,111 @@ internal sealed class OfflineDownloadJobs : IDisposable
                 && e.Data.Status != StatusFailed);
             if (existing is not null)
             {
-                return Info(existing);
+                created = Info(existing);
             }
-
-            // Reserve a complete two-GiB slot, including queued jobs and deletion deferred by readers.
-            if (_entries.Count >= 2)
+            else
             {
-                throw new InvalidOperationException("The temporary download cache is full. Finish or discard another download first.");
+                // If the global cache is full, reclaim failed jobs from any user so failed entries cannot starve others.
+                if (_entries.Count >= MaxTotalSlots)
+                {
+                    foreach (var failed in _entries.Values.Where(e => e.Data.Status == StatusFailed).ToArray())
+                    {
+                        DeleteEntry(failed, ref toCancel);
+                    }
+                }
+
+                var userCount = _entries.Values.Count(e => e.Data.Owner.Equals(owner));
+                if (userCount >= MaxSlotsPerUser || _entries.Count >= MaxTotalSlots)
+                {
+                    throw new InvalidOperationException("The temporary download cache is full. Finish or discard another download first.");
+                }
+
+                var data = new OfflineDownloadRecord
+                {
+                    Id = Guid.NewGuid(),
+                    Owner = owner,
+                    Item = item,
+                    Fingerprint = fingerprint,
+                    Filename = filename,
+                    Quality = quality,
+                    AudioStreamIndex = tracks.Audio,
+                    SubtitleStreamIndex = tracks.Subtitle,
+                    SubtitleMode = tracks.Mode,
+                    ExpiresAt = _clock().Add(Retention),
+                    Status = StatusQueued
+                };
+                var entry = new Entry(data);
+                Directory.CreateDirectory(DirectoryFor(data.Id));
+                PrivateDirectory(DirectoryFor(data.Id));
+                Save(data);
+                _entries.Add(data.Id, entry);
+                created = Info(entry);
             }
-
-            var data = new OfflineDownloadRecord
-            {
-                Id = Guid.NewGuid(),
-                Owner = owner,
-                Item = item,
-                Fingerprint = fingerprint,
-                Filename = filename,
-                Quality = quality,
-                AudioStreamIndex = tracks.Audio,
-                SubtitleStreamIndex = tracks.Subtitle,
-                SubtitleMode = tracks.Mode,
-                ExpiresAt = _clock().Add(Retention),
-                Status = StatusQueued
-            };
-            var entry = new Entry(data);
-            Directory.CreateDirectory(DirectoryFor(data.Id));
-            PrivateDirectory(DirectoryFor(data.Id));
-            Save(data);
-            _entries.Add(data.Id, entry);
-            return Info(entry);
         }
+
+        CancelDeferred(toCancel);
+        return created;
     }
 
     internal OfflineDownloadJobInfo[] List(Guid owner, Guid item)
     {
+        List<Entry>? toCancel = null;
+        OfflineDownloadJobInfo[] result;
         lock (_sync)
         {
-            Sweep();
-            return _entries.Values.Where(e => !e.Deleted && e.Data.Owner.Equals(owner) && e.Data.Item.Equals(item)).Select(Info).ToArray();
+            Sweep(ref toCancel);
+            result = _entries.Values.Where(e => !e.Deleted && e.Data.Owner.Equals(owner) && e.Data.Item.Equals(item)).Select(Info).ToArray();
         }
+
+        CancelDeferred(toCancel);
+        return result;
     }
 
     internal OfflineDownloadJobInfo? Get(Guid owner, Guid item, Guid id, string? fingerprint = null)
     {
+        List<Entry>? toCancel = null;
+        OfflineDownloadJobInfo? result = null;
         lock (_sync)
         {
-            Sweep();
+            Sweep(ref toCancel);
             var entry = Find(owner, item, id);
-            if (entry is null)
+            if (entry is not null)
             {
-                return null;
+                if (fingerprint is not null && fingerprint != entry.Data.Fingerprint)
+                {
+                    DeleteEntry(entry, ref toCancel);
+                }
+                else
+                {
+                    result = Info(entry);
+                }
             }
-
-            if (fingerprint is not null && fingerprint != entry.Data.Fingerprint)
-            {
-                DeleteEntry(entry);
-                return null;
-            }
-
-            return Info(entry);
         }
+
+        CancelDeferred(toCancel);
+        return result;
     }
 
     internal bool Delete(Guid owner, Guid item, Guid id)
     {
+        List<Entry>? toCancel = null;
+        bool deleted;
         lock (_sync)
         {
             var entry = Find(owner, item, id);
             if (entry is null)
             {
-                return false;
+                deleted = false;
             }
-
-            DeleteEntry(entry);
-            return true;
+            else
+            {
+                DeleteEntry(entry, ref toCancel);
+                deleted = true;
+            }
         }
+
+        CancelDeferred(toCancel);
+        return deleted;
     }
 
     // Called by an awaited HTTP handler. A lost connection does not dispose its scope prematurely.
@@ -188,37 +269,56 @@ internal sealed class OfflineDownloadJobs : IDisposable
 
     internal Stream Open(Guid owner, Guid item, Guid id, Action? abortTransfer = null)
     {
-        lock (_sync)
+        List<Entry>? toCancel = null;
+        try
         {
-            Sweep();
-            var entry = Find(owner, item, id) ?? throw new FileNotFoundException();
-            if (entry.Data.Status != StatusReady || !ValidFile(entry.Data))
+            lock (_sync)
             {
-                throw new InvalidOperationException("The offline file is not ready.");
-            }
-
-            RejectLink(DirectoryFor(id));
-            RejectLink(FileFor(id));
-            var file = new FileStream(FileFor(id), FileMode.Open, FileAccess.Read, FileShare.Read, 65536, FileOptions.Asynchronous | FileOptions.RandomAccess);
-            entry.Readers++;
-            var registration = abortTransfer is null ? default : entry.Cancellation.Token.Register(abortTransfer);
-            return new OfflineDownloadStream(file, async () =>
-            {
-                await registration.DisposeAsync().ConfigureAwait(false);
-                lock (_sync)
+                ObjectDisposedException.ThrowIf(_disposed, this);
+                Sweep(ref toCancel);
+                var entry = Find(owner, item, id);
+                if (entry is null)
                 {
-                    entry.Readers--;
-                    if (entry.Deleted && !entry.Working && entry.Readers == 0)
-                    {
-                        Remove(entry);
-                    }
+                    throw new FileNotFoundException();
                 }
-            });
+
+                if (entry.Data.Status != StatusReady || !ValidFile(entry.Data))
+                {
+                    throw new InvalidOperationException("The offline file is not ready.");
+                }
+
+                RejectLink(DirectoryFor(id));
+                RejectLink(FileFor(id));
+                var file = new FileStream(FileFor(id), FileMode.Open, FileAccess.Read, FileShare.Read, 65536, FileOptions.Asynchronous | FileOptions.RandomAccess);
+                entry.Readers++;
+                var registration = abortTransfer is null ? default : entry.Cancellation.Token.Register(abortTransfer);
+                return new OfflineDownloadStream(file, async () =>
+                {
+                    await registration.DisposeAsync().ConfigureAwait(false);
+                    lock (_sync)
+                    {
+                        entry.Readers--;
+                        if (entry.Deleted && !entry.Working && entry.Readers == 0)
+                        {
+                            Remove(entry);
+                        }
+                        else if (_disposed && !entry.Working && entry.Readers == 0)
+                        {
+                            entry.Dispose();
+                        }
+                    }
+                });
+            }
+        }
+        finally
+        {
+            CancelDeferred(toCancel);
         }
     }
 
     public void Dispose()
     {
+        Entry[] entries;
         lock (_sync)
         {
             if (_disposed)
@@ -228,11 +328,26 @@ internal sealed class OfflineDownloadJobs : IDisposable
 
             _disposed = true;
             _timer.Dispose();
-            foreach (var entry in _entries.Values)
+            entries = _entries.Values.ToArray();
+        }
+
+        foreach (var entry in entries)
+        {
+            entry.CancelSafe();
+        }
+
+        lock (_sync)
+        {
+            foreach (var entry in entries)
             {
-                entry.Cancellation.Cancel();
+                if (!entry.Working && entry.Readers == 0)
+                {
+                    entry.Dispose();
+                }
             }
         }
+
+        _encoder.Dispose();
     }
 
     private Entry? TryBeginPrepare(Guid owner, Guid item, Guid id)
@@ -335,8 +450,19 @@ internal sealed class OfflineDownloadJobs : IDisposable
             entry.Data.Error = error is OperationCanceledException
                 ? "Preparation was cancelled or expired."
                 : "Preparation failed. Check source tracks, disk space and size limits; discard this job before retrying.";
-            File.Delete(PartialFor(id));
-            File.Delete(FileFor(id));
+            TryDeleteFile(PartialFor(id));
+            TryDeleteFile(FileFor(id));
+            if (!entry.Deleted && Directory.Exists(DirectoryFor(id)))
+            {
+                try
+                {
+                    Save(entry.Data);
+                }
+                catch (Exception saveError) when (saveError is IOException or UnauthorizedAccessException)
+                {
+                    _warning?.Invoke(saveError.ToString());
+                }
+            }
         }
     }
 
@@ -344,16 +470,27 @@ internal sealed class OfflineDownloadJobs : IDisposable
     {
         if (acquired)
         {
-            _encoder.Release();
+            try
+            {
+                _encoder.Release();
+            }
+            catch (ObjectDisposedException)
+            {
+                // Store was disposed while preparation was winding down.
+            }
         }
 
         lock (_sync)
         {
-            entry.Cancellation.CancelAfter(Timeout.InfiniteTimeSpan);
+            entry.ClearCancelAfterSafe();
             entry.Working = false;
-            if (entry.Deleted)
+            if (entry.Deleted && entry.Readers == 0)
             {
                 Remove(entry);
+            }
+            else if (_disposed && entry.Readers == 0)
+            {
+                entry.Dispose();
             }
         }
     }
@@ -366,13 +503,14 @@ internal sealed class OfflineDownloadJobs : IDisposable
 
     private void SweepSafely()
     {
+        List<Entry>? toCancel = null;
         try
         {
             lock (_sync)
             {
                 if (!_disposed)
                 {
-                    Sweep();
+                    Sweep(ref toCancel);
                 }
             }
         }
@@ -384,30 +522,57 @@ internal sealed class OfflineDownloadJobs : IDisposable
         {
             // Do not widen permissions to remove an inaccessible file.
         }
+
+        CancelDeferred(toCancel);
     }
 
-    private void Sweep()
+    private void Sweep(ref List<Entry>? toCancel)
     {
         foreach (var entry in _entries.Values.ToArray())
         {
             if (entry.Data.ExpiresAt <= _clock() || (entry.Data.Status == StatusReady && !ValidFile(entry.Data)))
             {
-                DeleteEntry(entry);
+                DeleteEntry(entry, ref toCancel);
             }
         }
     }
 
-    private void DeleteEntry(Entry entry)
+    private void DeleteEntry(Entry entry, ref List<Entry>? toCancel)
     {
         entry.Deleted = true;
-        entry.Cancellation.Cancel();
+        toCancel ??= new List<Entry>();
+        toCancel.Add(entry);
         if (!entry.Working && entry.Readers == 0)
         {
-            Remove(entry);
+            Remove(entry, disposeCancellation: false);
         }
     }
 
-    private void Remove(Entry entry)
+    private void CancelDeferred(List<Entry>? entries)
+    {
+        if (entries is null)
+        {
+            return;
+        }
+
+        foreach (var entry in entries)
+        {
+            entry.CancelSafe();
+        }
+
+        lock (_sync)
+        {
+            foreach (var entry in entries)
+            {
+                if (entry.Deleted && !entry.Working && entry.Readers == 0)
+                {
+                    entry.Dispose();
+                }
+            }
+        }
+    }
+
+    private void Remove(Entry entry, bool disposeCancellation = true)
     {
         var path = DirectoryFor(entry.Data.Id);
         if (Directory.Exists(path))
@@ -417,7 +582,22 @@ internal sealed class OfflineDownloadJobs : IDisposable
         }
 
         _entries.Remove(entry.Data.Id);
-        entry.Cancellation.Dispose();
+        if (disposeCancellation)
+        {
+            entry.Dispose();
+        }
+    }
+
+    private static void TryDeleteFile(string path)
+    {
+        try
+        {
+            File.Delete(path);
+        }
+        catch (Exception error) when (error is DirectoryNotFoundException or IOException or UnauthorizedAccessException)
+        {
+            // Directory may already be removed or file locked; slot cleanup will retry.
+        }
     }
 
     private void Save(OfflineDownloadRecord data)
@@ -449,7 +629,7 @@ internal sealed class OfflineDownloadJobs : IDisposable
                 RejectLink(manifest);
                 using var input = File.OpenRead(manifest);
                 var data = JsonSerializer.Deserialize<OfflineDownloadRecord>(input);
-                if (data is null || !data.Id.Equals(id) || data.Owner.Equals(Guid.Empty) || data.Item.Equals(Guid.Empty) || data.Status != StatusReady || data.ExpiresAt <= _clock() || data.ExpiresAt > _clock().Add(Retention) || data.Size <= 0 || data.Size >= EncoderFileLimit || _entries.Count >= 2 || OfflineDownloadProfiles.Get(data.Quality) is null || !ValidFile(data))
+                if (data is null || !data.Id.Equals(id) || data.Owner.Equals(Guid.Empty) || data.Item.Equals(Guid.Empty) || data.Status != StatusReady || data.ExpiresAt <= _clock() || data.ExpiresAt > _clock().Add(Retention) || data.Size <= 0 || data.Size >= EncoderFileLimit || _entries.Count >= MaxTotalSlots || OfflineDownloadProfiles.Get(data.Quality) is null || !ValidFile(data))
                 {
                     throw new InvalidDataException("metadata: null=" + (data is null) + ", id=" + data?.Id.Equals(id) + ", owner=" + data?.Owner.Equals(Guid.Empty) + ", item=" + data?.Item.Equals(Guid.Empty) + ", status=" + data?.Status + ", expired=" + (data?.ExpiresAt <= _clock()) + ", future=" + (data?.ExpiresAt > _clock().Add(Retention)) + ", size=" + data?.Size + ", slots=" + _entries.Count + ", file=" + (data is not null && ValidFile(data)));
                 }
@@ -478,7 +658,7 @@ internal sealed class OfflineDownloadJobs : IDisposable
         return File.Exists(path) && new FileInfo(path).LinkTarget is null && new FileInfo(path).Length == data.Size;
     }
 
-    private string DirectoryFor(Guid id) => Path.Combine(_root, id.ToString("N"));
+    private string DirectoryFor(Guid id) => Path.Combine(_root, id.ToString("N", CultureInfo.InvariantCulture));
 
     private string FileFor(Guid id) => Path.Combine(DirectoryFor(id), "download.mp4");
 
@@ -508,9 +688,10 @@ internal sealed class OfflineDownloadJobs : IDisposable
         }
     }
 
-    private sealed class Entry(OfflineDownloadRecord data)
+    private sealed class Entry(OfflineDownloadRecord data) : IDisposable
     {
         private long _bytes = data.Size;
+        private int _disposed;
 
         internal OfflineDownloadRecord Data { get; } = data;
 
@@ -525,5 +706,47 @@ internal sealed class OfflineDownloadJobs : IDisposable
         internal bool Deleted { get; set; }
 
         internal void AddBytes(int bytes) => Interlocked.Add(ref _bytes, bytes);
+
+        internal void CancelSafe()
+        {
+            if (Volatile.Read(ref _disposed) != 0)
+            {
+                return;
+            }
+
+            try
+            {
+                Cancellation.Cancel();
+            }
+            catch (ObjectDisposedException)
+            {
+                // Already disposed concurrently.
+            }
+        }
+
+        internal void ClearCancelAfterSafe()
+        {
+            if (Volatile.Read(ref _disposed) != 0)
+            {
+                return;
+            }
+
+            try
+            {
+                Cancellation.CancelAfter(Timeout.InfiniteTimeSpan);
+            }
+            catch (ObjectDisposedException)
+            {
+                // Already disposed concurrently.
+            }
+        }
+
+        public void Dispose()
+        {
+            if (Interlocked.Exchange(ref _disposed, 1) == 0)
+            {
+                Cancellation.Dispose();
+            }
+        }
     }
 }

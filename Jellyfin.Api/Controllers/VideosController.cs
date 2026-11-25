@@ -124,6 +124,18 @@ public class VideosController : BaseJellyfinApiController
             ? sessionValue
             : Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
         var deviceId = "offline-download-" + sessionId;
+        var hadSessionKey = HttpContext.Items.ContainsKey(OfflineDownloadContext.SessionKey);
+        if (!hadSessionKey)
+        {
+            HttpContext.Items[OfflineDownloadContext.SessionKey] = sessionId;
+        }
+
+        // Resolve "source default" consistently with OfflineDownloadsController.Create.
+        audioStreamIndex ??= item.GetMediaStreams()
+            .Where(stream => stream.Type == MediaStreamType.Audio)
+            .OrderByDescending(stream => stream.IsDefault)
+            .ThenBy(stream => stream.Index)
+            .FirstOrDefault()?.Index;
         Response.Headers["Cache-Control"] = "no-store";
         Response.Headers["X-Content-Type-Options"] = "nosniff";
         var deliveryMethod = subtitleMode switch
@@ -194,6 +206,10 @@ public class VideosController : BaseJellyfinApiController
         finally
         {
             Request.QueryString = originalQuery;
+            if (!hadSessionKey)
+            {
+                HttpContext.Items.Remove(OfflineDownloadContext.SessionKey);
+            }
         }
 
         if (result is FileStreamResult file)
@@ -202,14 +218,7 @@ public class VideosController : BaseJellyfinApiController
             file.FileStream = new OfflineDownloadStream(
                 file.FileStream,
                 () => _transcodeManager.KillTranscodingJobs(deviceId, sessionId, _ => true),
-                () =>
-                {
-                    var job = _transcodeManager.GetTranscodingJob(sessionId);
-                    if (job is null || !job.HasExited || job.ExitCode != 0)
-                    {
-                        throw new System.IO.IOException("Offline transcoding did not complete successfully.");
-                    }
-                });
+                () => ValidateOfflineTranscodeCompletion(sessionId));
         }
 
         return result;
@@ -283,7 +292,11 @@ public class VideosController : BaseJellyfinApiController
     /// <returns>The selectable stream metadata.</returns>
     [HttpGet("{itemId}/OfflineDownloadOptions")]
     [Authorize(Policy = Policies.Download)]
-    public ActionResult GetOfflineDownloadOptions([FromRoute] Guid itemId)
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public ActionResult<OfflineDownloadOptionsResult> GetOfflineDownloadOptions([FromRoute] Guid itemId)
     {
         var invalid = ValidateOfflineRequest(itemId, "720p", null, null, "none", out var item);
         if (invalid is not null)
@@ -298,26 +311,28 @@ public class VideosController : BaseJellyfinApiController
 
         Response.Headers["Cache-Control"] = "no-store";
         var streams = item.GetMediaStreams();
-        return new OkObjectResult(new
+        return new OkObjectResult(new OfflineDownloadOptionsResult
         {
-            AudioTracks = streams.Where(stream => stream.Type == MediaStreamType.Audio).Select(stream => new
-            {
-                stream.Index,
-                stream.DisplayTitle,
-                stream.Language,
-                stream.Codec,
-                stream.IsDefault
-            }),
-            SubtitleTracks = streams.Where(stream => stream.Type == MediaStreamType.Subtitle).Select(stream => new
-            {
-                stream.Index,
-                stream.DisplayTitle,
-                stream.Language,
-                stream.Codec,
-                stream.IsDefault,
-                CanEmbed = OfflineDownloadTracks.CanEmbed(stream),
-                CanBurn = OfflineDownloadTracks.CanBurn(stream)
-            })
+            AudioTracks = streams
+                .Where(stream => stream.Type == MediaStreamType.Audio)
+                .Select(stream => new OfflineDownloadAudioTrack(
+                    stream.Index,
+                    stream.DisplayTitle,
+                    stream.Language,
+                    stream.Codec,
+                    stream.IsDefault))
+                .ToArray(),
+            SubtitleTracks = streams
+                .Where(stream => stream.Type == MediaStreamType.Subtitle)
+                .Select(stream => new OfflineDownloadSubtitleTrack(
+                    stream.Index,
+                    stream.DisplayTitle,
+                    stream.Language,
+                    stream.Codec,
+                    stream.IsDefault,
+                    OfflineDownloadTracks.CanEmbed(stream),
+                    OfflineDownloadTracks.CanBurn(stream)))
+                .ToArray()
         });
     }
 
@@ -728,6 +743,56 @@ public class VideosController : BaseJellyfinApiController
             ffmpegCommandLineArguments,
             _transcodingJobType,
             cancellationTokenSource).ConfigureAwait(false);
+    }
+
+    private void ValidateOfflineTranscodeCompletion(string sessionId)
+    {
+        var job = _transcodeManager.GetTranscodingJob(sessionId);
+        if (job is null)
+        {
+            throw new InvalidOperationException("Offline transcoding did not complete successfully.");
+        }
+
+        int? processExitCode = null;
+        var process = job.Process;
+        if (process is not null)
+        {
+            try
+            {
+                if (!job.HasExited)
+                {
+                    process.WaitForExit(5000);
+                }
+
+                if (process.HasExited)
+                {
+                    processExitCode = process.ExitCode;
+                }
+            }
+            catch (ObjectDisposedException)
+            {
+                // Process was disposed by OnFfMpegProcessExited.
+            }
+            catch (InvalidOperationException)
+            {
+                // Process handle is no longer available.
+            }
+        }
+
+        if (!job.HasExited)
+        {
+            var deadline = Environment.TickCount64 + 5000;
+            while (!job.HasExited && Environment.TickCount64 < deadline)
+            {
+                Thread.Sleep(25);
+            }
+        }
+
+        var exitCode = processExitCode ?? job.ExitCode;
+        if (!job.HasExited || exitCode != 0)
+        {
+            throw new InvalidOperationException("Offline transcoding did not complete successfully.");
+        }
     }
 
     private CancellationTokenSource CreateStreamCancellationTokenSource()

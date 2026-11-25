@@ -25,6 +25,7 @@ namespace Jellyfin.Api.Controllers;
 
 /// <summary>Owner-bound, bounded, expiring offline MP4 preparation and byte-range transfer.</summary>
 [Route("Videos/{itemId:guid}/OfflineDownloads")]
+[Tags("Video")]
 [Authorize]
 public class OfflineDownloadsController : BaseJellyfinApiController
 {
@@ -50,7 +51,7 @@ public class OfflineDownloadsController : BaseJellyfinApiController
     /// <param name="subtitleStreamIndex">An available subtitle index.</param>
     /// <param name="subtitleMode">none, embed, or burn.</param>
     /// <returns>A descriptor without filesystem paths or bearer credentials.</returns>
-    [HttpPost]
+    [HttpPost(Name = "CreateOfflineDownload")]
     [Authorize(Policy = Policies.Download)]
     [ProducesResponseType(typeof(OfflineDownloadJobInfo), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -71,11 +72,17 @@ public class OfflineDownloadsController : BaseJellyfinApiController
             return NotFound();
         }
 
+        var fingerprint = TryFingerprint(item);
+        if (fingerprint is null)
+        {
+            return NotFound();
+        }
+
         // Resolve "source default" once so later preference changes cannot silently change cached audio.
         audioStreamIndex ??= item.GetMediaStreams().Where(stream => stream.Type == MediaBrowser.Model.Entities.MediaStreamType.Audio).OrderByDescending(stream => stream.IsDefault).ThenBy(stream => stream.Index).FirstOrDefault()?.Index;
         try
         {
-            return new OkObjectResult(_jobs.Create(User.GetUserId(), itemId, Fingerprint(item), OfflineDownloadProfiles.CreateFileName(item.Path, quality), quality, (audioStreamIndex, subtitleStreamIndex, subtitleMode)));
+            return new OkObjectResult(_jobs.Create(User.GetUserId(), itemId, fingerprint, OfflineDownloadProfiles.CreateFileName(item.Path, quality), quality, (audioStreamIndex, subtitleStreamIndex, subtitleMode)));
         }
         catch (InvalidOperationException error)
         {
@@ -86,7 +93,7 @@ public class OfflineDownloadsController : BaseJellyfinApiController
     /// <summary>Lists this user's temporary jobs for an accessible video.</summary>
     /// <param name="itemId">The video.</param>
     /// <returns>Owned, accessible jobs only.</returns>
-    [HttpGet]
+    [HttpGet(Name = "ListOfflineDownloads")]
     [Authorize(Policy = Policies.Download)]
     [ProducesResponseType(typeof(OfflineDownloadJobInfo[]), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -106,7 +113,12 @@ public class OfflineDownloadsController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var fingerprint = Fingerprint(item);
+        var fingerprint = TryFingerprint(item);
+        if (fingerprint is null)
+        {
+            return NotFound();
+        }
+
         var jobs = _jobs.List(User.GetUserId(), itemId).Where(job => _jobs.Get(User.GetUserId(), itemId, job.Id, fingerprint) is not null).ToArray();
         return new OkObjectResult(jobs);
     }
@@ -115,7 +127,7 @@ public class OfflineDownloadsController : BaseJellyfinApiController
     /// <param name="itemId">The video.</param>
     /// <param name="jobId">An owned job.</param>
     /// <returns>The descriptor or an authorization/not-found response.</returns>
-    [HttpGet("{jobId:guid}")]
+    [HttpGet("{jobId:guid}", Name = "GetOfflineDownloadStatus")]
     [Authorize(Policy = Policies.Download)]
     [ProducesResponseType(typeof(OfflineDownloadJobInfo), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -131,11 +143,12 @@ public class OfflineDownloadsController : BaseJellyfinApiController
     /// <param name="itemId">The video.</param>
     /// <param name="jobId">An owned job.</param>
     /// <returns>The final descriptor, or current status if another prepare already owns it.</returns>
-    [HttpPost("{jobId:guid}/Prepare")]
+    [HttpPost("{jobId:guid}/Prepare", Name = "PrepareOfflineDownload")]
     [Authorize(Policy = Policies.Download)]
     [ProducesResponseType(typeof(OfflineDownloadJobInfo), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult> Prepare([FromRoute] Guid itemId, [FromRoute] Guid jobId)
     {
         NoStore();
@@ -151,26 +164,47 @@ public class OfflineDownloadsController : BaseJellyfinApiController
         }
 
         var validatedJob = job;
-        await _jobs.Prepare(User.GetUserId(), itemId, jobId, async token =>
+        try
         {
-            // Revalidate after waiting for the single encoder, not just when joining its queue.
-            var videos = Videos();
-            var error = videos.ValidateOfflineRequest(itemId, validatedJob.Quality, validatedJob.AudioStreamIndex, validatedJob.SubtitleStreamIndex, validatedJob.SubtitleMode, out var item);
-            if (error is not null || item is null || _jobs.Get(User.GetUserId(), itemId, jobId, Fingerprint(item)) is null)
+            await _jobs.Prepare(User.GetUserId(), itemId, jobId, async token =>
             {
-                throw new InvalidOperationException("The source or permission changed before preparation.");
-            }
+                // Revalidate after waiting for the single encoder, not just when joining its queue.
+                var videos = Videos();
+                var error = videos.ValidateOfflineRequest(itemId, validatedJob.Quality, validatedJob.AudioStreamIndex, validatedJob.SubtitleStreamIndex, validatedJob.SubtitleMode, out var item);
+                var fingerprint = item is null ? null : TryFingerprint(item);
+                if (error is not null || item is null || fingerprint is null || _jobs.Get(User.GetUserId(), itemId, jobId, fingerprint) is null)
+                {
+                    throw new InvalidOperationException("The source or permission changed before preparation.");
+                }
 
-            HttpContext.Items[OfflineDownloadContext.SessionKey] = jobId.ToString("N", CultureInfo.InvariantCulture);
-            HttpContext.Items[OfflineDownloadContext.CancellationKey] = token;
-            var result = await videos.DownloadTranscoded(itemId, validatedJob.Quality, validatedJob.AudioStreamIndex, validatedJob.SubtitleStreamIndex, validatedJob.SubtitleMode).ConfigureAwait(false);
-            if (result is not FileStreamResult file)
-            {
-                throw new InvalidOperationException("The selected source cannot be prepared.");
-            }
+                HttpContext.Items[OfflineDownloadContext.SessionKey] = jobId.ToString("N", CultureInfo.InvariantCulture);
+                HttpContext.Items[OfflineDownloadContext.CancellationKey] = token;
+                try
+                {
+                    var result = await videos.DownloadTranscoded(itemId, validatedJob.Quality, validatedJob.AudioStreamIndex, validatedJob.SubtitleStreamIndex, validatedJob.SubtitleMode).ConfigureAwait(false);
+                    if (result is not FileStreamResult file)
+                    {
+                        throw new InvalidOperationException("The selected source cannot be prepared.");
+                    }
 
-            return file.FileStream;
-        }).ConfigureAwait(false);
+                    return file.FileStream;
+                }
+                finally
+                {
+                    HttpContext.Items.Remove(OfflineDownloadContext.SessionKey);
+                    HttpContext.Items.Remove(OfflineDownloadContext.CancellationKey);
+                }
+            }).ConfigureAwait(false);
+        }
+        catch (FileNotFoundException)
+        {
+            return NotFound();
+        }
+        catch (InvalidOperationException error)
+        {
+            return Conflict(error.Message);
+        }
+
         invalid = ValidateJob(itemId, jobId, out job);
         return invalid ?? new OkObjectResult(job);
     }
@@ -179,8 +213,8 @@ public class OfflineDownloadsController : BaseJellyfinApiController
     /// <param name="itemId">The video.</param>
     /// <param name="jobId">An owned ready job.</param>
     /// <returns>MP4 bytes, a range, or a not-ready/error response.</returns>
-    [HttpGet("{jobId:guid}/File")]
-    [HttpHead("{jobId:guid}/File")]
+    [HttpGet("{jobId:guid}/File", Name = "GetOfflineDownloadFile")]
+    [HttpHead("{jobId:guid}/File", Name = "HeadOfflineDownloadFile")]
     [Authorize(Policy = Policies.Download)]
     [ProducesResponseType(typeof(FileStreamResult), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(FileStreamResult), StatusCodes.Status206PartialContent)]
@@ -221,7 +255,7 @@ public class OfflineDownloadsController : BaseJellyfinApiController
     /// <param name="itemId">The original item id.</param>
     /// <param name="jobId">An owned temporary job.</param>
     /// <returns>No content, or not found without cross-user disclosure.</returns>
-    [HttpDelete("{jobId:guid}")]
+    [HttpDelete("{jobId:guid}", Name = "DeleteOfflineDownload")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> Delete([FromRoute] Guid itemId, [FromRoute] Guid jobId)
@@ -256,7 +290,13 @@ public class OfflineDownloadsController : BaseJellyfinApiController
             return NotFound();
         }
 
-        job = _jobs.Get(User.GetUserId(), itemId, jobId, Fingerprint(item));
+        var fingerprint = TryFingerprint(item);
+        if (fingerprint is null)
+        {
+            return NotFound();
+        }
+
+        job = _jobs.Get(User.GetUserId(), itemId, jobId, fingerprint);
         return job is null ? NotFound() : null;
     }
 
@@ -273,9 +313,19 @@ public class OfflineDownloadsController : BaseJellyfinApiController
         Response.Headers["X-Content-Type-Options"] = "nosniff";
     }
 
-    private static string Fingerprint(BaseItem item)
+    private static string? TryFingerprint(BaseItem item)
     {
+        if (string.IsNullOrEmpty(item.Path))
+        {
+            return null;
+        }
+
         var source = new FileInfo(item.Path);
+        if (!source.Exists)
+        {
+            return null;
+        }
+
         var text = new StringBuilder().Append(item.Id).Append('|').Append(source.Length).Append('|').Append(source.LastWriteTimeUtc.Ticks);
         foreach (var stream in item.GetMediaStreams().OrderBy(stream => stream.Index))
         {

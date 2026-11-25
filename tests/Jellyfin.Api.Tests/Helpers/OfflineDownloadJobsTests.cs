@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -11,7 +12,7 @@ namespace Jellyfin.Api.Tests.Helpers;
 
 public sealed class OfflineDownloadJobsTests : IDisposable
 {
-    private readonly string _root = Path.Combine(Path.GetTempPath(), "jellyfin-offline-test-" + Guid.NewGuid().ToString("N"));
+    private readonly string _root = Path.Combine(Path.GetTempPath(), "jellyfin-offline-test-" + Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture));
     private readonly Guid _owner = Guid.NewGuid();
     private readonly Guid _item = Guid.NewGuid();
     private DateTimeOffset _now = DateTimeOffset.UtcNow;
@@ -19,7 +20,8 @@ public sealed class OfflineDownloadJobsTests : IDisposable
 
     private OfflineDownloadJobs Jobs => _jobs ??= NewJobs();
 
-    private OfflineDownloadJobs NewJobs() => new(_root, () => _now, () => 10L * 1024 * 1024 * 1024);
+    private OfflineDownloadJobs NewJobs(TimeSpan? sweepInterval = null)
+        => new(_root, () => _now, () => 10L * 1024 * 1024 * 1024, sweepInterval: sweepInterval);
 
     private OfflineDownloadJobInfo Create(string quality = "720p", string fingerprint = "source-1")
         => Jobs.Create(_owner, _item, fingerprint, "video.mp4", quality, (1, null, "none"));
@@ -42,9 +44,15 @@ public sealed class OfflineDownloadJobsTests : IDisposable
     [Fact]
     public async Task ExpiryTimerRunsWithoutAStatusOrDownloadRequest()
     {
+        _jobs = NewJobs(TimeSpan.FromMilliseconds(50));
         Create();
         _now = _now.AddHours(24).AddSeconds(1);
-        await Task.Delay(TimeSpan.FromSeconds(32), TestContext.Current.CancellationToken);
+        var deadline = DateTimeOffset.UtcNow.AddSeconds(2);
+        while (Directory.GetDirectories(Path.Combine(_root, "offline-downloads-v2")).Length > 0 && DateTimeOffset.UtcNow < deadline)
+        {
+            await Task.Delay(TimeSpan.FromMilliseconds(25), TestContext.Current.CancellationToken);
+        }
+
         Assert.Empty(Directory.GetDirectories(Path.Combine(_root, "offline-downloads-v2")));
     }
 
@@ -140,7 +148,7 @@ public sealed class OfflineDownloadJobsTests : IDisposable
         var job = Create();
         await Ready(job.Id);
         Jobs.Dispose();
-        await File.WriteAllTextAsync(Path.Combine(_root, "offline-downloads-v2", job.Id.ToString("N"), "download.mp4"), new string('x', 29), TestContext.Current.CancellationToken);
+        await File.WriteAllTextAsync(Path.Combine(_root, "offline-downloads-v2", job.Id.ToString("N", CultureInfo.InvariantCulture), "download.mp4"), new string('x', 29), TestContext.Current.CancellationToken);
         _jobs = NewJobs();
         Assert.Null(Jobs.Get(_owner, _item, job.Id));
     }
@@ -201,6 +209,93 @@ public sealed class OfflineDownloadJobsTests : IDisposable
         var first = Create();
         var alternate = Jobs.Create(_owner, _item, "source-1", "video.mp4", "720p", (2, 4, "embed"));
         Assert.NotEqual(first.Id, alternate.Id);
+    }
+
+    [Fact]
+    public void CrossUserSlotsCannotBeStarvedByOneUser()
+    {
+        var otherUser = Guid.NewGuid();
+        var first = Create("720p");
+        Create("540p");
+        Assert.Throws<InvalidOperationException>(() => Create("1080p"));
+
+        // Another user still gets their own per-user slots within the global cap.
+        var otherFirst = Jobs.Create(otherUser, _item, "source-1", "video.mp4", "720p", (1, null, "none"));
+        var otherSecond = Jobs.Create(otherUser, _item, "source-1", "video.mp4", "540p", (1, null, "none"));
+        Assert.NotEqual(otherFirst.Id, otherSecond.Id);
+
+        // A third user hits the global cap while all 4 slots are active.
+        var thirdUser = Guid.NewGuid();
+        Assert.Throws<InvalidOperationException>(() => Jobs.Create(thirdUser, _item, "source-1", "video.mp4", "720p", (1, null, "none")));
+
+        // Deleting one active job frees a global slot for the third user.
+        Assert.True(Jobs.Delete(_owner, _item, first.Id));
+        Assert.NotNull(Jobs.Create(thirdUser, _item, "source-1", "video.mp4", "720p", (1, null, "none")));
+    }
+
+    [Fact]
+    public async Task FailedJobsFromAnotherUserAreReclaimedWhenGlobalCacheIsFull()
+    {
+        var otherUser = Guid.NewGuid();
+        var thirdUser = Guid.NewGuid();
+        var failedJob = Create("720p");
+        Create("540p");
+        Jobs.Create(otherUser, _item, "source-1", "video.mp4", "720p", (1, null, "none"));
+        Jobs.Create(otherUser, _item, "source-1", "video.mp4", "540p", (1, null, "none"));
+
+        await Jobs.Prepare(_owner, _item, failedJob.Id, _ => throw new IOException("simulated failure"));
+        Assert.Equal(OfflineDownloadJobs.StatusFailed, Jobs.Get(_owner, _item, failedJob.Id)?.Status);
+
+        // Third user reclaims the failed slot instead of being locked out.
+        var thirdJob = Jobs.Create(thirdUser, _item, "source-1", "video.mp4", "720p", (1, null, "none"));
+        Assert.Equal(OfflineDownloadJobs.StatusQueued, thirdJob.Status);
+        Assert.Null(Jobs.Get(_owner, _item, failedJob.Id));
+    }
+
+    [Fact]
+    public async Task FailedJobCannotBePreparedAgainWithoutDiscard()
+    {
+        var job = Create();
+        await Jobs.Prepare(_owner, _item, job.Id, _ => throw new IOException("simulated failure"));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => Ready(job.Id));
+    }
+
+    [Fact]
+    public async Task OpenAfterDisposeThrowsObjectDisposedException()
+    {
+        var job = Create();
+        await Ready(job.Id);
+        Jobs.Dispose();
+        Assert.Throws<ObjectDisposedException>(() => Jobs.Open(_owner, _item, job.Id));
+        Assert.Throws<ObjectDisposedException>(() => Create("540p"));
+
+        // Double dispose is safe.
+        Jobs.Dispose();
+    }
+
+    [Fact]
+    public async Task AbortCallbackCanReenterStoreWithoutDeadlock()
+    {
+        var job = Create();
+        await Ready(job.Id);
+        OfflineDownloadJobInfo[]? observed = null;
+        await using var stream = Jobs.Open(_owner, _item, job.Id, () => observed = Jobs.List(_owner, _item));
+        Assert.True(Jobs.Delete(_owner, _item, job.Id));
+        Assert.NotNull(observed);
+        Assert.Empty(observed);
+    }
+
+    [Fact]
+    public void GetAvailableFreeSpaceHandlesExistingTempPathAndLowercaseDrive()
+    {
+        Directory.CreateDirectory(_root);
+        var free = OfflineDownloadJobs.GetAvailableFreeSpace(_root);
+        Assert.True(free > 0);
+        if (OperatingSystem.IsWindows() && _root.Length > 2 && _root[1] == ':')
+        {
+            var lowerRoot = char.ToLowerInvariant(_root[0]) + _root[1..];
+            Assert.True(OfflineDownloadJobs.GetAvailableFreeSpace(lowerRoot) > 0);
+        }
     }
 
     public void Dispose()
