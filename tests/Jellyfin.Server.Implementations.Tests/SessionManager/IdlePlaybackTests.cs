@@ -44,7 +44,8 @@ public class IdlePlaybackTests
             Mock.Of<IServerApplicationHost>(),
             Mock.Of<IDeviceManager>(),
             Mock.Of<IMediaSourceManager>(),
-            Mock.Of<IHostApplicationLifetime>());
+            Mock.Of<IHostApplicationLifetime>(),
+            Mock.Of<IVideoPlaybackCoordinator>());
         var session = await sessionManager.LogSessionActivity(
             "Test Client",
             "1.0.0",

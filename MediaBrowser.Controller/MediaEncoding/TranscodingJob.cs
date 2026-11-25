@@ -35,6 +35,21 @@ public sealed class TranscodingJob : IDisposable
     public string? PlaySessionId { get; set; }
 
     /// <summary>
+    /// Gets or sets the canonical library item selected by the server.
+    /// </summary>
+    public Guid ItemId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the authenticated user owning the encoding.
+    /// </summary>
+    public Guid UserId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the authentication record owning the encoding.
+    /// </summary>
+    public string? PlaybackOwnerId { get; set; }
+
+    /// <summary>
     /// Gets or sets the live stream identifier.
     /// </summary>
     public string? LiveStreamId { get; set; }
@@ -43,6 +58,15 @@ public sealed class TranscodingJob : IDisposable
     /// Gets or sets a value indicating whether is live output.
     /// </summary>
     public bool IsLiveOutput { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the encoded output contains video.
+    /// </summary>
+    /// <remarks>
+    /// A null value indicates an unknown job. Input video streams do not imply
+    /// video output when the request extracts only audio.
+    /// </remarks>
+    public bool? IsOutputVideo { get; set; }
 
     /// <summary>
     /// Gets or sets the path.

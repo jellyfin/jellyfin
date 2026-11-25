@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Models.UserDtos;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Users;
 using Xunit;
 using Xunit.v3.Priority;
 
@@ -190,6 +191,139 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
 
             // Sanity check, make sure we're testing something
             Assert.NotEqual(TestUsername, userDto.Name);
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(1)]
+        [InlineData(3)]
+        [InlineData(int.MaxValue)]
+        [Priority(1)]
+        public async Task UpdateUserPolicy_ValidVideoLimit_Persists(int limit)
+        {
+            using var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+            var user = await CreateVideoPolicyTestUserAsync(client);
+            try
+            {
+                user.Policy!.MaxActiveVideoStreams = limit;
+                using var response = await client.PostAsJsonAsync($"Users/{user.Id}/Policy", user.Policy, _jsonOptions, TestContext.Current.CancellationToken);
+
+                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+                Assert.Equal(limit, (await GetPolicyAsync(client, user.Id)).MaxActiveVideoStreams);
+            }
+            finally
+            {
+                using var response = await client.DeleteAsync($"Users/{user.Id}", TestContext.Current.CancellationToken);
+                response.EnsureSuccessStatusCode();
+            }
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        [Priority(1)]
+        public async Task UpdateUserPolicy_NegativeVideoLimit_ReturnsBadRequestWithoutChangingPolicy(bool camelCase)
+        {
+            using var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+            var user = await CreateVideoPolicyTestUserAsync(client);
+            try
+            {
+                user.Policy!.MaxActiveVideoStreams = 2;
+                using var seedResponse = await client.PostAsJsonAsync($"Users/{user.Id}/Policy", user.Policy, _jsonOptions, TestContext.Current.CancellationToken);
+                Assert.Equal(HttpStatusCode.NoContent, seedResponse.StatusCode);
+
+                user.Policy.MaxActiveVideoStreams = -1;
+                user.Policy.MaxActiveSessions = 7;
+                var options = camelCase ? JsonDefaults.CamelCaseOptions : JsonDefaults.PascalCaseOptions;
+                using var response = await client.PostAsJsonAsync($"Users/{user.Id}/Policy", user.Policy, options, TestContext.Current.CancellationToken);
+
+                Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+                Assert.Contains(nameof(UserPolicy.MaxActiveVideoStreams), await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken), StringComparison.OrdinalIgnoreCase);
+                var stored = await GetPolicyAsync(client, user.Id);
+                Assert.Equal(2, stored.MaxActiveVideoStreams);
+                Assert.Equal(0, stored.MaxActiveSessions);
+            }
+            finally
+            {
+                using var response = await client.DeleteAsync($"Users/{user.Id}", TestContext.Current.CancellationToken);
+                response.EnsureSuccessStatusCode();
+            }
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        [Priority(1)]
+        public async Task UpdateUserPolicy_OmittedVideoLimitPreservesLimitAndExplicitZeroDisablesIt(bool camelCase)
+        {
+            using var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
+            var user = await CreateVideoPolicyTestUserAsync(client);
+            try
+            {
+                user.Policy!.MaxActiveVideoStreams = 2;
+                using var seedResponse = await client.PostAsJsonAsync($"Users/{user.Id}/Policy", user.Policy, _jsonOptions, TestContext.Current.CancellationToken);
+                Assert.Equal(HttpStatusCode.NoContent, seedResponse.StatusCode);
+
+                var options = camelCase ? JsonDefaults.CamelCaseOptions : JsonDefaults.PascalCaseOptions;
+                var propertyName = camelCase ? "maxActiveVideoStreams" : "MaxActiveVideoStreams";
+                user.Policy.MaxActiveSessions = 3;
+                var oldClientPolicy = JsonSerializer.SerializeToNode(user.Policy, options)!.AsObject();
+                Assert.True(oldClientPolicy.Remove(propertyName));
+                using var omittedResponse = await client.PostAsJsonAsync($"Users/{user.Id}/Policy", oldClientPolicy, options, TestContext.Current.CancellationToken);
+
+                Assert.Equal(HttpStatusCode.NoContent, omittedResponse.StatusCode);
+                var stored = await GetPolicyAsync(client, user.Id);
+                Assert.Equal(2, stored.MaxActiveVideoStreams);
+                Assert.Equal(3, stored.MaxActiveSessions);
+
+                oldClientPolicy[propertyName] = 0;
+                using var zeroResponse = await client.PostAsJsonAsync($"Users/{user.Id}/Policy", oldClientPolicy, options, TestContext.Current.CancellationToken);
+
+                Assert.Equal(HttpStatusCode.NoContent, zeroResponse.StatusCode);
+                Assert.Equal(0, (await GetPolicyAsync(client, user.Id)).MaxActiveVideoStreams);
+            }
+            finally
+            {
+                using var response = await client.DeleteAsync($"Users/{user.Id}", TestContext.Current.CancellationToken);
+                response.EnsureSuccessStatusCode();
+            }
+        }
+
+        [Fact]
+        public async Task UserPolicySchema_ExposesOnlyTheInt32VideoLimit()
+        {
+            using var client = _factory.CreateClient();
+            using var response = await client.GetAsync("api-docs/openapi.json", TestContext.Current.CancellationToken);
+            response.EnsureSuccessStatusCode();
+            using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
+            var properties = document.RootElement.GetProperty("components").GetProperty("schemas").GetProperty("UserPolicy").GetProperty("properties");
+            var limit = properties.GetProperty(nameof(UserPolicy.MaxActiveVideoStreams));
+
+            Assert.Equal("integer", limit.GetProperty("type").GetString());
+            Assert.Equal("int32", limit.GetProperty("format").GetString());
+            Assert.Equal(0, limit.GetProperty("minimum").GetInt32());
+            Assert.False(properties.TryGetProperty(nameof(UserPolicy.HasMaxActiveVideoStreams), out _));
+        }
+
+        private async Task<UserDto> CreateVideoPolicyTestUserAsync(HttpClient client)
+        {
+            using var response = await CreateUserByName(client, new CreateUserByName { Name = $"video-policy-{Guid.NewGuid():N}" });
+            response.EnsureSuccessStatusCode();
+            var user = await response.Content.ReadFromJsonAsync<UserDto>(_jsonOptions, TestContext.Current.CancellationToken);
+            Assert.NotNull(user);
+            return user;
+        }
+
+        private async Task<UserPolicy> GetPolicyAsync(HttpClient client, Guid userId)
+        {
+            using var response = await client.GetAsync($"Users/{userId}", TestContext.Current.CancellationToken);
+            response.EnsureSuccessStatusCode();
+            var user = await response.Content.ReadFromJsonAsync<UserDto>(_jsonOptions, TestContext.Current.CancellationToken);
+            Assert.NotNull(user?.Policy);
+            return user.Policy;
         }
     }
 }

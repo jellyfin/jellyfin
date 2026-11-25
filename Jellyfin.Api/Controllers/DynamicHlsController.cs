@@ -60,6 +60,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     private readonly IDynamicHlsPlaylistGenerator _dynamicHlsPlaylistGenerator;
     private readonly DynamicHlsHelper _dynamicHlsHelper;
     private readonly EncodingOptions _encodingOptions;
+    private readonly VideoPlaybackHelper _videoPlaybackHelper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DynamicHlsController"/> class.
@@ -75,6 +76,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="dynamicHlsHelper">Instance of <see cref="DynamicHlsHelper"/>.</param>
     /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
     /// <param name="dynamicHlsPlaylistGenerator">Instance of <see cref="IDynamicHlsPlaylistGenerator"/>.</param>
+    /// <param name="videoPlaybackHelper">The video playback authorization helper.</param>
     public DynamicHlsController(
         ILibraryManager libraryManager,
         IUserManager userManager,
@@ -86,7 +88,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         ILogger<DynamicHlsController> logger,
         DynamicHlsHelper dynamicHlsHelper,
         EncodingHelper encodingHelper,
-        IDynamicHlsPlaylistGenerator dynamicHlsPlaylistGenerator)
+        IDynamicHlsPlaylistGenerator dynamicHlsPlaylistGenerator,
+        VideoPlaybackHelper videoPlaybackHelper)
     {
         _libraryManager = libraryManager;
         _userManager = userManager;
@@ -99,6 +102,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         _dynamicHlsHelper = dynamicHlsHelper;
         _encodingHelper = encodingHelper;
         _dynamicHlsPlaylistGenerator = dynamicHlsPlaylistGenerator;
+        _videoPlaybackHelper = videoPlaybackHelper;
 
         _encodingOptions = serverConfigurationManager.GetEncodingOptions();
     }
@@ -275,11 +279,15 @@ public class DynamicHlsController : BaseJellyfinApiController
             AlwaysBurnInSubtitleWhenTranscoding = alwaysBurnInSubtitleWhenTranscoding
         };
 
+        StreamingHelpers.NormalizeRequest(streamingRequest);
         // CTS lifecycle is managed internally.
         var cancellationTokenSource = new CancellationTokenSource();
         // Due to CTS.Token calling ThrowIfDisposed (https://github.com/dotnet/runtime/issues/29970) we have to "cache" the token
         // since it gets disposed when ffmpeg exits
         var cancellationToken = cancellationTokenSource.Token;
+        using var playback = _videoPlaybackHelper.Acquire(HttpContext, itemId, streamingRequest.PlaySessionId, out var resolvedPlaySessionId);
+        streamingRequest.PlaySessionId = resolvedPlaySessionId;
+
         var state = await StreamingHelpers.GetStreamingState(
                 streamingRequest,
                 HttpContext,
@@ -291,7 +299,8 @@ public class DynamicHlsController : BaseJellyfinApiController
                 _encodingHelper,
                 _transcodeManager,
                 TranscodingJobType,
-                cancellationToken)
+                cancellationToken,
+                _videoPlaybackHelper)
             .ConfigureAwait(false);
 
         TranscodingJob? job = null;
@@ -338,9 +347,10 @@ public class DynamicHlsController : BaseJellyfinApiController
             _transcodeManager.OnTranscodeEndRequest(job);
         }
 
-        var playlistText = HlsHelpers.GetLivePlaylistText(playlistPath, state);
+        var playlistText = HlsHelpers.AuthenticatePlaylistSegments(HlsHelpers.GetLivePlaylistText(playlistPath, state), playlistPath, User.GetToken());
+        Response.Headers.CacheControl = "private, no-store";
 
-        return Content(playlistText, MimeTypes.GetMimeType("playlist.m3u8"));
+        return VideoPlaybackHelper.Wrap(Content(playlistText, MimeTypes.GetMimeType("playlist.m3u8")), playback);
     }
 
     /// <summary>
@@ -516,7 +526,11 @@ public class DynamicHlsController : BaseJellyfinApiController
             AlwaysBurnInSubtitleWhenTranscoding = alwaysBurnInSubtitleWhenTranscoding
         };
 
-        return await _dynamicHlsHelper.GetMasterHlsPlaylist(TranscodingJobType, streamingRequest, enableAdaptiveBitrateStreaming).ConfigureAwait(false);
+        StreamingHelpers.NormalizeRequest(streamingRequest);
+        using var playback = _videoPlaybackHelper.Acquire(HttpContext, itemId, streamingRequest.PlaySessionId, out var resolvedPlaySessionId);
+        streamingRequest.PlaySessionId = resolvedPlaySessionId;
+
+        return VideoPlaybackHelper.Wrap(await _dynamicHlsHelper.GetMasterHlsPlaylist(TranscodingJobType, streamingRequest, enableAdaptiveBitrateStreaming).ConfigureAwait(false), playback);
     }
 
     /// <summary>
@@ -853,8 +867,12 @@ public class DynamicHlsController : BaseJellyfinApiController
             AlwaysBurnInSubtitleWhenTranscoding = alwaysBurnInSubtitleWhenTranscoding
         };
 
-        return await GetVariantPlaylistInternal(streamingRequest, cancellationTokenSource)
-            .ConfigureAwait(false);
+        StreamingHelpers.NormalizeRequest(streamingRequest);
+        using var playback = _videoPlaybackHelper.Acquire(HttpContext, itemId, streamingRequest.PlaySessionId, out var resolvedPlaySessionId);
+        streamingRequest.PlaySessionId = resolvedPlaySessionId;
+
+        var result = await GetVariantPlaylistInternal(streamingRequest, cancellationTokenSource).ConfigureAwait(false);
+        return VideoPlaybackHelper.Wrap(result, playback);
     }
 
     /// <summary>
@@ -1397,7 +1415,8 @@ public class DynamicHlsController : BaseJellyfinApiController
                 _encodingHelper,
                 _transcodeManager,
                 TranscodingJobType,
-                cancellationTokenSource.Token)
+                cancellationTokenSource.Token,
+                _videoPlaybackHelper)
             .ConfigureAwait(false);
         var mediaSourceId = state.BaseRequest.MediaSourceId;
         double fps = state.TargetFramerate ?? 0.0f;
@@ -1417,10 +1436,11 @@ public class DynamicHlsController : BaseJellyfinApiController
             state.RunTimeTicks ?? 0,
             state.Request.SegmentContainer ?? string.Empty,
             "hls1/main/",
-            Request.QueryString.ToString(),
+            HlsHelpers.GetAuthenticatedPlaylistQuery(Request.QueryString.ToString(), state.Request.PlaySessionId, User.GetToken()),
             EncodingHelper.IsCopyCodec(state.OutputVideoCodec));
         var playlist = _dynamicHlsPlaylistGenerator.CreateMainPlaylist(request);
 
+        Response.Headers.CacheControl = "private, no-store";
         return new FileContentResult(Encoding.UTF8.GetBytes(playlist), MimeTypes.GetMimeType("playlist.m3u8"));
     }
 
@@ -1431,7 +1451,16 @@ public class DynamicHlsController : BaseJellyfinApiController
             throw new ArgumentException("StartTimeTicks is not allowed.");
         }
 
+        // Legacy playlists can carry a packed start offset. Encoding starts at the requested segment's runtime.
+        StreamingHelpers.NormalizeRequest(streamingRequest);
+
         var cancellationToken = HttpContext.RequestAborted;
+
+        var resolvedPlaySessionId = streamingRequest.PlaySessionId;
+        using var playback = streamingRequest is VideoRequestDto
+            ? _videoPlaybackHelper.Acquire(HttpContext, streamingRequest.Id, streamingRequest.PlaySessionId, out resolvedPlaySessionId)
+            : null;
+        streamingRequest.PlaySessionId = resolvedPlaySessionId;
 
         var state = await StreamingHelpers.GetStreamingState(
                 streamingRequest,
@@ -1444,7 +1473,8 @@ public class DynamicHlsController : BaseJellyfinApiController
                 _encodingHelper,
                 _transcodeManager,
                 TranscodingJobType,
-                cancellationToken)
+                cancellationToken,
+                _videoPlaybackHelper)
             .ConfigureAwait(false);
 
         var playlistPath = Path.ChangeExtension(state.OutputFilePath, ".m3u8");
@@ -1565,7 +1595,7 @@ public class DynamicHlsController : BaseJellyfinApiController
                 }
             }
 
-            return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, segmentId, job, cancellationToken).ConfigureAwait(false);
+            return VideoPlaybackHelper.Wrap(await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, segmentId, job, cancellationToken).ConfigureAwait(false), playback);
         }
         catch
         {
@@ -1704,11 +1734,12 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// </summary>
     /// <param name="state">The <see cref="StreamState"/>.</param>
     /// <returns>The command line arguments for audio transcoding.</returns>
-    private string GetAudioArguments(StreamState state)
+    internal string GetAudioArguments(StreamState state)
     {
         if (state.AudioStream is null)
         {
-            return string.Empty;
+            // FFmpeg may auto-select a video stream when there is no audio to map.
+            return state.IsOutputVideo ? string.Empty : "-vn";
         }
 
         var audioCodec = _encodingHelper.GetAudioEncoder(state);

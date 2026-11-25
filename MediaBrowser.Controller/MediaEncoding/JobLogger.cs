@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Net;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.MediaEncoding
@@ -32,7 +33,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     {
                         ParseLogLine(line, state);
 
-                        var bytes = Encoding.UTF8.GetBytes(Environment.NewLine + line);
+                        var bytes = Encoding.UTF8.GetBytes(Environment.NewLine + InternalLiveTvAccessToken.Redact(line));
 
                         // If ffmpeg process is closed, the state is disposed, so don't write to target in that case
                         if (!target.CanWrite)

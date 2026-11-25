@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
@@ -33,6 +34,7 @@ public class PlaystateController : BaseJellyfinApiController
     private readonly ISessionManager _sessionManager;
     private readonly ILogger<PlaystateController> _logger;
     private readonly ITranscodeManager _transcodeManager;
+    private readonly VideoPlaybackHelper _videoPlaybackHelper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PlaystateController"/> class.
@@ -42,6 +44,7 @@ public class PlaystateController : BaseJellyfinApiController
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="sessionManager">Instance of the <see cref="ISessionManager"/> interface.</param>
     /// <param name="loggerFactory">Instance of the <see cref="ILoggerFactory"/> interface.</param>
+    /// <param name="videoPlaybackHelper">The video playback authorization helper.</param>
     /// <param name="transcodeManager">Instance of the <see cref="ITranscodeManager"/> interface.</param>
     public PlaystateController(
         IUserManager userManager,
@@ -49,7 +52,8 @@ public class PlaystateController : BaseJellyfinApiController
         ILibraryManager libraryManager,
         ISessionManager sessionManager,
         ILoggerFactory loggerFactory,
-        ITranscodeManager transcodeManager)
+        ITranscodeManager transcodeManager,
+        VideoPlaybackHelper videoPlaybackHelper)
     {
         _userManager = userManager;
         _userDataRepository = userDataRepository;
@@ -58,6 +62,7 @@ public class PlaystateController : BaseJellyfinApiController
         _logger = loggerFactory.CreateLogger<PlaystateController>();
 
         _transcodeManager = transcodeManager;
+        _videoPlaybackHelper = videoPlaybackHelper;
     }
 
     /// <summary>
@@ -204,7 +209,17 @@ public class PlaystateController : BaseJellyfinApiController
     {
         playbackStartInfo.PlayMethod = ValidatePlayMethod(playbackStartInfo.PlayMethod, playbackStartInfo.PlaySessionId);
         playbackStartInfo.SessionId = await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
-        await _sessionManager.OnPlaybackStart(playbackStartInfo).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(playbackStartInfo.PlaySessionId))
+        {
+            playbackStartInfo.PlaySessionId = _videoPlaybackHelper.ResolveLegacyPlaySession(HttpContext, playbackStartInfo.ItemId);
+        }
+
+        if (!TryVerifyPlaybackReport(playbackStartInfo.PlaySessionId, playbackStartInfo.LiveStreamId, out var isVideoPlayback))
+        {
+            return NoContent();
+        }
+
+        await _sessionManager.OnPlaybackStart(playbackStartInfo, User.GetPlaybackOwnerId(), isVideoPlayback).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -220,7 +235,17 @@ public class PlaystateController : BaseJellyfinApiController
     {
         playbackProgressInfo.PlayMethod = ValidatePlayMethod(playbackProgressInfo.PlayMethod, playbackProgressInfo.PlaySessionId);
         playbackProgressInfo.SessionId = await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
-        await _sessionManager.OnPlaybackProgress(playbackProgressInfo).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(playbackProgressInfo.PlaySessionId))
+        {
+            playbackProgressInfo.PlaySessionId = _videoPlaybackHelper.ResolveLegacyPlaySession(HttpContext, playbackProgressInfo.ItemId);
+        }
+
+        if (!TryVerifyPlaybackReport(playbackProgressInfo.PlaySessionId, playbackProgressInfo.LiveStreamId, out var isVideoPlayback))
+        {
+            return NoContent();
+        }
+
+        await _sessionManager.OnPlaybackProgress(playbackProgressInfo, User.GetPlaybackOwnerId(), isVideoPlayback).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -234,6 +259,7 @@ public class PlaystateController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public ActionResult PingPlaybackSession([FromQuery, Required] string playSessionId)
     {
+        _videoPlaybackHelper.VerifyEncodingControl(HttpContext, playSessionId, _transcodeManager.GetTranscodingJob(playSessionId), reportActivity: true);
         _transcodeManager.PingTranscodingJob(playSessionId, null);
         return NoContent();
     }
@@ -248,6 +274,16 @@ public class PlaystateController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> ReportPlaybackStopped([FromBody] PlaybackStopInfo playbackStopInfo)
     {
+        if (string.IsNullOrWhiteSpace(playbackStopInfo.PlaySessionId))
+        {
+            playbackStopInfo.PlaySessionId = _videoPlaybackHelper.ResolveLegacyPlaySession(HttpContext, playbackStopInfo.ItemId);
+        }
+
+        if (!TryVerifyPlaybackReport(playbackStopInfo.PlaySessionId, playbackStopInfo.LiveStreamId, out var isVideoPlayback))
+        {
+            return NoContent();
+        }
+
         _logger.LogDebug("ReportPlaybackStopped PlaySessionId: {0}", playbackStopInfo.PlaySessionId ?? string.Empty);
         if (!string.IsNullOrWhiteSpace(playbackStopInfo.PlaySessionId))
         {
@@ -255,7 +291,7 @@ public class PlaystateController : BaseJellyfinApiController
         }
 
         playbackStopInfo.SessionId = await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
-        await _sessionManager.OnPlaybackStopped(playbackStopInfo).ConfigureAwait(false);
+        await _sessionManager.OnPlaybackStopped(playbackStopInfo, User.GetPlaybackOwnerId(), isVideoPlayback).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -300,7 +336,17 @@ public class PlaystateController : BaseJellyfinApiController
 
         playbackStartInfo.PlayMethod = ValidatePlayMethod(playbackStartInfo.PlayMethod, playbackStartInfo.PlaySessionId);
         playbackStartInfo.SessionId = await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
-        await _sessionManager.OnPlaybackStart(playbackStartInfo).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(playbackStartInfo.PlaySessionId))
+        {
+            playbackStartInfo.PlaySessionId = _videoPlaybackHelper.ResolveLegacyPlaySession(HttpContext, playbackStartInfo.ItemId);
+        }
+
+        if (!TryVerifyPlaybackReport(playbackStartInfo.PlaySessionId, playbackStartInfo.LiveStreamId, out var isVideoPlayback))
+        {
+            return NoContent();
+        }
+
+        await _sessionManager.OnPlaybackStart(playbackStartInfo, User.GetPlaybackOwnerId(), isVideoPlayback).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -388,7 +434,17 @@ public class PlaystateController : BaseJellyfinApiController
 
         playbackProgressInfo.PlayMethod = ValidatePlayMethod(playbackProgressInfo.PlayMethod, playbackProgressInfo.PlaySessionId);
         playbackProgressInfo.SessionId = await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
-        await _sessionManager.OnPlaybackProgress(playbackProgressInfo).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(playbackProgressInfo.PlaySessionId))
+        {
+            playbackProgressInfo.PlaySessionId = _videoPlaybackHelper.ResolveLegacyPlaySession(HttpContext, playbackProgressInfo.ItemId);
+        }
+
+        if (!TryVerifyPlaybackReport(playbackProgressInfo.PlaySessionId, playbackProgressInfo.LiveStreamId, out var isVideoPlayback))
+        {
+            return NoContent();
+        }
+
+        await _sessionManager.OnPlaybackProgress(playbackProgressInfo, User.GetPlaybackOwnerId(), isVideoPlayback).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -464,6 +520,16 @@ public class PlaystateController : BaseJellyfinApiController
             NextMediaType = nextMediaType
         };
 
+        if (string.IsNullOrWhiteSpace(playbackStopInfo.PlaySessionId))
+        {
+            playbackStopInfo.PlaySessionId = _videoPlaybackHelper.ResolveLegacyPlaySession(HttpContext, playbackStopInfo.ItemId);
+        }
+
+        if (!TryVerifyPlaybackReport(playbackStopInfo.PlaySessionId, playbackStopInfo.LiveStreamId, out var isVideoPlayback))
+        {
+            return NoContent();
+        }
+
         _logger.LogDebug("ReportPlaybackStopped PlaySessionId: {0}", playbackStopInfo.PlaySessionId ?? string.Empty);
         if (!string.IsNullOrWhiteSpace(playbackStopInfo.PlaySessionId))
         {
@@ -471,7 +537,7 @@ public class PlaystateController : BaseJellyfinApiController
         }
 
         playbackStopInfo.SessionId = await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
-        await _sessionManager.OnPlaybackStopped(playbackStopInfo).ConfigureAwait(false);
+        await _sessionManager.OnPlaybackStopped(playbackStopInfo, User.GetPlaybackOwnerId(), isVideoPlayback).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -536,5 +602,28 @@ public class PlaystateController : BaseJellyfinApiController
         }
 
         return method;
+    }
+
+    private bool TryVerifyPlaybackReport(string? playSessionId, string? liveStreamId, out bool isVideoPlayback)
+    {
+        isVideoPlayback = true;
+        if (!string.IsNullOrWhiteSpace(liveStreamId)
+            && !_videoPlaybackHelper.VerifyLiveStreamControl(HttpContext, liveStreamId))
+        {
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(playSessionId))
+        {
+            return true;
+        }
+
+        var job = _transcodeManager.GetTranscodingJob(playSessionId);
+        _videoPlaybackHelper.VerifyEncodingControl(HttpContext, playSessionId, job);
+        var jobs = _transcodeManager.GetActiveTranscodingJobs() ?? Array.Empty<TranscodingJob>();
+        isVideoPlayback = job?.IsOutputVideo != false
+            || jobs.Any(candidate => string.Equals(candidate.PlaySessionId, playSessionId, StringComparison.OrdinalIgnoreCase)
+                && candidate.IsOutputVideo != false);
+        return true;
     }
 }

@@ -1,14 +1,15 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
+using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -23,24 +24,24 @@ namespace Jellyfin.Api.Controllers;
 [ApiExplorerSettings(IgnoreApi = true)]
 public class HlsSegmentController : BaseJellyfinApiController
 {
-    private readonly IFileSystem _fileSystem;
     private readonly IServerConfigurationManager _serverConfigurationManager;
     private readonly ITranscodeManager _transcodeManager;
+    private readonly VideoPlaybackHelper _videoPlaybackHelper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HlsSegmentController"/> class.
     /// </summary>
-    /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
     /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
     /// <param name="transcodeManager">Instance of the <see cref="ITranscodeManager"/> interface.</param>
+    /// <param name="videoPlaybackHelper">The video playback admission helper.</param>
     public HlsSegmentController(
-        IFileSystem fileSystem,
         IServerConfigurationManager serverConfigurationManager,
-        ITranscodeManager transcodeManager)
+        ITranscodeManager transcodeManager,
+        VideoPlaybackHelper videoPlaybackHelper)
     {
-        _fileSystem = fileSystem;
         _serverConfigurationManager = serverConfigurationManager;
         _transcodeManager = transcodeManager;
+        _videoPlaybackHelper = videoPlaybackHelper;
     }
 
     /// <summary>
@@ -90,7 +91,9 @@ public class HlsSegmentController : BaseJellyfinApiController
             return BadRequest("Invalid segment.");
         }
 
-        return GetFileResult(file, file);
+        return Guid.TryParse(itemId, out var id)
+            ? GetVideoFileResult(id, file, file)
+            : BadRequest("Invalid item.");
     }
 
     /// <summary>
@@ -107,6 +110,14 @@ public class HlsSegmentController : BaseJellyfinApiController
         [FromQuery, Required] string deviceId,
         [FromQuery, Required] string playSessionId)
     {
+        var job = _transcodeManager.GetTranscodingJob(playSessionId);
+        if (job is null)
+        {
+            return NoContent();
+        }
+
+        _videoPlaybackHelper.VerifyEncodingControl(HttpContext, playSessionId, job);
+
         _transcodeManager.KillTranscodingJobs(deviceId, playSessionId, _ => true);
         return NoContent();
     }
@@ -121,9 +132,8 @@ public class HlsSegmentController : BaseJellyfinApiController
     /// <response code="200">Hls video segment returned.</response>
     /// <response code="404">Hls segment not found.</response>
     /// <returns>A <see cref="FileStreamResult"/> containing the video segment.</returns>
-    // Can't require authentication just yet due to seeing some requests come from Chrome without full query string
-    // [Authenticated]
     [HttpGet("Videos/{itemId}/hls/{playlistId}/{segmentId}.{segmentContainer}")]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesVideoFile]
@@ -140,26 +150,25 @@ public class HlsSegmentController : BaseJellyfinApiController
             return BadRequest("Invalid segment.");
         }
 
-        var transcodeFolderPath = _serverConfigurationManager.GetTranscodePath();
-        var filePaths = _fileSystem.GetFilePaths(transcodeFolderPath);
-        // Add . to start of segment container for future use.
-        segmentContainer = segmentContainer.Insert(0, ".");
-        string? playlistPath = null;
-        foreach (var path in filePaths)
+        var playlistPath = ValidateTranscodePath(string.Concat(playlistId, ".m3u8"));
+        if (playlistPath is null || !Path.GetExtension(file).Equals(string.Concat(".", segmentContainer), StringComparison.OrdinalIgnoreCase))
         {
-            var pathExtension = Path.GetExtension(path);
-            if ((string.Equals(pathExtension, segmentContainer, StringComparison.OrdinalIgnoreCase)
-                 || string.Equals(pathExtension, ".m3u8", StringComparison.OrdinalIgnoreCase))
-                && path.Contains(playlistId, StringComparison.OrdinalIgnoreCase))
-            {
-                playlistPath = path;
-                break;
-            }
+            return BadRequest("Invalid segment.");
         }
 
-        return playlistPath is null
-            ? NotFound("Hls segment not found.")
-            : GetFileResult(file, playlistPath);
+        var prefix = Path.ChangeExtension(playlistPath, null);
+        var segment = Path.ChangeExtension(file, null);
+        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        if (!segment.StartsWith(prefix, comparison)
+            || !int.TryParse(segment.AsSpan(prefix.Length), NumberStyles.Integer, CultureInfo.InvariantCulture, out var index)
+            || index < -1)
+        {
+            return NotFound("Hls segment not found.");
+        }
+
+        return Guid.TryParse(itemId, out var id)
+            ? GetVideoFileResult(id, file, playlistPath)
+            : BadRequest("Invalid item.");
     }
 
     private string? ValidateTranscodePath(string filename)
@@ -167,7 +176,8 @@ public class HlsSegmentController : BaseJellyfinApiController
         var transcodePath = Path.TrimEndingDirectorySeparator(Path.GetFullPath(_serverConfigurationManager.GetTranscodePath()));
         var file = Path.GetFullPath(filename, transcodePath);
         // Require a separator after the transcode path so a sibling like "<transcodePath>-evil" can't pass.
-        if (!file.StartsWith(transcodePath + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        if (!file.StartsWith(transcodePath + Path.DirectorySeparatorChar, comparison))
         {
             return null;
         }
@@ -175,20 +185,66 @@ public class HlsSegmentController : BaseJellyfinApiController
         return file;
     }
 
-    private ActionResult GetFileResult(string path, string playlistPath)
+    private ActionResult GetVideoFileResult(Guid itemId, string path, string playlistPath)
+    {
+        var job = _transcodeManager.GetTranscodingJob(playlistPath, TranscodingJobType.Hls);
+        if (job is null)
+        {
+            return NotFound("Hls segment not found.");
+        }
+
+        if (string.IsNullOrWhiteSpace(job.PlaySessionId))
+        {
+            return User.GetIsApiKey() && User.GetUserId().Equals(Guid.Empty)
+                && job.UserId.Equals(Guid.Empty) && job.ItemId.Equals(itemId)
+                ? GetFileResult(path, playlistPath, job)
+                : NotFound("Hls segment not found.");
+        }
+
+        _videoPlaybackHelper.VerifyPlaySession(HttpContext, job.PlaySessionId);
+        using var request = _videoPlaybackHelper.Acquire(HttpContext, itemId, job.PlaySessionId);
+        return VideoPlaybackHelper.Wrap(GetFileResult(path, playlistPath, job), request);
+    }
+
+    private ActionResult GetFileResult(string path, string playlistPath, TranscodingJob verifiedJob)
     {
         var transcodingJob = _transcodeManager.OnTranscodeBeginRequest(playlistPath, TranscodingJobType.Hls);
-
-        Response.OnCompleted(() =>
+        if (!ReferenceEquals(transcodingJob, verifiedJob))
         {
             if (transcodingJob is not null)
             {
                 _transcodeManager.OnTranscodeEndRequest(transcodingJob);
             }
 
-            return Task.CompletedTask;
-        });
+            return NotFound("Hls segment not found.");
+        }
 
-        return FileStreamResponseHelpers.GetStaticFileResult(path, MimeTypes.GetMimeType(path));
+        try
+        {
+            ActionResult result;
+            if (string.Equals(path, playlistPath, StringComparison.Ordinal))
+            {
+                var text = HlsHelpers.AuthenticatePlaylistSegments(System.IO.File.ReadAllText(path), playlistPath, User.GetToken());
+                Response.Headers.CacheControl = "private, no-store";
+                result = Content(text, MimeTypes.GetMimeType(path));
+            }
+            else
+            {
+                result = FileStreamResponseHelpers.GetStaticFileResult(path, MimeTypes.GetMimeType(path));
+            }
+
+            Response.OnCompleted(() =>
+            {
+                _transcodeManager.OnTranscodeEndRequest(transcodingJob);
+                return Task.CompletedTask;
+            });
+
+            return result;
+        }
+        catch
+        {
+            _transcodeManager.OnTranscodeEndRequest(transcodingJob);
+            throw;
+        }
     }
 }

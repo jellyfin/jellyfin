@@ -10,6 +10,7 @@ using Jellyfin.Database.Implementations;
 using Jellyfin.Server.Implementations.DatabaseConfiguration;
 using Jellyfin.Server.Implementations.Extensions;
 using Jellyfin.Server.Migrations;
+using Jellyfin.Server.Migrations.Stages;
 using Jellyfin.Server.ServerSetupApp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Configuration;
@@ -106,6 +107,93 @@ public sealed class JellyfinMigrationServiceTests : IDisposable
         Assert.Equal(applied, await GetAppliedMigrationIdsAsync());
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task MigrateStepAsync_MaxActiveVideoStreams_PreservesExistingUserAndIsIdempotent(bool ancestorIndexAlreadyUpgraded)
+    {
+        const string previousMigration = "20261002210711_MakeOwnerIdIndexesPartial";
+        const string ancestorIndexMigration = "20261024092111_CoverAncestorIdsParentIndex";
+        const string newMigration = "20261117101651_AddMaxActiveVideoStreams";
+        // Seed completed code migrations without applying the pending database migration.
+        WriteServerConfiguration(wizardCompleted: false);
+        var service = CreateService();
+        await service.CheckFirstTimeRunOrMigration(_paths, new StartupOptions());
+
+        await using (var context = await CreateDbContextAsync())
+        {
+            await context.GetService<IMigrator>().MigrateAsync(
+                ancestorIndexAlreadyUpgraded ? ancestorIndexMigration : previousMigration,
+                TestContext.Current.CancellationToken);
+            await context.Database.ExecuteSqlRawAsync(
+                """
+                INSERT INTO "Users" (
+                    "Id", "Username", "NormalizedUsername", "AuthenticationProviderId", "PasswordResetProviderId",
+                    "AudioLanguagePreference", "SubtitleLanguagePreference", "CastReceiverId", "Password",
+                    "LastActivityDate", "LastLoginDate", "LoginAttemptsBeforeLockout",
+                    "MaxActiveSessions", "InvalidLoginAttemptCount", "MaxParentalRatingScore", "MaxParentalRatingSubScore",
+                    "RemoteClientBitrateLimit", "InternalId", "RowVersion",
+                    "DisplayCollectionsView", "DisplayMissingEpisodes", "EnableAutoLogin", "EnableLocalPassword",
+                    "EnableNextEpisodeAutoPlay", "EnableUserPreferenceAccess", "HidePlayedInLatest", "MustUpdatePassword",
+                    "PlayDefaultAudioTrack", "RememberAudioSelections", "RememberSubtitleSelections", "SubtitleMode", "SyncPlayAccess")
+                VALUES (
+                    '11111111-1111-1111-1111-111111111111', 'MigrationSentinel', 'SENTINEL-NORMALIZED', 'MigrationTest', 'MigrationTest',
+                    'ita', 'eng', 'sentinel-receiver', 'sentinel-password',
+                    '2026-10-01 12:00:00', '2026-09-30 11:00:00', 5,
+                    3, 2, 15, 3,
+                    1000000, 7, 11,
+                    1, 0, 0, 1,
+                    1, 1, 1, 0,
+                    1, 1, 1, 1, 1);
+                UPDATE "__EFMigrationsHistory"
+                SET "ProductVersion" = '10.0.11'
+                WHERE "MigrationId" = '20261002210711_MakeOwnerIdIndexesPartial';
+                """,
+                TestContext.Current.CancellationToken);
+        }
+
+        var userBefore = await ReadUserAsync();
+        var historyBefore = await GetAppliedMigrationHistoryAsync();
+        Assert.Equal(32, userBefore.Count);
+        Assert.DoesNotContain("MaxActiveVideoStreams", userBefore.Keys);
+        Assert.DoesNotContain(historyBefore, row => row.MigrationId == newMigration);
+        WriteServerConfiguration(wizardCompleted: true);
+        await service.CheckFirstTimeRunOrMigration(_paths, new StartupOptions());
+
+        Assert.True(await service.MigrateStepAsync(JellyfinMigrationStageTypes.CoreInitialisation, _serviceProviders[^1]));
+
+        var userAfter = await ReadUserAsync();
+        var historyAfter = await GetAppliedMigrationHistoryAsync();
+        Assert.Equal(userBefore.Count + 1, userAfter.Count);
+        foreach (var column in userBefore)
+        {
+            Assert.Equal(column.Value, userAfter[column.Key]);
+        }
+
+        Assert.Equal(0L, Assert.IsType<long>(userAfter["MaxActiveVideoStreams"]));
+        Assert.Equal(historyBefore, historyAfter.Take(historyBefore.Length));
+        Assert.Equal(
+            ancestorIndexAlreadyUpgraded ? [newMigration] : new[] { ancestorIndexMigration, newMigration },
+            historyAfter.Skip(historyBefore.Length).Select(row => row.MigrationId));
+
+        await using (var context = await CreateDbContextAsync())
+        {
+            var indexColumns = await context.Database.SqlQueryRaw<string>(
+                "SELECT name AS Value FROM pragma_index_info('IX_AncestorIds_ParentItemId_ItemId') ORDER BY seqno")
+                .ToArrayAsync(TestContext.Current.CancellationToken);
+            Assert.Equal(["ParentItemId", "ItemId"], indexColumns);
+            Assert.False(context.Database.HasPendingModelChanges());
+            await context.Database.ExecuteSqlRawAsync("UPDATE \"Users\" SET \"MaxActiveVideoStreams\" = 2;", TestContext.Current.CancellationToken);
+        }
+
+        var restartedService = CreateService();
+        await restartedService.CheckFirstTimeRunOrMigration(_paths, new StartupOptions());
+
+        Assert.False(await restartedService.MigrateStepAsync(JellyfinMigrationStageTypes.CoreInitialisation, _serviceProviders[^1]));
+        Assert.Equal(historyAfter, await GetAppliedMigrationHistoryAsync());
+        Assert.Equal(2L, Assert.IsType<long>((await ReadUserAsync())["MaxActiveVideoStreams"]));
+    }
+
     [Fact]
     public async Task CheckFirstTimeRunOrMigration_SeedSystemOnSetUpServerWithoutDatabase_SeedsCodeMigrations()
     {
@@ -183,5 +271,30 @@ public sealed class JellyfinMigrationServiceTests : IDisposable
         await using var context = await CreateDbContextAsync();
         var applied = await context.Database.GetAppliedMigrationsAsync(TestContext.Current.CancellationToken);
         return applied.Order(StringComparer.Ordinal).ToArray();
+    }
+
+    private async Task<(string MigrationId, string ProductVersion)[]> GetAppliedMigrationHistoryAsync()
+    {
+        await using var context = await CreateDbContextAsync();
+        var applied = await context.GetService<IHistoryRepository>().GetAppliedMigrationsAsync(TestContext.Current.CancellationToken);
+        return applied.Select(row => (row.MigrationId, row.ProductVersion)).OrderBy(row => row.MigrationId, StringComparer.Ordinal).ToArray();
+    }
+
+    private async Task<Dictionary<string, object>> ReadUserAsync()
+    {
+        await using var context = await CreateDbContextAsync();
+        await context.Database.OpenConnectionAsync(TestContext.Current.CancellationToken);
+        await using var command = context.Database.GetDbConnection().CreateCommand();
+        command.CommandText = "SELECT * FROM \"Users\";";
+        await using var reader = await command.ExecuteReaderAsync(TestContext.Current.CancellationToken);
+        Assert.True(await reader.ReadAsync(TestContext.Current.CancellationToken));
+        var values = new Dictionary<string, object>(StringComparer.Ordinal);
+        for (var index = 0; index < reader.FieldCount; index++)
+        {
+            values.Add(reader.GetName(index), reader.GetValue(index));
+        }
+
+        Assert.False(await reader.ReadAsync(TestContext.Current.CancellationToken));
+        return values;
     }
 }

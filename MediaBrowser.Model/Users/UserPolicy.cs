@@ -4,6 +4,7 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using System.Xml.Serialization;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Enums;
@@ -13,6 +14,8 @@ namespace MediaBrowser.Model.Users
 {
     public class UserPolicy
     {
+        private int? _maxActiveVideoStreams;
+
         public UserPolicy()
         {
             IsHidden = true;
@@ -174,6 +177,28 @@ namespace MediaBrowser.Model.Users
         public int LoginAttemptsBeforeLockout { get; set; }
 
         public int MaxActiveSessions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the maximum number of simultaneous video playbacks. A value of 0 means unlimited.
+        /// </summary>
+        /// <remarks>
+        /// Independent playbacks of the same item can share one slot when a legacy client uses the
+        /// same access token without sending a stable playback instance identifier.
+        /// Omitting this value when updating the policy preserves the current limit.
+        /// </remarks>
+        [Range(0, int.MaxValue)]
+        public int MaxActiveVideoStreams
+        {
+            get => _maxActiveVideoStreams ?? 0;
+            set => _maxActiveVideoStreams = value;
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether <see cref="MaxActiveVideoStreams"/> was supplied.
+        /// </summary>
+        [JsonIgnore]
+        [XmlIgnore]
+        public bool HasMaxActiveVideoStreams => _maxActiveVideoStreams.HasValue;
 
         public bool EnablePublicSharing { get; set; }
 

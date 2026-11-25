@@ -224,6 +224,8 @@ namespace Jellyfin.Server.Implementations.Users
                         .ConfigureAwait(false)
                         ?? throw new ResourceNotFoundException(nameof(user.Id));
 
+                    // Generic activity and profile updates must preserve the current policy limit.
+                    user.MaxActiveVideoStreams = dbUser.MaxActiveVideoStreams;
                     dbContext.Entry(dbUser).CurrentValues.SetValues(user);
                     SyncPermissions(dbUser, user.Permissions);
                     SyncPreferences(dbUser, user.Preferences);
@@ -494,6 +496,7 @@ namespace Jellyfin.Server.Implementations.Users
                     InvalidLoginAttemptCount = user.InvalidLoginAttemptCount,
                     LoginAttemptsBeforeLockout = user.LoginAttemptsBeforeLockout ?? -1,
                     MaxActiveSessions = user.MaxActiveSessions,
+                    MaxActiveVideoStreams = user.MaxActiveVideoStreams,
                     IsAdministrator = user.HasPermission(PermissionKind.IsAdministrator),
                     IsHidden = user.HasPermission(PermissionKind.IsHidden),
                     IsDisabled = user.HasPermission(PermissionKind.IsDisabled),
@@ -847,6 +850,8 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public async Task UpdatePolicyAsync(Guid userId, UserPolicy policy)
         {
+            ArgumentOutOfRangeException.ThrowIfNegative(policy.MaxActiveVideoStreams);
+
             User user;
             using (await _userLock.LockAsync(userId).ConfigureAwait(false))
             {
@@ -876,6 +881,11 @@ namespace Jellyfin.Server.Implementations.Users
                     user.InvalidLoginAttemptCount = policy.InvalidLoginAttemptCount;
                     user.LoginAttemptsBeforeLockout = maxLoginAttempts;
                     user.MaxActiveSessions = policy.MaxActiveSessions;
+                    if (policy.HasMaxActiveVideoStreams)
+                    {
+                        user.MaxActiveVideoStreams = policy.MaxActiveVideoStreams;
+                    }
+
                     user.SyncPlayAccess = policy.SyncPlayAccess;
                     user.SetPermission(PermissionKind.IsAdministrator, policy.IsAdministrator);
                     user.SetPermission(PermissionKind.IsHidden, policy.IsHidden);

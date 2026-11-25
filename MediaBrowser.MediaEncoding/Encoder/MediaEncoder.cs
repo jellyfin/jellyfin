@@ -23,6 +23,7 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.MediaEncoding.Probing;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
@@ -59,6 +60,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private readonly IBlurayExaminer _blurayExaminer;
         private readonly IConfiguration _config;
         private readonly IServerConfigurationManager _serverConfig;
+        private readonly IInternalLiveTvAccess _internalLiveTvAccess;
         private readonly string _startupOptionFFmpegPath;
 
         private readonly AsyncNonKeyedLocker _thumbnailResourcePool;
@@ -116,6 +118,19 @@ namespace MediaBrowser.MediaEncoding.Encoder
             ILocalizationManager localization,
             IConfiguration config,
             IServerConfigurationManager serverConfig)
+            : this(logger, configurationManager, fileSystem, blurayExaminer, localization, config, serverConfig, null)
+        {
+        }
+
+        public MediaEncoder(
+            ILogger<MediaEncoder> logger,
+            IServerConfigurationManager configurationManager,
+            IFileSystem fileSystem,
+            IBlurayExaminer blurayExaminer,
+            ILocalizationManager localization,
+            IConfiguration config,
+            IServerConfigurationManager serverConfig,
+            IInternalLiveTvAccess internalLiveTvAccess)
         {
             _logger = logger;
             _configurationManager = configurationManager;
@@ -124,6 +139,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _localization = localization;
             _config = config;
             _serverConfig = serverConfig;
+            _internalLiveTvAccess = internalLiveTvAccess;
             _startupOptionFFmpegPath = config.GetValue<string>(Controller.Extensions.ConfigurationExtensions.FfmpegPathKey) ?? string.Empty;
 
             _jsonSerializerOptions = new JsonSerializerOptions(JsonDefaults.Options);
@@ -479,6 +495,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <inheritdoc />
         public string GetInputArgument(string inputFile, MediaSourceInfo mediaSource)
         {
+            if (_internalLiveTvAccess is not null
+                && (mediaSource.Protocol == MediaProtocol.Http || mediaSource.EncoderProtocol == MediaProtocol.Http))
+            {
+                inputFile = _internalLiveTvAccess.GetInputUrl(inputFile);
+            }
+
             var prefix = "file";
             if (mediaSource.IsoType == IsoType.BluRay)
             {
@@ -541,7 +563,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 EnableRaisingEvents = true
             };
 
-            _logger.LogDebug("Starting {ProcessFileName} with args {ProcessArgs}", _ffprobePath, args);
+            _logger.LogDebug("Starting {ProcessFileName} with args {ProcessArgs}", _ffprobePath, InternalLiveTvAccessToken.Redact(args));
 
             var memoryStream = new MemoryStream();
             await using (memoryStream.ConfigureAwait(false))
@@ -641,7 +663,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning(ex, "I-frame image extraction failed, will attempt standard way. Input: {Arguments}", inputArgument);
+                    _logger.LogWarning(ex, "I-frame image extraction failed, will attempt standard way. Input: {Arguments}", InternalLiveTvAccessToken.Redact(inputArgument));
                 }
             }
 
@@ -794,7 +816,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 EnableRaisingEvents = true
             };
 
-            _logger.LogDebug("{ProcessFileName} {ProcessArguments}", process.StartInfo.FileName, process.StartInfo.Arguments);
+            _logger.LogDebug("{ProcessFileName} {ProcessArguments}", process.StartInfo.FileName, InternalLiveTvAccessToken.Redact(process.StartInfo.Arguments));
 
             using (var processWrapper = new ProcessWrapper(process, this))
             {
@@ -1054,7 +1076,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 EnableRaisingEvents = true
             };
 
-            var processDescription = string.Format(CultureInfo.InvariantCulture, "{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
+            var processDescription = string.Format(CultureInfo.InvariantCulture, "{0} {1}", process.StartInfo.FileName, InternalLiveTvAccessToken.Redact(process.StartInfo.Arguments));
             _logger.LogInformation("Trickplay generation: {ProcessDescription}", processDescription);
 
             using (var processWrapper = new ProcessWrapper(process, this))

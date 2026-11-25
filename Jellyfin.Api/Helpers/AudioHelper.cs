@@ -30,6 +30,33 @@ public class AudioHelper
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly EncodingHelper _encodingHelper;
+    private readonly VideoPlaybackHelper? _videoPlaybackHelper;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AudioHelper"/> class for existing callers.
+    /// </summary>
+    /// <param name="userManager">The user manager.</param>
+    /// <param name="libraryManager">The library manager.</param>
+    /// <param name="mediaSourceManager">The media source manager.</param>
+    /// <param name="serverConfigurationManager">The server configuration.</param>
+    /// <param name="mediaEncoder">The media encoder.</param>
+    /// <param name="transcodeManager">The transcode manager.</param>
+    /// <param name="httpClientFactory">The HTTP client factory.</param>
+    /// <param name="httpContextAccessor">The current HTTP context.</param>
+    /// <param name="encodingHelper">The encoding helper.</param>
+    public AudioHelper(
+        IUserManager userManager,
+        ILibraryManager libraryManager,
+        IMediaSourceManager mediaSourceManager,
+        IServerConfigurationManager serverConfigurationManager,
+        IMediaEncoder mediaEncoder,
+        ITranscodeManager transcodeManager,
+        IHttpClientFactory httpClientFactory,
+        IHttpContextAccessor httpContextAccessor,
+        EncodingHelper encodingHelper)
+        : this(userManager, libraryManager, mediaSourceManager, serverConfigurationManager, mediaEncoder, transcodeManager, httpClientFactory, httpContextAccessor, encodingHelper, null)
+    {
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AudioHelper"/> class.
@@ -43,6 +70,7 @@ public class AudioHelper
     /// <param name="httpClientFactory">Instance of the <see cref="IHttpClientFactory"/> interface.</param>
     /// <param name="httpContextAccessor">Instance of the <see cref="IHttpContextAccessor"/> interface.</param>
     /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
+    /// <param name="videoPlaybackHelper">The video playback admission helper.</param>
     public AudioHelper(
         IUserManager userManager,
         ILibraryManager libraryManager,
@@ -52,7 +80,8 @@ public class AudioHelper
         ITranscodeManager transcodeManager,
         IHttpClientFactory httpClientFactory,
         IHttpContextAccessor httpContextAccessor,
-        EncodingHelper encodingHelper)
+        EncodingHelper encodingHelper,
+        VideoPlaybackHelper? videoPlaybackHelper)
     {
         _userManager = userManager;
         _libraryManager = libraryManager;
@@ -63,6 +92,7 @@ public class AudioHelper
         _httpClientFactory = httpClientFactory;
         _httpContextAccessor = httpContextAccessor;
         _encodingHelper = encodingHelper;
+        _videoPlaybackHelper = videoPlaybackHelper;
     }
 
     /// <summary>
@@ -80,7 +110,14 @@ public class AudioHelper
             throw new ResourceNotFoundException(nameof(_httpContextAccessor.HttpContext));
         }
 
+        StreamingHelpers.NormalizeRequest(streamingRequest);
         bool isHeadRequest = _httpContextAccessor.HttpContext.Request.Method == System.Net.WebRequestMethods.Http.Head;
+
+        var resolvedPlaySessionId = streamingRequest.PlaySessionId;
+        using var playback = streamingRequest.Static
+            ? _videoPlaybackHelper?.Acquire(_httpContextAccessor.HttpContext, streamingRequest.Id, streamingRequest.PlaySessionId, out resolvedPlaySessionId)
+            : null;
+        streamingRequest.PlaySessionId = resolvedPlaySessionId;
 
         // CTS lifecycle is managed internally.
         var cancellationTokenSource = new CancellationTokenSource();
@@ -96,7 +133,8 @@ public class AudioHelper
                 _encodingHelper,
                 _transcodeManager,
                 transcodingJobType,
-                cancellationTokenSource.Token)
+                cancellationTokenSource.Token,
+                _videoPlaybackHelper)
             .ConfigureAwait(false);
 
         if (streamingRequest.Static && state.DirectStreamProvider is not null)
@@ -109,14 +147,14 @@ public class AudioHelper
 
             var liveStream = new ProgressiveFileStream(liveStreamInfo.GetStream());
             // TODO (moved from MediaBrowser.Api): Don't hardcode contentType
-            return new FileStreamResult(liveStream, MimeTypes.GetMimeType("file.ts"));
+            return VideoPlaybackHelper.Wrap(new FileStreamResult(liveStream, MimeTypes.GetMimeType("file.ts")), playback);
         }
 
         // Static remote stream
         if (streamingRequest.Static && state.InputProtocol == MediaProtocol.Http)
         {
             var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
-            return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, httpClient, _httpContextAccessor.HttpContext).ConfigureAwait(false);
+            return VideoPlaybackHelper.Wrap(await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, httpClient, _httpContextAccessor.HttpContext).ConfigureAwait(false), playback);
         }
 
         if (streamingRequest.Static && state.InputProtocol != MediaProtocol.File)
@@ -134,12 +172,13 @@ public class AudioHelper
             if (state.MediaSource.IsInfiniteStream)
             {
                 var stream = new ProgressiveFileStream(state.MediaPath, null, _transcodeManager);
-                return new FileStreamResult(stream, contentType);
+                return VideoPlaybackHelper.Wrap(new FileStreamResult(stream, contentType), playback);
             }
 
-            return FileStreamResponseHelpers.GetStaticFileResult(
+            var result = FileStreamResponseHelpers.GetStaticFileResult(
                 state.MediaPath,
                 contentType);
+            return VideoPlaybackHelper.Wrap(result, playback);
         }
 
         // Need to start ffmpeg (because media can't be returned directly)

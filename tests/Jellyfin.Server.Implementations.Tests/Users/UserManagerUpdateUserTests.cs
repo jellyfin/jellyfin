@@ -17,6 +17,7 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Events;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Users;
 using Microsoft.Data.Sqlite;
@@ -53,6 +54,7 @@ public sealed class UserManagerUpdateUserTests : IDisposable
 
         var cryptoProvider = new Mock<ICryptoProvider>();
         var configManager = new Mock<IServerConfigurationManager>();
+        configManager.SetupGet(x => x.Configuration).Returns(new ServerConfiguration());
         var appPaths = new Mock<IServerApplicationPaths>();
         appPaths.Setup(x => x.ProgramDataPath).Returns(Path.GetTempPath());
         configManager.Setup(x => x.ApplicationPaths).Returns(appPaths.Object);
@@ -122,6 +124,25 @@ public sealed class UserManagerUpdateUserTests : IDisposable
     }
 
     [Fact]
+    public async Task UpdateUserAsync_StaleActivityUpdatePreservesCurrentVideoLimit()
+    {
+        var user = await _userManager.CreateUserAsync("stalevideolimituser");
+        var policy = _userManager.GetUserDto(user).Policy!;
+        policy.MaxActiveVideoStreams = 2;
+        await _userManager.UpdatePolicyAsync(user.Id, policy);
+        Assert.Equal(0, user.MaxActiveVideoStreams);
+
+        var activityDate = new DateTime(2026, 11, 17, 12, 0, 0, DateTimeKind.Utc);
+        user.LastActivityDate = activityDate;
+        await _userManager.UpdateUserAsync(user);
+
+        await using var context = CreateDbContext();
+        var stored = await context.Users.SingleAsync(u => u.Id.Equals(user.Id), TestContext.Current.CancellationToken);
+        Assert.Equal(2, stored.MaxActiveVideoStreams);
+        Assert.Equal(activityDate, stored.LastActivityDate);
+    }
+
+    [Fact]
     public async Task UpdatePolicyAsync_RaisesOnUserUpdated()
     {
         var user = await _userManager.CreateUserAsync("policyeventuser");
@@ -140,6 +161,69 @@ public sealed class UserManagerUpdateUserTests : IDisposable
 
         Assert.NotNull(updated);
         Assert.Equal(user.Id, updated.Id);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(3)]
+    [InlineData(int.MaxValue)]
+    public async Task UpdatePolicyAsync_PersistsMaxActiveVideoStreams(int limit)
+    {
+        var user = await _userManager.CreateUserAsync("videolimituser");
+        var policy = _userManager.GetUserDto(user).Policy!;
+        policy.MaxActiveVideoStreams = limit;
+
+        await _userManager.UpdatePolicyAsync(user.Id, policy);
+
+        await using var context = CreateDbContext();
+        var stored = await context.Users.SingleAsync(u => u.Id.Equals(user.Id), TestContext.Current.CancellationToken);
+        Assert.Equal(limit, stored.MaxActiveVideoStreams);
+        Assert.Equal(limit, _userManager.GetUserDto(_userManager.GetUserById(user.Id)!).Policy!.MaxActiveVideoStreams);
+    }
+
+    [Fact]
+    public async Task UpdatePolicyAsync_RejectsNegativeVideoLimitBeforeChangingUser()
+    {
+        var user = await _userManager.CreateUserAsync("invalidvideolimituser");
+        var policy = _userManager.GetUserDto(user).Policy!;
+        policy.MaxActiveVideoStreams = 2;
+        await _userManager.UpdatePolicyAsync(user.Id, policy);
+
+        var updated = false;
+        _userManager.OnUserUpdated += (_, _) => updated = true;
+        policy.MaxActiveVideoStreams = -1;
+        policy.MaxActiveSessions = 7;
+
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => _userManager.UpdatePolicyAsync(user.Id, policy));
+
+        await using var context = CreateDbContext();
+        var stored = await context.Users.SingleAsync(u => u.Id.Equals(user.Id), TestContext.Current.CancellationToken);
+        Assert.Equal(2, stored.MaxActiveVideoStreams);
+        Assert.Equal(0, stored.MaxActiveSessions);
+        Assert.False(updated);
+    }
+
+    [Fact]
+    public async Task UpdatePolicyAsync_OmittedVideoLimitPreservesLimitAndExplicitZeroDisablesIt()
+    {
+        var user = await _userManager.CreateUserAsync("omittedvideolimituser");
+        var policy = _userManager.GetUserDto(user).Policy!;
+        policy.MaxActiveVideoStreams = 2;
+        await _userManager.UpdatePolicyAsync(user.Id, policy);
+
+        var oldPolicy = new UserPolicy
+        {
+            AuthenticationProviderId = user.AuthenticationProviderId,
+            PasswordResetProviderId = user.PasswordResetProviderId,
+            MaxActiveSessions = 3
+        };
+        await _userManager.UpdatePolicyAsync(user.Id, oldPolicy);
+        Assert.Equal(2, _userManager.GetUserById(user.Id)!.MaxActiveVideoStreams);
+
+        oldPolicy.MaxActiveVideoStreams = 0;
+        await _userManager.UpdatePolicyAsync(user.Id, oldPolicy);
+        Assert.Equal(0, _userManager.GetUserById(user.Id)!.MaxActiveVideoStreams);
     }
 
     [Fact]

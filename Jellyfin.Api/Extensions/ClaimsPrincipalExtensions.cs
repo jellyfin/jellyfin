@@ -32,6 +32,17 @@ public static class ClaimsPrincipalExtensions
         => GetClaimValue(user, InternalClaimTypes.DeviceId);
 
     /// <summary>
+    /// Gets the authenticated record identifier used to own video playback.
+    /// </summary>
+    /// <param name="user">Current claims principal.</param>
+    /// <returns>The playback owner identifier, or null when unavailable.</returns>
+    public static string? GetPlaybackOwnerId(this ClaimsPrincipal user)
+    {
+        var value = GetClaimValue(user, InternalClaimTypes.PlaybackOwnerId);
+        return string.IsNullOrEmpty(value) ? null : value;
+    }
+
+    /// <summary>
     /// Get device from claims.
     /// </summary>
     /// <param name="user">Current claims principal.</param>

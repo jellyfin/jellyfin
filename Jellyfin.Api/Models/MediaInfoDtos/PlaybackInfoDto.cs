@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 using MediaBrowser.Model.Dlna;
 
 namespace Jellyfin.Api.Models.MediaInfoDtos;
@@ -12,6 +13,12 @@ public class PlaybackInfoDto
     /// Gets or sets the playback userId.
     /// </summary>
     public Guid? UserId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the stable playback identifier to reuse when changing encodings.
+    /// </summary>
+    [MaxLength(128)]
+    public string? PlaybackInstanceId { get; set; }
 
     /// <summary>
     /// Gets or sets the max streaming bitrate.

@@ -7,6 +7,7 @@ using Jellyfin.Api.Models.StreamingDtos;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Streaming;
 using MediaBrowser.Model.IO;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Api.Helpers;
@@ -134,5 +135,109 @@ public static class HlsHelpers
         }
 
         return text;
+    }
+
+    /// <summary>
+    /// Propagates normal request authentication only to segments belonging to this playlist.
+    /// </summary>
+    /// <param name="text">The generated playlist.</param>
+    /// <param name="playlistPath">The verified output playlist path.</param>
+    /// <param name="token">The authenticated request token.</param>
+    /// <returns>The playlist with authenticated local segment and initialization URLs.</returns>
+    public static string AuthenticatePlaylistSegments(string text, string playlistPath, string? token)
+    {
+        if (string.IsNullOrEmpty(token))
+        {
+            return text;
+        }
+
+        var lines = text.ReplaceLineEndings("\n").Split('\n');
+        for (var index = 0; index < lines.Length; index++)
+        {
+            var line = lines[index];
+            if (line.StartsWith("#EXT-X-MAP:", StringComparison.Ordinal))
+            {
+                const string UriAttribute = "URI=\"";
+                var start = line.IndexOf(UriAttribute, StringComparison.Ordinal);
+                if (start >= 0)
+                {
+                    start += UriAttribute.Length;
+                    var end = line.IndexOf('"', start);
+                    if (end > start)
+                    {
+                        lines[index] = string.Concat(line.AsSpan(0, start), AuthenticateSegmentUri(line[start..end], playlistPath, token), line.AsSpan(end));
+                    }
+                }
+            }
+            else if (line.Length > 0 && line[0] != '#')
+            {
+                lines[index] = AuthenticateSegmentUri(line, playlistPath, token);
+            }
+        }
+
+        return string.Join('\n', lines);
+    }
+
+    /// <summary>
+    /// Preserves request options while propagating the verified token and resolved encoding alias.
+    /// </summary>
+    /// <param name="queryString">The original playlist query.</param>
+    /// <param name="playSessionId">The resolved encoding alias.</param>
+    /// <param name="token">The authenticated request token.</param>
+    /// <returns>The query to append to local playlist and segment URLs.</returns>
+    public static string GetAuthenticatedPlaylistQuery(string queryString, string? playSessionId, string? token)
+    {
+        var query = QueryHelpers.ParseQuery(queryString);
+        if (!string.IsNullOrWhiteSpace(playSessionId))
+        {
+            query["PlaySessionId"] = playSessionId;
+        }
+
+        if (!string.IsNullOrEmpty(token))
+        {
+            query["ApiKey"] = token;
+        }
+
+        return QueryHelpers.AddQueryString(string.Empty, query);
+    }
+
+    private static string AuthenticateSegmentUri(string uri, string playlistPath, string token)
+    {
+        var queryStart = uri.IndexOf('?', StringComparison.Ordinal);
+        var path = queryStart < 0 ? uri : uri[..queryStart];
+        if (path.Contains("..", StringComparison.Ordinal) || uri.Contains('#', StringComparison.Ordinal))
+        {
+            return uri;
+        }
+
+        var filename = Path.GetFileName(path);
+        var prefix = Path.GetFileNameWithoutExtension(playlistPath);
+        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        if (Path.IsPathFullyQualified(path))
+        {
+            if (!string.Equals(Path.GetDirectoryName(path), Path.GetDirectoryName(playlistPath), comparison))
+            {
+                return uri;
+            }
+
+            path = filename;
+        }
+        else if (!string.Equals(path, filename, comparison)
+                 && !string.Equals(path, $"hls/{prefix}/{filename}", comparison))
+        {
+            return uri;
+        }
+
+        var stem = Path.GetFileNameWithoutExtension(filename);
+        if (!stem.StartsWith(prefix, comparison)
+            || !int.TryParse(stem.AsSpan(prefix.Length), NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var index)
+            || index < -1)
+        {
+            return uri;
+        }
+
+        var query = QueryHelpers.ParseQuery(queryStart < 0 ? string.Empty : uri[queryStart..]);
+        query["ApiKey"] = token;
+        return QueryHelpers.AddQueryString(path, query);
     }
 }

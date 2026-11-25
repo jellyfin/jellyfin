@@ -92,6 +92,25 @@ namespace MediaBrowser.Controller.Session
         Task OnPlaybackStart(PlaybackStartInfo info);
 
         /// <summary>
+        /// Reports playback start with a verified owner for video admission lifecycle.
+        /// </summary>
+        /// <param name="info">The playback report.</param>
+        /// <param name="playbackOwnerId">The authenticated, token-bound playback owner.</param>
+        /// <returns>The playback reporting task.</returns>
+        Task OnPlaybackStart(PlaybackStartInfo info, string playbackOwnerId)
+            => OnPlaybackStart(info);
+
+        /// <summary>
+        /// Reports playback start with a server-verified output classification.
+        /// </summary>
+        /// <param name="info">The playback report.</param>
+        /// <param name="playbackOwnerId">The authenticated playback owner.</param>
+        /// <param name="isVideoPlayback">Whether the server is delivering video.</param>
+        /// <returns>The reporting task.</returns>
+        Task OnPlaybackStart(PlaybackStartInfo info, string playbackOwnerId, bool isVideoPlayback)
+            => OnPlaybackStart(info, playbackOwnerId);
+
+        /// <summary>
         /// Used to report playback progress for an item.
         /// </summary>
         /// <param name="info">The info.</param>
@@ -102,12 +121,71 @@ namespace MediaBrowser.Controller.Session
         Task OnPlaybackProgress(PlaybackProgressInfo info, bool isAutomated);
 
         /// <summary>
+        /// Reports real client progress with a verified playback owner.
+        /// </summary>
+        /// <param name="info">The playback report.</param>
+        /// <param name="playbackOwnerId">The authenticated, token-bound playback owner.</param>
+        /// <returns>The playback reporting task.</returns>
+        Task OnPlaybackProgress(PlaybackProgressInfo info, string playbackOwnerId)
+            => OnPlaybackProgress(info);
+
+        /// <summary>
+        /// Reports real progress with a server-verified output classification.
+        /// </summary>
+        /// <param name="info">The playback report.</param>
+        /// <param name="playbackOwnerId">The authenticated playback owner.</param>
+        /// <param name="isVideoPlayback">Whether the server is delivering video.</param>
+        /// <returns>The reporting task.</returns>
+        Task OnPlaybackProgress(PlaybackProgressInfo info, string playbackOwnerId, bool isVideoPlayback)
+            => OnPlaybackProgress(info, playbackOwnerId);
+
+        /// <summary>
+        /// Reports playback progress with an optional verified owner.
+        /// </summary>
+        /// <param name="info">The playback report.</param>
+        /// <param name="isAutomated">Whether the progress is simulated by the server.</param>
+        /// <param name="playbackOwnerId">The authenticated, token-bound playback owner, if available.</param>
+        /// <returns>The playback reporting task.</returns>
+        Task OnPlaybackProgress(PlaybackProgressInfo info, bool isAutomated, string playbackOwnerId)
+            => OnPlaybackProgress(info, isAutomated);
+
+        /// <summary>
+        /// Reports progress with server automation and output classification.
+        /// </summary>
+        /// <param name="info">The playback report.</param>
+        /// <param name="isAutomated">Whether progress is simulated by the server.</param>
+        /// <param name="playbackOwnerId">The authenticated playback owner.</param>
+        /// <param name="isVideoPlayback">Whether the server is delivering video.</param>
+        /// <returns>The reporting task.</returns>
+        Task OnPlaybackProgress(PlaybackProgressInfo info, bool isAutomated, string playbackOwnerId, bool isVideoPlayback)
+            => OnPlaybackProgress(info, isAutomated, playbackOwnerId);
+
+        /// <summary>
         /// Used to report that playback has ended for an item.
         /// </summary>
         /// <param name="info">The info.</param>
         /// <returns>Task.</returns>
         /// <exception cref="ArgumentNullException">Throws if an argument is null.</exception>
         Task OnPlaybackStopped(PlaybackStopInfo info);
+
+        /// <summary>
+        /// Reports playback stop with a verified owner for video admission lifecycle.
+        /// </summary>
+        /// <param name="info">The playback report.</param>
+        /// <param name="playbackOwnerId">The authenticated, token-bound playback owner.</param>
+        /// <returns>The playback reporting task.</returns>
+        Task OnPlaybackStopped(PlaybackStopInfo info, string playbackOwnerId)
+            => OnPlaybackStopped(info);
+
+        /// <summary>
+        /// Reports playback stop with a server-verified output classification.
+        /// </summary>
+        /// <param name="info">The playback report.</param>
+        /// <param name="playbackOwnerId">The authenticated playback owner.</param>
+        /// <param name="isVideoPlayback">Whether the server is delivering video.</param>
+        /// <returns>The reporting task.</returns>
+        Task OnPlaybackStopped(PlaybackStopInfo info, string playbackOwnerId, bool isVideoPlayback)
+            => OnPlaybackStopped(info, playbackOwnerId);
 
         /// <summary>
         /// Reports the session ended.

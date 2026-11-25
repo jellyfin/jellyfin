@@ -6,6 +6,7 @@ using AutoFixture;
 using AutoFixture.AutoMoq;
 using Jellyfin.Api.Auth;
 using Jellyfin.Api.Constants;
+using Jellyfin.Api.Extensions;
 using Jellyfin.Data;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
@@ -103,6 +104,35 @@ namespace Jellyfin.Api.Tests.Auth
 
             Assert.NotNull(authorizationInfo.User);
             Assert.True(authenticateResult.Principal?.HasClaim(ClaimTypes.Name, authorizationInfo.User.Username));
+        }
+
+        [Fact]
+        public async Task HandleAuthenticateAsyncShouldAssignPlaybackOwnerClaim()
+        {
+            var authorizationInfo = SetupUser();
+            authorizationInfo.PlaybackOwnerId = "42";
+            authorizationInfo.DeviceId = "casting-device";
+
+            var result = await _sut.AuthenticateAsync();
+
+            Assert.True(result.Succeeded);
+            Assert.NotNull(result.Principal);
+            Assert.Equal("42", result.Principal.GetPlaybackOwnerId());
+            Assert.Equal("casting-device", result.Principal.GetDeviceId());
+        }
+
+        [Fact]
+        public async Task HandleAuthenticateAsyncWithoutPlaybackOwnerShouldNotUseDeviceId()
+        {
+            var authorizationInfo = SetupUser();
+            authorizationInfo.PlaybackOwnerId = null;
+            authorizationInfo.DeviceId = "client-supplied-device";
+
+            var result = await _sut.AuthenticateAsync();
+
+            Assert.True(result.Succeeded);
+            Assert.NotNull(result.Principal);
+            Assert.Null(result.Principal.GetPlaybackOwnerId());
         }
 
         [Theory]

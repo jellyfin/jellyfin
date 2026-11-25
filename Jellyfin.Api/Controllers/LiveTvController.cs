@@ -23,6 +23,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Streaming;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -51,6 +52,7 @@ public class LiveTvController : BaseJellyfinApiController
     private readonly IMediaSourceManager _mediaSourceManager;
     private readonly ITranscodeManager _transcodeManager;
     private readonly ISchedulesDirectService _schedulesDirectService;
+    private readonly IInternalLiveTvAccess? _internalLiveTvAccess;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LiveTvController"/> class.
@@ -78,6 +80,38 @@ public class LiveTvController : BaseJellyfinApiController
         IMediaSourceManager mediaSourceManager,
         ITranscodeManager transcodeManager,
         ISchedulesDirectService schedulesDirectService)
+        : this(liveTvManager, guideManager, tunerHostManager, listingsManager, recordingsManager, userManager, libraryManager, dtoService, mediaSourceManager, transcodeManager, schedulesDirectService, null)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="LiveTvController"/> class.
+    /// </summary>
+    /// <param name="liveTvManager">Instance of the <see cref="ILiveTvManager"/> interface.</param>
+    /// <param name="guideManager">Instance of the <see cref="IGuideManager"/> interface.</param>
+    /// <param name="tunerHostManager">Instance of the <see cref="ITunerHostManager"/> interface.</param>
+    /// <param name="listingsManager">Instance of the <see cref="IListingsManager"/> interface.</param>
+    /// <param name="recordingsManager">Instance of the <see cref="IRecordingsManager"/> interface.</param>
+    /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
+    /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
+    /// <param name="dtoService">Instance of the <see cref="IDtoService"/> interface.</param>
+    /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
+    /// <param name="transcodeManager">Instance of the <see cref="ITranscodeManager"/> interface.</param>
+    /// <param name="schedulesDirectService">Instance of the <see cref="ISchedulesDirectService"/> interface.</param>
+    /// <param name="internalLiveTvAccess">The internal encoder input authorization.</param>
+    public LiveTvController(
+        ILiveTvManager liveTvManager,
+        IGuideManager guideManager,
+        ITunerHostManager tunerHostManager,
+        IListingsManager listingsManager,
+        IRecordingsManager recordingsManager,
+        IUserManager userManager,
+        ILibraryManager libraryManager,
+        IDtoService dtoService,
+        IMediaSourceManager mediaSourceManager,
+        ITranscodeManager transcodeManager,
+        ISchedulesDirectService schedulesDirectService,
+        IInternalLiveTvAccess? internalLiveTvAccess)
     {
         _liveTvManager = liveTvManager;
         _guideManager = guideManager;
@@ -90,6 +124,7 @@ public class LiveTvController : BaseJellyfinApiController
         _mediaSourceManager = mediaSourceManager;
         _transcodeManager = transcodeManager;
         _schedulesDirectService = schedulesDirectService;
+        _internalLiveTvAccess = internalLiveTvAccess;
     }
 
     /// <summary>
@@ -1121,6 +1156,11 @@ public class LiveTvController : BaseJellyfinApiController
     [ProducesVideoFile]
     public ActionResult GetLiveRecordingFile([FromRoute, Required] string recordingId)
     {
+        if (!(_internalLiveTvAccess?.IsAuthorizedRequest(Request) ?? false))
+        {
+            return StatusCode(StatusCodes.Status403Forbidden);
+        }
+
         var path = _recordingsManager.GetActiveRecordingPath(recordingId);
         if (string.IsNullOrWhiteSpace(path))
         {
@@ -1150,6 +1190,11 @@ public class LiveTvController : BaseJellyfinApiController
         [FromRoute, Required] string streamId,
         [FromRoute, Required][RegularExpression(EncodingHelper.ContainerValidationRegexStr)] string container)
     {
+        if (!(_internalLiveTvAccess?.IsAuthorizedRequest(Request) ?? false))
+        {
+            return StatusCode(StatusCodes.Status403Forbidden);
+        }
+
         var liveStreamInfo = _mediaSourceManager.GetLiveStreamInfoByUniqueId(streamId);
         if (liveStreamInfo is null)
         {

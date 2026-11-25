@@ -19,6 +19,7 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Streaming;
 using MediaBrowser.Model.Dlna;
@@ -94,6 +95,15 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         DeleteEncodedMediaCache();
         _sessionManager.PlaybackProgress += OnPlaybackProgress;
         _sessionManager.PlaybackStart += OnPlaybackProgress;
+    }
+
+    /// <inheritdoc />
+    public IReadOnlyList<TranscodingJob> GetActiveTranscodingJobs()
+    {
+        lock (_activeTranscodingJobs)
+        {
+            return _activeTranscodingJobs.ToArray();
+        }
     }
 
     /// <inheritdoc />
@@ -446,7 +456,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
             state,
             cancellationTokenSource);
 
-        _logger.LogInformation("{Filename} {Arguments}", process.StartInfo.FileName, process.StartInfo.Arguments);
+        _logger.LogInformation("{Filename} {Arguments}", process.StartInfo.FileName, InternalLiveTvAccessToken.Redact(process.StartInfo.Arguments));
 
         var logFilePrefix = "FFmpeg.Transcode-";
         if (state.VideoRequest is not null
@@ -479,7 +489,7 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         var commandLineLogMessageBytes = Encoding.UTF8.GetBytes(
             Environment.NewLine
             + Environment.NewLine
-            + process.StartInfo.FileName + " " + process.StartInfo.Arguments
+            + process.StartInfo.FileName + " " + InternalLiveTvAccessToken.Redact(process.StartInfo.Arguments)
             + Environment.NewLine
             + Environment.NewLine);
 
@@ -598,7 +608,11 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
                 Id = transcodingJobId,
                 PlaySessionId = playSessionId,
                 LiveStreamId = liveStreamId,
-                MediaSource = state.MediaSource
+                MediaSource = state.MediaSource,
+                IsOutputVideo = state.IsOutputVideo,
+                ItemId = state.Request.Id,
+                UserId = state.User?.Id ?? Guid.Empty,
+                PlaybackOwnerId = state.PlaybackOwnerId
             };
 
             _activeTranscodingJobs.Add(job);

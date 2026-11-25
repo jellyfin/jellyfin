@@ -50,6 +50,7 @@ public class LibraryController : BaseJellyfinApiController
     private readonly IProviderManager _providerManager;
     private readonly ISimilarItemsManager _similarItemsManager;
     private readonly ILibraryManager _libraryManager;
+    private readonly VideoPlaybackHelper _videoPlaybackHelper;
     private readonly IUserManager _userManager;
     private readonly ICollectionManager _collectionManager;
     private readonly IDtoService _dtoService;
@@ -72,6 +73,7 @@ public class LibraryController : BaseJellyfinApiController
     /// <param name="localization">Instance of the <see cref="ILocalizationManager"/> interface.</param>
     /// <param name="libraryMonitor">Instance of the <see cref="ILibraryMonitor"/> interface.</param>
     /// <param name="logger">Instance of the <see cref="ILogger{LibraryController}"/> interface.</param>
+    /// <param name="videoPlaybackHelper">The video playback authorization helper.</param>
     /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
     public LibraryController(
         IProviderManager providerManager,
@@ -84,11 +86,13 @@ public class LibraryController : BaseJellyfinApiController
         ILocalizationManager localization,
         ILibraryMonitor libraryMonitor,
         ILogger<LibraryController> logger,
-        IServerConfigurationManager serverConfigurationManager)
+        IServerConfigurationManager serverConfigurationManager,
+        VideoPlaybackHelper videoPlaybackHelper)
     {
         _providerManager = providerManager;
         _similarItemsManager = similarItemsManager;
         _libraryManager = libraryManager;
+        _videoPlaybackHelper = videoPlaybackHelper;
         _userManager = userManager;
         _collectionManager = collectionManager;
         _dtoService = dtoService;
@@ -103,6 +107,7 @@ public class LibraryController : BaseJellyfinApiController
     /// Get the original file of an item.
     /// </summary>
     /// <param name="itemId">The item id.</param>
+    /// <param name="playSessionId">Optional. The playback session identifier.</param>
     /// <response code="200">File stream returned.</response>
     /// <response code="404">Item not found.</response>
     /// <returns>A <see cref="FileStreamResult"/> with the original file.</returns>
@@ -111,7 +116,9 @@ public class LibraryController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesFile("video/*", "audio/*")]
-    public ActionResult GetFile([FromRoute, Required] Guid itemId)
+    public ActionResult GetFile(
+        [FromRoute, Required] Guid itemId,
+        [FromQuery(Name = "PlaySessionId"), ModelBinder(typeof(CommaJoinedStringModelBinder))] string? playSessionId = null)
     {
         var item = _libraryManager.GetItemById<BaseItem>(itemId, User.GetUserId());
         if (item is null)
@@ -130,7 +137,8 @@ public class LibraryController : BaseJellyfinApiController
             }
         }
 
-        return PhysicalFile(filePath, MimeTypes.GetMimeType(filePath), true);
+        using var playback = _videoPlaybackHelper.Acquire(HttpContext, item.Id, playSessionId);
+        return VideoPlaybackHelper.Wrap(PhysicalFile(filePath, MimeTypes.GetMimeType(filePath), true), playback);
     }
 
     /// <summary>

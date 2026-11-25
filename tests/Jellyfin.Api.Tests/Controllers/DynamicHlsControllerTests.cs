@@ -1,16 +1,43 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using AutoFixture;
+using AutoFixture.AutoMoq;
 using Jellyfin.Api.Controllers;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Streaming;
+using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging.Abstractions;
+using Moq;
 using Xunit;
 
 namespace Jellyfin.Api.Tests.Controllers
 {
     public class DynamicHlsControllerTests
     {
+        [Theory]
+        [InlineData(false, "-vn")]
+        [InlineData(true, "")]
+        public void GetAudioArguments_WithoutAudio_SuppressesVideoOnlyForAudioOutput(bool isVideo, string expected)
+        {
+            var fixture = new Fixture().Customize(new AutoMoqCustomization());
+            var configuration = new Mock<IServerConfigurationManager>();
+            configuration.Setup(x => x.GetConfiguration("encoding")).Returns(new EncodingOptions());
+            fixture.Inject(configuration.Object);
+            var controller = fixture.Build<DynamicHlsController>().OmitAutoProperties().Create();
+            using var state = new StreamState(Mock.Of<IMediaSourceManager>(), TranscodingJobType.Hls, Mock.Of<ITranscodeManager>())
+            {
+                MediaSource = new MediaSourceInfo(),
+                Request = isVideo ? new VideoRequestDto() : new StreamingRequestDto()
+            };
+
+            Assert.Equal(expected, controller.GetAudioArguments(state));
+        }
+
         [Theory]
         [InlineData(8, 1, "smpte2084", false, "hvc1")]
         [InlineData(8, 1, "smpte2084", true, "hvc1")]

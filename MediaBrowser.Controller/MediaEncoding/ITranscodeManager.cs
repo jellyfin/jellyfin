@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Streaming;
@@ -10,6 +11,12 @@ namespace MediaBrowser.Controller.MediaEncoding;
 /// </summary>
 public interface ITranscodeManager
 {
+    /// <summary>
+    /// Takes a snapshot of jobs whose playback identifiers still own server resources.
+    /// </summary>
+    /// <returns>The current server jobs.</returns>
+    public IReadOnlyList<TranscodingJob> GetActiveTranscodingJobs() => Array.Empty<TranscodingJob>();
+
     /// <summary>
     /// Get transcoding job.
     /// </summary>

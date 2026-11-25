@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Logging;
@@ -52,7 +53,7 @@ public class ResponseTimeMiddleware
             {
                 _logger.LogDebug(
                     "Slow HTTP Response from {Url} to {RemoteIP} in {Elapsed:g} with Status Code {StatusCode}",
-                    context.Request.GetDisplayUrl(),
+                    InternalLiveTvAccessToken.Redact(context.Request.GetDisplayUrl()),
                     context.GetNormalizedRemoteIP(),
                     responseTime,
                     context.Response.StatusCode);

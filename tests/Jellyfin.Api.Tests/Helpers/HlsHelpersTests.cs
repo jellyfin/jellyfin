@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Streaming;
 using MediaBrowser.Model.Dto;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Win32.SafeHandles;
 using Moq;
@@ -19,6 +20,7 @@ namespace Jellyfin.Api.Tests.Helpers;
 public sealed class HlsHelpersTests : IDisposable
 {
     private const string PlaylistText = "#EXTM3U\n#EXTINF:3.0,Café\nplaylist0.ts\n#EXTINF:3.0,\nplaylist1.ts\n";
+    private static readonly string _authenticatedPlaylistPath = Path.Combine(Path.GetTempPath(), "owned-transcodes", "list.m3u8");
     private readonly DirectoryInfo _directory = Directory.CreateTempSubdirectory();
 
     private string PlaylistPath => Path.Combine(_directory.FullName, "playlist.m3u8");
@@ -72,6 +74,59 @@ public sealed class HlsHelpersTests : IDisposable
         // The DELETE-access handle stays open for the entire wait; no overlap timing is required.
         await HlsHelpers.WaitForMinimumSegmentCount(PlaylistPath, 2, NullLogger.Instance, cancellation.Token);
         Assert.False(cancellation.IsCancellationRequested);
+    }
+
+    [Theory]
+    [InlineData("list0.ts")]
+    [InlineData("hls/list/list12.ts")]
+    [InlineData("list-1.mp4")]
+    public void AuthenticatePlaylistSegments_AuthenticatesOnlyOwnedSegmentUris(string uri)
+    {
+        var output = HlsHelpers.AuthenticatePlaylistSegments(uri, _authenticatedPlaylistPath, "owner-token");
+
+        Assert.Equal(uri + "?ApiKey=owner-token", output);
+    }
+
+    [Fact]
+    public void AuthenticatePlaylistSegments_AuthenticatesFmp4InitializationMap()
+    {
+        var output = HlsHelpers.AuthenticatePlaylistSegments("#EXT-X-MAP:URI=\"list-1.mp4\",BYTERANGE=\"100@0\"", _authenticatedPlaylistPath, "owner-token");
+
+        Assert.Equal("#EXT-X-MAP:URI=\"list-1.mp4?ApiKey=owner-token\",BYTERANGE=\"100@0\"", output);
+    }
+
+    [Theory]
+    [InlineData("https://external.example/list0.ts")]
+    [InlineData("//external.example/list0.ts")]
+    [InlineData("../list0.ts")]
+    [InlineData("hls/other/list0.ts")]
+    [InlineData("other0.ts")]
+    [InlineData("list-other0.ts")]
+    [InlineData("hls/list/../list0.ts")]
+    public void AuthenticatePlaylistSegments_NeverForwardsTokenToExternalOrUnrelatedPaths(string uri)
+    {
+        Assert.Equal(uri, HlsHelpers.AuthenticatePlaylistSegments(uri, _authenticatedPlaylistPath, "private-token"));
+    }
+
+    [Fact]
+    public void AuthenticatePlaylistSegments_ReplacesUnverifiedTokenWithoutDuplicateQueryValues()
+    {
+        var output = HlsHelpers.AuthenticatePlaylistSegments("list0.ts?ApiKey=other-token&option=1", _authenticatedPlaylistPath, "owner+token");
+        var query = QueryHelpers.ParseQuery(output[output.IndexOf('?', StringComparison.Ordinal)..]);
+
+        Assert.Equal("owner+token", Assert.Single(query["ApiKey"]));
+        Assert.Equal("1", query["option"].ToString());
+    }
+
+    [Fact]
+    public void GetAuthenticatedPlaylistQuery_PropagatesResolvedAliasAndVerifiedToken()
+    {
+        var output = HlsHelpers.GetAuthenticatedPlaylistQuery("?ApiKey=unverified&PlaySessionId=obsolete&VideoCodec=copy", "resolved-encoding", "owner-token");
+        var query = QueryHelpers.ParseQuery(output);
+
+        Assert.Equal("owner-token", Assert.Single(query["ApiKey"]));
+        Assert.Equal("resolved-encoding", Assert.Single(query["PlaySessionId"]));
+        Assert.Equal("copy", query["VideoCodec"].ToString());
     }
 
     public void Dispose()

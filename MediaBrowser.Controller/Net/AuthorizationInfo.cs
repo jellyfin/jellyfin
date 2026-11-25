@@ -22,6 +22,11 @@ namespace MediaBrowser.Controller.Net
         public string? DeviceId { get; set; }
 
         /// <summary>
+        /// Gets or sets the identifier of the authenticated record that owns video playback.
+        /// </summary>
+        public string? PlaybackOwnerId { get; set; }
+
+        /// <summary>
         /// Gets or sets the device.
         /// </summary>
         /// <value>The device.</value>
