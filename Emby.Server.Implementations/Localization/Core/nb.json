@@ -119,5 +119,7 @@
     "NameExtraTrailer": "Trailer",
     "LyricDownloadFailureFromForItem": "Kunne ikke laste ned sangtekster fra {0} for {1}",
     "NameExtraClip": "Klipp",
-    "NameExtraShort": "Kortfilm"
+    "NameExtraShort": "Kortfilm",
+    "NameExtraUnknown": "Ekstra",
+    "Original": "Original"
 }

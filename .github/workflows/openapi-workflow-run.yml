@@ -50,7 +50,16 @@ jobs:
         path: openapi-report
         run-id: ${{ github.event.workflow_run.id }}
         github-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Check Result
+      id: check_file
+      run: |
+        if grep -q "No differences. Specifications are equivalent" ${{ steps.download_report.outputs.download-path }}/openapi-report.md; then
+          echo "comment=false" >> $GITHUB_ENV
+        else
+          echo "comment=true" >> $GITHUB_ENV
+        fi
     - name: Push Comment
+      if: env.comment == 'true'
       uses: thollander/actions-comment-pull-request@24bffb9b452ba05a4f3f77933840a6a841d1b32b # v3.0.1
       with:
         github-token: ${{ secrets.JF_BOT_TOKEN }}

@@ -13,6 +13,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Configuration;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using Xunit;
@@ -32,12 +33,16 @@ public abstract class SqlSearchProviderTests : DbTestFixture
     private static readonly Guid _primaryId = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc");
     private static readonly Guid _versionId = Guid.Parse("dddddddd-dddd-dddd-dddd-dddddddddddd");
 
+    // A movie nested one folder below the library, so only its AncestorIds rows reach the library.
+    private static readonly Guid _franchiseFolderId = Guid.Parse("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee");
+    private static readonly Guid _nestedMovieId = Guid.Parse("ffffffff-ffff-ffff-ffff-ffffffffffff");
+
     private readonly SqlSearchProvider _provider;
     private readonly Mock<ILibraryManager> _libraryManager = new();
     private readonly User _user = new("test", "auth-provider", "reset-provider");
 
-    protected SqlSearchProviderTests(TestDatabase database)
-        : base(database)
+    protected SqlSearchProviderTests(TestDatabase database, params IInterceptor[] interceptors)
+        : base(database, interceptors)
     {
         var itemTypeLookup = new ItemTypeLookup();
         var movieTypeName = itemTypeLookup.BaseItemKindNames[BaseItemKind.Movie]!;
@@ -50,6 +55,15 @@ public abstract class SqlSearchProviderTests : DbTestFixture
             context.BaseItems.Add(CreateLibrary(_movie4KLibraryId, folderTypeName, "Movies-4K", "/movies-4k"));
             context.BaseItems.Add(CreateMovie(_primaryId, movieTypeName, _movie4KLibraryId, null));
             context.BaseItems.Add(CreateMovie(_versionId, movieTypeName, _movieLibraryId, _primaryId));
+            context.BaseItems.Add(CreateLibrary(_franchiseFolderId, folderTypeName, "Franchise", "/movies/franchise"));
+            var nestedMovie = CreateMovie(_nestedMovieId, movieTypeName, _movieLibraryId, null);
+            nestedMovie.Name = "Moana";
+            nestedMovie.CleanName = "moana";
+            nestedMovie.SortName = "Moana";
+            nestedMovie.ParentId = _franchiseFolderId;
+            context.BaseItems.Add(nestedMovie);
+            context.AncestorIds.Add(new AncestorId { ItemId = _nestedMovieId, ParentItemId = _franchiseFolderId, Item = null!, ParentItem = null! });
+            context.AncestorIds.Add(new AncestorId { ItemId = _nestedMovieId, ParentItemId = _movieLibraryId, Item = null!, ParentItem = null! });
             context.SaveChanges();
         }
 
@@ -89,6 +103,16 @@ public abstract class SqlSearchProviderTests : DbTestFixture
         Assert.Equal([_primaryId], hits);
     }
 
+    [Fact]
+    public async Task SearchAsync_WithParent_FindsItemsNestedBelowIt()
+    {
+        RestrictUserTo(_movieLibraryId);
+
+        Assert.Equal([_nestedMovieId], await SearchAsync("moana", _movieLibraryId).ConfigureAwait(true));
+        Assert.Equal([_nestedMovieId], await SearchAsync("moana", _franchiseFolderId).ConfigureAwait(true));
+        Assert.Empty(await SearchAsync("moana", _movie4KLibraryId).ConfigureAwait(true));
+    }
+
     private void RestrictUserTo(params Guid[] libraryIds)
     {
         _libraryManager
@@ -96,10 +120,10 @@ public abstract class SqlSearchProviderTests : DbTestFixture
             .Callback<InternalItemsQuery, User>((query, _) => query.TopParentIds = libraryIds);
     }
 
-    private async Task<List<Guid>> SearchAsync()
+    private async Task<List<Guid>> SearchAsync(string searchTerm = "coco", Guid? parentId = null)
     {
         var results = await _provider.SearchAsync(
-            new SearchProviderQuery { SearchTerm = "coco", UserId = _user.Id, Limit = 10 },
+            new SearchProviderQuery { SearchTerm = searchTerm, UserId = _user.Id, ParentId = parentId, Limit = 10 },
             CancellationToken.None).ConfigureAwait(false);
 
         return results.Select(r => r.ItemId).ToList();
@@ -133,5 +157,43 @@ public abstract class SqlSearchProviderTests : DbTestFixture
             PrimaryVersionId = primaryVersionId
         };
 
-    public sealed class Sqlite() : SqlSearchProviderTests(new SqliteTestDatabase());
+    /// <summary>
+    /// Runs the search tests against SQLite, plus the checks on the query plan SQLite picks.
+    /// </summary>
+    public sealed class Sqlite : SqlSearchProviderTests
+    {
+        private readonly QueryPlanRecorder _recorder;
+
+        public Sqlite()
+            : this(new QueryPlanRecorder())
+        {
+        }
+
+        private Sqlite(QueryPlanRecorder recorder)
+            : base(new SqliteTestDatabase(), recorder)
+        {
+            _recorder = recorder;
+        }
+
+        [Fact]
+        public async Task SearchAsync_WithParent_SeeksDescendantsByParent()
+        {
+            RestrictUserTo(_movieLibraryId);
+            _recorder.Commands.Clear();
+
+            await SearchAsync("moana", _franchiseFolderId).ConfigureAwait(true);
+
+            var query = Assert.Single(_recorder.Commands, c => c.Sql.Contains("\"AncestorIds\"", StringComparison.Ordinal));
+            // The ParentId alternative keeps BaseItems as the driver; the descendants become a list built once, not a per-row probe.
+            var plan = Explain(query);
+            Assert.Contains(plan, line => line.Contains("COVERING INDEX IX_AncestorIds_ParentItemId_ItemId (ParentItemId=?)", StringComparison.Ordinal));
+            Assert.DoesNotContain(plan, line => line.Contains("sqlite_autoindex_AncestorIds_1", StringComparison.Ordinal));
+        }
+
+        private string[] Explain(RecordedCommand query)
+        {
+            using var context = CreateDbContext();
+            return QueryPlanRecorder.Explain(context, query);
+        }
+    }
 }

@@ -151,6 +151,31 @@ namespace Jellyfin.Server.Implementations.Tests.Library
             Assert.Equal(expectedIndex, mediaInfo.DefaultAudioStreamIndex);
         }
 
+        [Fact]
+        public void SetDefaultAudioStreamIndex_VariantPreference_MatchesBaseCodeTrack()
+        {
+            _mockLocalizationManager
+                .Setup(m => m.FindLanguageInfo("pt-br"))
+                .Returns(new CultureDto("pt-br", "Portuguese (Brazil)", "pt-br", ["pt-br", "por"]));
+
+            var mediaInfo = new MediaSourceInfo
+            {
+                MediaStreams = new MediaStream[]
+                {
+                    new() { Index = 0, Type = MediaStreamType.Video, IsDefault = true },
+                    new() { Index = 1, Type = MediaStreamType.Audio, Language = "eng", IsDefault = true },
+                    new() { Index = 2, Type = MediaStreamType.Audio, Language = "por", IsDefault = false }
+                }
+            };
+
+            _user.AudioLanguagePreference = "pt-br";
+            _user.PlayDefaultAudioTrack = false;
+
+            _mediaSourceManager.SetDefaultAudioAndSubtitleStreamIndices(_item, mediaInfo, _user);
+
+            Assert.Equal(2, mediaInfo.DefaultAudioStreamIndex);
+        }
+
         [Theory]
         // A remembered full track must not survive a switch to "only forced" (it falls through to
         // the forced track here); a remembered forced track and "off" still must.

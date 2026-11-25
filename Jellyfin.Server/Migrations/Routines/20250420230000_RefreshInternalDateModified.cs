@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
@@ -70,7 +72,14 @@ public class RefreshInternalDateModified : IDatabaseMigrationRoutine
     }
 
     /// <inheritdoc />
-    public void Perform()
+    public Task PerformAsync(CancellationToken cancellationToken)
+    {
+        // This routine predates the async interface and has not been ported to async database access yet.
+        PerformCore();
+        return Task.CompletedTask;
+    }
+
+    private void PerformCore()
     {
         const int Limit = 5000;
         int itemCount = 0, offset = 0;

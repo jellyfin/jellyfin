@@ -7,7 +7,6 @@ using System.Linq;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
-using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
@@ -72,6 +71,7 @@ public class ItemCountService : IItemCountService
         {
             ItemCount = counts.Sum(c => c.Count)
         };
+
         foreach (var count in counts)
         {
             if (string.Equals(count.Key, lookup[BaseItemKind.MusicAlbum], StringComparison.Ordinal))
@@ -297,10 +297,6 @@ public class ItemCountService : IItemCountService
                 && !years.Contains(year))
             {
                 years.Add(year);
-            }
-            else if (string.Equals(count.Key, lookup[BaseItemKind.AudioBook], StringComparison.Ordinal))
-            {
-                result.AudioBookCount = count.Count;
             }
         }
 

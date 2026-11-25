@@ -104,18 +104,14 @@ namespace Emby.Naming.ExternalFiles
 
                     if (culture is not null && pathInfo.Language is null)
                     {
-                        pathInfo.Language = culture.Name.Contains('-', StringComparison.OrdinalIgnoreCase)
-                                          ? culture.Name
-                                          : culture.ThreeLetterISOLanguageName;
+                        pathInfo.Language = GetLanguageCode(culture);
                         extraString = extraString.Replace(currentSlice, string.Empty, StringComparison.OrdinalIgnoreCase);
                     }
                     else if (culture is not null && pathInfo.Language == "hin")
                     {
                         // Hindi language code "hi" collides with a hearing impaired flag - use as Hindi only if no other language is set
                         pathInfo.IsHearingImpaired = true;
-                        pathInfo.Language = culture.Name.Contains('-', StringComparison.OrdinalIgnoreCase)
-                                          ? culture.Name
-                                          : culture.ThreeLetterISOLanguageName;
+                        pathInfo.Language = GetLanguageCode(culture);
                         extraString = extraString.Replace(currentSlice, string.Empty, StringComparison.OrdinalIgnoreCase);
                     }
                     else if (_namingOptions.MediaHearingImpairedFlags.Any(s => currentSliceWithoutSeparator.Equals(s, StringComparison.OrdinalIgnoreCase)))
@@ -135,6 +131,18 @@ namespace Emby.Naming.ExternalFiles
             }
 
             return pathInfo;
+        }
+
+        private static string? GetLanguageCode(CultureDto culture)
+        {
+            var tag = culture.TwoLetterISOLanguageName;
+            if (tag.Contains('-', StringComparison.Ordinal))
+            {
+                return tag;
+            }
+
+            return culture.ThreeLetterISOLanguageNames.FirstOrDefault(n => !n.Equals(tag, StringComparison.OrdinalIgnoreCase))
+                ?? culture.ThreeLetterISOLanguageName;
         }
     }
 }

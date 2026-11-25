@@ -1837,7 +1837,7 @@ namespace Emby.Server.Implementations.Session
         {
             CheckDisposed();
 
-            _logger.LogInformation("Logging out access token {0}", device.AccessToken);
+            _logger.LogInformation("Logging out {0} ({1}) for user {2}", device.DeviceName, device.DeviceId, device.UserId);
 
             await _deviceManager.DeleteDevice(device).ConfigureAwait(false);
 

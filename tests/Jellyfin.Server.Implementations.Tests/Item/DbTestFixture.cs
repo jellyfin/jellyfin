@@ -8,6 +8,7 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Globalization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -62,7 +63,7 @@ public abstract class DbTestFixture : IDisposable
         return factory.Object;
     }
 
-    protected BaseItemRepository CreateBaseItemRepository(ItemTypeLookup itemTypeLookup)
+    protected BaseItemRepository CreateBaseItemRepository(ItemTypeLookup itemTypeLookup, ILocalizationManager? localizationManager = null)
     {
         var serverConfigurationManager = new Mock<IServerConfigurationManager>();
         serverConfigurationManager.Setup(c => c.Configuration).Returns(new ServerConfiguration());
@@ -72,6 +73,7 @@ public abstract class DbTestFixture : IDisposable
             new Mock<IServerApplicationHost>().Object,
             itemTypeLookup,
             serverConfigurationManager.Object,
+            localizationManager ?? Mock.Of<ILocalizationManager>(),
             NullLogger<BaseItemRepository>.Instance);
     }
 
