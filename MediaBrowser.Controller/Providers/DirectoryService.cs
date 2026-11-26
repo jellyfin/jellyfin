@@ -1,64 +1,57 @@
 #pragma warning disable CS1591
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
+using System.Runtime.CompilerServices;
+using BitFaster.Caching;
+using BitFaster.Caching.Lru;
 using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Controller.Providers
 {
     public class DirectoryService : IDirectoryService
     {
-        // TODO replace with one shared bounded cache.
-        private const int MaxCachedRecords = 100_000;
-        private const int AccessIntervalMs = 1_000;
-        // Timeout cache if no access for 5 minutes.
-        private const int IdleTimeoutMs = 5 * 60 * 1_000;
-
-        private readonly ConcurrentDictionary<string, FileSystemMetadata[]> _cache = new(StringComparer.Ordinal);
-
-        private readonly ConcurrentDictionary<string, FileSystemMetadata> _fileCache = new(StringComparer.Ordinal);
-
-        private readonly ConcurrentDictionary<string, List<string>> _filePathCache = new(StringComparer.Ordinal);
+        private static readonly ConditionalWeakTable<IFileSystem, DirectoryCache> _caches = [];
 
         private readonly IFileSystem _fileSystem;
-
-        // ConcurrentDictionary.Count locks the dictionary, so keep an estimated counter.
-        // Concurrent factory runs can overcount and a clear racing an add can undercount,
-        // it only has to be roughly right.
-        private int _recordCount;
-        private long _lastAccess = Environment.TickCount64;
+        private readonly DirectoryCache _cache;
 
         public DirectoryService(IFileSystem fileSystem)
         {
             _fileSystem = fileSystem;
+            _cache = _caches.GetValue(fileSystem, static _ => new DirectoryCache());
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DirectoryService"/> class holding a cache of
+        /// its own, so a test can pick a lifetime it is willing to wait out.
+        /// </summary>
+        /// <param name="fileSystem">The file system to read through.</param>
+        /// <param name="entryLifetime">How long an entry is trusted after it was last read.</param>
+        internal DirectoryService(IFileSystem fileSystem, TimeSpan entryLifetime)
+        {
+            _fileSystem = fileSystem;
+            _cache = new DirectoryCache(entryLifetime);
         }
 
         public FileSystemMetadata[] GetFileSystemEntries(string path)
         {
-            DropCacheIfIdleOrFull();
-
-            return _cache.GetOrAdd(
+            return _cache.Entries.GetOrAdd(
                 path,
-                static (p, state) =>
+                static (p, fileSystem) =>
                 {
-                    FileSystemMetadata[] entries;
                     try
                     {
-                        entries = state.FileSystem.GetFileSystemEntries(p).ToArray();
+                        return fileSystem.GetFileSystemEntries(p).ToArray();
                     }
                     catch (DirectoryNotFoundException)
                     {
-                        entries = [];
+                        return [];
                     }
-
-                    Interlocked.Add(ref state.Service._recordCount, entries.Length + 1);
-                    return entries;
                 },
-                (FileSystem: _fileSystem, Service: this));
+                _fileSystem);
         }
 
         public List<FileSystemMetadata> GetDirectories(string path)
@@ -107,18 +100,15 @@ namespace MediaBrowser.Controller.Providers
 
         public FileSystemMetadata? GetFileSystemEntry(string path)
         {
-            DropCacheIfIdleOrFull();
-
-            if (!_fileCache.TryGetValue(path, out var result))
+            // Deliberately not a GetOrAdd: a path that does not exist is not remembered, so a file
+            // appearing later is picked up without waiting for anything to invalidate it.
+            if (!_cache.Files.TryGet(path, out var result))
             {
                 var file = _fileSystem.GetFileSystemInfo(path);
                 if (file?.Exists ?? false)
                 {
                     result = file;
-                    if (_fileCache.TryAdd(path, result))
-                    {
-                        Interlocked.Increment(ref _recordCount);
-                    }
+                    _cache.Files.AddOrUpdate(path, result);
                 }
             }
 
@@ -130,33 +120,25 @@ namespace MediaBrowser.Controller.Providers
 
         public IReadOnlyList<string> GetFilePaths(string path, bool clearCache)
         {
-            if (clearCache && _filePathCache.TryRemove(path, out var cached))
+            if (clearCache)
             {
-                Interlocked.Add(ref _recordCount, -(cached.Count + 1));
+                _cache.FilePaths.TryRemove(path);
             }
 
-            DropCacheIfIdleOrFull();
-
-            var filePaths = _filePathCache.GetOrAdd(
+            return _cache.FilePaths.GetOrAdd(
                 path,
-                static (p, state) =>
+                static (p, fileSystem) =>
                 {
-                    List<string> filePaths;
                     try
                     {
-                        filePaths = state.FileSystem.GetFilePaths(p).OrderBy(x => x).ToList();
+                        return fileSystem.GetFilePaths(p).OrderBy(x => x).ToList();
                     }
                     catch (DirectoryNotFoundException)
                     {
-                        filePaths = [];
+                        return [];
                     }
-
-                    Interlocked.Add(ref state.Service._recordCount, filePaths.Count + 1);
-                    return filePaths;
                 },
-                (FileSystem: _fileSystem, Service: this));
-
-            return filePaths;
+                _fileSystem);
         }
 
         public void Invalidate(string path)
@@ -178,47 +160,87 @@ namespace MediaBrowser.Controller.Providers
             Invalidate(destination);
         }
 
+        public void TrimExpired()
+            => _cache.TrimExpired();
+
         public bool IsAccessible(string path)
         {
             return _fileSystem.GetFileSystemEntryPaths(path).Any();
         }
 
-        private void DropCacheIfIdleOrFull()
-        {
-            var nowMs = Environment.TickCount64;
-            var idleMs = nowMs - _lastAccess;
-
-            if (idleMs >= IdleTimeoutMs || _recordCount >= MaxCachedRecords)
-            {
-                _cache.Clear();
-                _fileCache.Clear();
-                _filePathCache.Clear();
-                _recordCount = 0;
-                _lastAccess = nowMs;
-                return;
-            }
-
-            if (idleMs >= AccessIntervalMs)
-            {
-                _lastAccess = nowMs;
-            }
-        }
-
         private void Forget(string path)
         {
-            if (_cache.TryRemove(path, out var entries))
+            _cache.Entries.TryRemove(path);
+            _cache.Files.TryRemove(path);
+            _cache.FilePaths.TryRemove(path);
+        }
+
+        private sealed class DirectoryCache
+        {
+            // Entries are whole directory listings, so a modest count still holds a lot of metadata.
+            // Files are single entries, so that cache is allowed to be deeper.
+            private const int DirectoryCacheSize = 2048;
+            private const int FileCacheSize = 8192;
+
+            // A DirectoryService no longer bounds how long its answers are trusted by dying, so a
+            // lifetime does. This is a staleness bound, not a snapshot: a long refresh can outlive it
+            // and re-read a directory partway through.
+            private static readonly TimeSpan _defaultEntryLifetime = TimeSpan.FromMinutes(1);
+
+            public DirectoryCache()
+                : this(_defaultEntryLifetime)
             {
-                Interlocked.Add(ref _recordCount, -(entries.Length + 1));
             }
 
-            if (_fileCache.TryRemove(path, out _))
+            public DirectoryCache(TimeSpan entryLifetime)
             {
-                Interlocked.Decrement(ref _recordCount);
+                // Reading a directory is expensive enough to be worth never doing twice at once:
+                // siblings are resolved in parallel and share a containing folder, so a plain
+                // GetOrAdd would run the same listing on every one of them and keep one result.
+                Entries = new ConcurrentLruBuilder<string, FileSystemMetadata[]>()
+                    .WithKeyComparer(StringComparer.Ordinal)
+                    .WithCapacity(DirectoryCacheSize)
+                    .WithExpireAfterAccess(entryLifetime)
+                    .WithAtomicGetOrAdd()
+                    .Build();
+
+                Files = new ConcurrentLruBuilder<string, FileSystemMetadata>()
+                    .WithKeyComparer(StringComparer.Ordinal)
+                    .WithCapacity(FileCacheSize)
+                    .WithExpireAfterAccess(entryLifetime)
+                    .Build();
+
+                FilePaths = new ConcurrentLruBuilder<string, List<string>>()
+                    .WithKeyComparer(StringComparer.Ordinal)
+                    .WithCapacity(DirectoryCacheSize)
+                    .WithExpireAfterAccess(entryLifetime)
+                    .WithAtomicGetOrAdd()
+                    .Build();
             }
 
-            if (_filePathCache.TryRemove(path, out var filePaths))
+            public ICache<string, FileSystemMetadata[]> Entries { get; }
+
+            public ICache<string, FileSystemMetadata> Files { get; }
+
+            public ICache<string, List<string>> FilePaths { get; }
+
+            public void TrimExpired()
             {
-                Interlocked.Add(ref _recordCount, -(filePaths.Count + 1));
+                TrimExpired(Entries);
+                TrimExpired(Files);
+                TrimExpired(FilePaths);
+            }
+
+            private static void TrimExpired<TValue>(ICache<string, TValue> cache)
+            {
+                // Nothing sweeps these caches on its own: a read only discards the key it touched and
+                // an add only inspects the head of the queues, so an idle server holds on to whatever
+                // the last scan left behind until something asks for it.
+                var expiry = cache.Policy.ExpireAfterAccess;
+                if (expiry.HasValue && expiry.Value is { } policy)
+                {
+                    policy.TrimExpired();
+                }
             }
         }
     }
