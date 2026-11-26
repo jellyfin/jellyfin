@@ -55,7 +55,7 @@ internal class MigrateRatingLevels : IDatabaseMigrationRoutine
         return Task.CompletedTask;
     }
 
-    private void PerformCore()
+    internal void PerformCore()
     {
         _logger.LogInformation("Recalculating parental rating levels based on rating string.");
         using var context = _provider.CreateDbContext();
