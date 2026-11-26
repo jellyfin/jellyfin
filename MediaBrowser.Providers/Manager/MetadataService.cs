@@ -178,6 +178,10 @@ namespace MediaBrowser.Providers.Manager
                     {
                         ApplySearchResult(id, refreshOptions.SearchResult);
                     }
+                    else if (refreshOptions.ReplaceAllMetadata)
+                    {
+                        ResetOrderDependentProviderIds(id);
+                    }
 
                     id.IsAutomated = refreshOptions.IsAutomated;
 
@@ -287,6 +291,32 @@ namespace MediaBrowser.Providers.Manager
                     lookupInfo.Name = result.Name;
                     lookupInfo.Year = result.ProductionYear;
                     break;
+            }
+        }
+
+        /// <summary>
+        /// Drops the season/episode provider ids a lookup inherited from the previous refresh.
+        /// </summary>
+        /// <remarks>
+        /// Unlike a series id, a season or episode id is positional: a provider resolves it from the
+        /// series id plus the season/episode number read under the series' display order. Changing that
+        /// order - or asking for all metadata to be replaced - is what invalidates it, yet providers
+        /// prefer a supplied id over the numbers, so they keep returning whatever the stale id points at
+        /// and the refresh appears to do nothing. Dropping them sends the lookup back to the numbers.
+        /// <para>
+        /// The dictionary is replaced rather than cleared because <see cref="BaseItem.GetItemLookupInfo{T}"/>
+        /// hands out the item's own instance: clearing it would erase the stored ids up front, losing them
+        /// for good if no provider answers. Swapping in an empty one keeps the reset to this lookup, so a
+        /// provider that resolves nothing leaves the item as it was and one that does resolve something
+        /// overwrites it through the usual replace-all merge.
+        /// </para>
+        /// </remarks>
+        /// <param name="lookupInfo">The lookup info to reset.</param>
+        private static void ResetOrderDependentProviderIds(ItemLookupInfo lookupInfo)
+        {
+            if (lookupInfo is EpisodeInfo or SeasonInfo)
+            {
+                lookupInfo.ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             }
         }
 
