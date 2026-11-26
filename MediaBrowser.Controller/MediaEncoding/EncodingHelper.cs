@@ -2682,6 +2682,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                 reasons |= TranscodeReason.AudioCodecNotSupported;
             }
 
+            if (!IsAudioProfileSupported(audioStream.Profile, state.GetRequestedAudioProfiles(audioStream.Codec)))
+            {
+                reasons |= TranscodeReason.AudioProfileNotSupported;
+            }
+
             // Channels must fall within requested value
             var channels = state.GetRequestedAudioChannels(audioStream.Codec);
             if (channels.HasValue
@@ -2710,6 +2715,18 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             return reasons;
+        }
+
+        private static bool IsAudioProfileSupported(string profile, string[] requestedProfiles)
+        {
+            if (requestedProfiles.Length == 0)
+            {
+                return true;
+            }
+
+            var currentProfile = profile?.Replace(" ", string.Empty, StringComparison.Ordinal);
+            return !string.IsNullOrEmpty(currentProfile)
+                && Array.Exists(requestedProfiles, p => string.Equals(p.Replace(" ", string.Empty, StringComparison.Ordinal), currentProfile, StringComparison.OrdinalIgnoreCase));
         }
 
         private static int GetBitDepthCompensatedBitrate(int bitrate, MediaStream videoStream, int targetBitDepth)

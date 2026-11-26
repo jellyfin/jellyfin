@@ -844,5 +844,67 @@ namespace Jellyfin.Model.Tests
 
             Assert.Equal(expectedMethod, result.Method);
         }
+
+        [Fact]
+        public void BuildVideoItem_AudioProfileCondition_PropagatesToTranscodingStreamOptions()
+        {
+            var profile = new DeviceProfile
+            {
+                MaxStreamingBitrate = 40_000_000,
+                DirectPlayProfiles =
+                [
+                    new DirectPlayProfile { Type = DlnaProfileType.Video, Container = "mp4", VideoCodec = "h264", AudioCodec = "aac" }
+                ],
+                TranscodingProfiles =
+                [
+                    new TranscodingProfile { Type = DlnaProfileType.Video, Context = EncodingContext.Streaming, Protocol = MediaStreamProtocol.hls, Container = "ts", VideoCodec = "h264", AudioCodec = "aac" }
+                ],
+                CodecProfiles =
+                [
+                    new CodecProfile
+                    {
+                        Type = CodecType.VideoAudio,
+                        Codec = "aac",
+                        Conditions =
+                        [
+                            new ProfileCondition(ProfileConditionType.EqualsAny, ProfileConditionValue.AudioProfile, "LC", true)
+                        ]
+                    }
+                ]
+            };
+
+            var mediaSource = new MediaSourceInfo
+            {
+                Id = "test",
+                Protocol = MediaBrowser.Model.MediaInfo.MediaProtocol.File,
+                Container = "mkv",
+                SupportsDirectPlay = true,
+                SupportsDirectStream = true,
+                SupportsTranscoding = true,
+                DefaultAudioStreamIndex = 1,
+                MediaStreams =
+                [
+                    new MediaStream { Index = 0, Type = MediaStreamType.Video, Codec = "h264", Width = 1920, Height = 1080 },
+                    new MediaStream { Index = 1, Type = MediaStreamType.Audio, Codec = "aac", Profile = "HE-AAC", Channels = 2, SampleRate = 48000 }
+                ]
+            };
+
+            var options = new MediaOptions
+            {
+                ItemId = Guid.NewGuid(),
+                MediaSources = [mediaSource],
+                Profile = profile,
+                MaxBitrate = profile.MaxStreamingBitrate,
+                EnableDirectStream = false
+            };
+
+            var streamInfo = GetStreamBuilder().GetOptimalVideoStream(options);
+
+            Assert.NotNull(streamInfo);
+            Assert.Equal(PlayMethod.Transcode, streamInfo.PlayMethod);
+            Assert.True(streamInfo.TranscodeReasons.HasFlag(TranscodeReason.AudioProfileNotSupported));
+            Assert.Equal("LC", streamInfo.GetOption("aac", "profile"));
+            Assert.Contains("aac-profile=LC", streamInfo.ToUrl("http://localhost", null, null), StringComparison.Ordinal);
+        }
     }
 }

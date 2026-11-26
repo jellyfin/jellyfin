@@ -12,6 +12,7 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Session;
 using Moq;
 using Xunit;
 
@@ -221,6 +222,34 @@ public class EncodingHelperTests
         var args = CreateHelper().GetProgressiveAudioFullCommandLine(state, new EncodingOptions(), "/tmp/out");
 
         Assert.Contains("-ar " + expectedSampleRate, args, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("aac", "LC", "LC", true, 0)]
+    [InlineData("aac", "HE-AAC", "LC", false, (int)TranscodeReason.AudioProfileNotSupported)]
+    [InlineData("aac", null, "LC", false, (int)TranscodeReason.AudioProfileNotSupported)]
+    [InlineData("dts", "DTS-HD MA", "dts-hdma", true, 0)]
+    public void CanStreamCopyAudio_AudioProfileConstraint_Honored(
+        string codec,
+        string? sourceProfile,
+        string requestedProfile,
+        bool expectedCanCopy,
+        int expectedReason)
+    {
+        var audio = new MediaStream { Index = 0, Type = MediaStreamType.Audio, Codec = codec, Profile = sourceProfile };
+        var request = new VideoRequestDto { AudioCodec = codec };
+        request.StreamOptions[codec + "-profile"] = requestedProfile;
+        var state = new EncodingJobInfo(TranscodingJobType.Hls)
+        {
+            BaseRequest = request,
+            AudioStream = audio,
+            OutputAudioCodec = codec
+        };
+
+        var canCopy = CreateHelper().CanStreamCopyAudio(state, audio, [codec], out var reasons);
+
+        Assert.Equal(expectedCanCopy, canCopy);
+        Assert.Equal((TranscodeReason)expectedReason, reasons);
     }
 
     [Theory]
