@@ -25,6 +25,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
     {
         private const int CacheDurationInHours = 1;
 
+        private const string FallbackVideoLanguage = "en";
+
         // Sized in TMDb records - see EstimateSize - rather than in responses, because the responses
         // differ in weight by orders of magnitude.
         private const int CacheSizeLimit = 100_000;
@@ -86,6 +88,16 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 imageLanguages,
                 extraMethods,
                 cancellationToken).ConfigureAwait(false);
+
+            if (movie is not null && NeedsVideoFallback(movie.Videos, language))
+            {
+                // TMDb filters appended videos by the requested language only, so items without
+                // a localized video would end up with no trailers at all. Fall back to English videos.
+                movie.Videos = await _tmDbClient.GetMovieVideosAsync(
+                    tmdbId,
+                    FallbackVideoLanguage,
+                    cancellationToken).ConfigureAwait(false) ?? movie.Videos;
+            }
 
             if (movie is not null)
             {
@@ -160,6 +172,16 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 includeImageLanguage: imageLanguages,
                 extraMethods: extraMethods,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
+
+            if (series is not null && NeedsVideoFallback(series.Videos, language))
+            {
+                // TMDb filters appended videos by the requested language only, so items without
+                // a localized video would end up with no trailers at all. Fall back to English and untagged videos.
+                series.Videos = await _tmDbClient.GetTvShowVideosAsync(
+                    tmdbId,
+                    FallbackVideoLanguage + ",null",
+                    cancellationToken).ConfigureAwait(false) ?? series.Videos;
+            }
 
             if (series is not null)
             {
@@ -739,6 +761,23 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             await EnsureClientConfigAsync().ConfigureAwait(false);
 
             return _tmDbClient.Config;
+        }
+
+        /// <summary>
+        /// Determines whether videos should be fetched again in the fallback language.
+        /// </summary>
+        /// <param name="videos">The videos returned for the requested language.</param>
+        /// <param name="language">The requested metadata language.</param>
+        /// <returns><c>true</c> if no videos were returned for a non-fallback language; otherwise <c>false</c>.</returns>
+        internal static bool NeedsVideoFallback(ResultContainer<Video>? videos, string? language)
+        {
+            if (videos?.Results is not null && videos.Results.Count > 0)
+            {
+                return false;
+            }
+
+            return !string.IsNullOrEmpty(language)
+                && !language.StartsWith(FallbackVideoLanguage, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
