@@ -239,6 +239,28 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
             Assert.Equivalent(expectedManifest, result);
         }
 
+        [Theory]
+        [InlineData(PluginStatus.Active)]
+        [InlineData(PluginStatus.Disabled)]
+        [InlineData(PluginStatus.Superseded)]
+        public async Task PopulateManifest_CatalogRefresh_PreservesPersistedStatus(PluginStatus status)
+        {
+            var packageInfo = GenerateTestPackage();
+            var pluginManager = new PluginManager(new NullLogger<PluginManager>(), null!, null!, null!, new Version(1, 0));
+            var manifest = new PluginManifest
+            {
+                Id = packageInfo.Id,
+                Name = packageInfo.Name,
+                Version = packageInfo.Versions[0].Version,
+                Status = status
+            };
+
+            Assert.True(pluginManager.SaveManifest(manifest, _pluginPath));
+            Assert.True(await pluginManager.PopulateManifest(packageInfo, new Version(1, 0), _pluginPath, status));
+
+            Assert.Equal(status, pluginManager.LoadManifest(_pluginPath).Manifest.Status);
+        }
+
         [Fact]
         public async Task PopulateManifest_ExistingImage_IsNotDownloaded()
         {
