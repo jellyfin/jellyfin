@@ -141,6 +141,15 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
             ResumePlaying = true;
 
             var setQueueStatus = context.SetPlayQueue(request.PlayingQueue, request.PlayingItemPosition, request.StartPositionTicks);
+            if (setQueueStatus)
+            {
+                foreach (var item in context.PlayQueue.GetPlaylist())
+                {
+                    item.AddedByUserId = session.UserId;
+                    item.AddedByUserName = session.UserName;
+                }
+            }
+
             PositionJumped = setQueueStatus;
             if (!setQueueStatus)
             {

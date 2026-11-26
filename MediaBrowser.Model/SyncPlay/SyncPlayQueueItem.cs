@@ -27,5 +27,15 @@ namespace MediaBrowser.Model.SyncPlay
         /// </summary>
         /// <value>The playlist identifier of the item.</value>
         public Guid PlaylistItemId { get; } = Guid.NewGuid();
+
+        /// <summary>
+        /// Gets or sets the user who added this queue entry.
+        /// </summary>
+        public Guid? AddedByUserId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the user who added this queue entry.
+        /// </summary>
+        public string? AddedByUserName { get; set; }
     }
 }
