@@ -25,6 +25,7 @@ namespace MediaBrowser.Controller.Providers
             ForceSave = copy.ForceSave;
             ReplaceAllMetadata = copy.ReplaceAllMetadata;
             EnableRemoteContentProbe = copy.EnableRemoteContentProbe;
+            RefreshMediaInfoOnly = copy.RefreshMediaInfoOnly;
 
             IsAutomated = copy.IsAutomated;
             ImageRefreshMode = copy.ImageRefreshMode;
@@ -63,6 +64,13 @@ namespace MediaBrowser.Controller.Providers
         public bool ForceSave { get; set; }
 
         public bool EnableRemoteContentProbe { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to refresh only technical media information.
+        /// Descriptive providers, embedded descriptive tags, images and owned-item maintenance
+        /// are excluded, even when the item has never been refreshed before.
+        /// </summary>
+        public bool RefreshMediaInfoOnly { get; set; }
 
         public bool RefreshItem(BaseItem item)
         {

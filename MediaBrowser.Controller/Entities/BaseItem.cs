@@ -1565,7 +1565,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var requiresSave = false;
 
-            if (SupportsOwnedItems)
+            if (SupportsOwnedItems && !options.RefreshMediaInfoOnly)
             {
                 try
                 {
@@ -2435,6 +2435,12 @@ namespace MediaBrowser.Controller.Entities
         {
             ImageInfos = [.. ImageInfos, image];
         }
+
+        /// <summary>
+        /// Creates a shallow snapshot for restoring properties after a failed metadata operation.
+        /// </summary>
+        /// <returns>A copy of this item. Referenced collections must not be mutated through the copy.</returns>
+        public BaseItem CreateMetadataCopy() => (BaseItem)MemberwiseClone();
 
         public virtual async Task UpdateToRepositoryAsync(ItemUpdateType updateReason, CancellationToken cancellationToken)
          => await LibraryManager.UpdateItemAsync(this, GetParent(), updateReason, cancellationToken).ConfigureAwait(false);
