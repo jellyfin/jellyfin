@@ -42,6 +42,9 @@ namespace MediaBrowser.Controller.Entities.TV
         [JsonIgnore]
         public override Guid DisplayParentId => SeriesId;
 
+        /// <inheritdoc />
+        protected override bool RefreshesLoadedChildren => true;
+
         /// <summary>
         /// Gets this Episode's Series Instance.
         /// </summary>
