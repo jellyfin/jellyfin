@@ -130,4 +130,33 @@ public class MediaStreamSelectorTests
 
         Assert.Equal(3, MediaStreamSelector.GetDefaultSubtitleStreamIndex(streams, ["pt-br", "por"], SubtitlePlaybackMode.Always, "eng"));
     }
+
+    [Theory]
+    [InlineData(true, 3)]
+    [InlineData(false, 3)]
+    public void GetDefaultSubtitleStreamIndex_SmartWithForeignAudio_SelectsFullTrackOverForced(bool forcedIsDefault, int expectedIndex)
+    {
+        var streams = new MediaStream[]
+        {
+            new() { Index = 0, Type = MediaStreamType.Video, IsDefault = true },
+            new() { Index = 1, Type = MediaStreamType.Audio, Language = "eng", IsDefault = true },
+            new() { Index = 2, Type = MediaStreamType.Subtitle, Language = "fre", IsForced = true, IsDefault = forcedIsDefault },
+            new() { Index = 3, Type = MediaStreamType.Subtitle, Language = "fre" }
+        };
+
+        Assert.Equal(expectedIndex, MediaStreamSelector.GetDefaultSubtitleStreamIndex(streams, ["fre"], SubtitlePlaybackMode.Smart, "eng"));
+    }
+
+    [Fact]
+    public void GetDefaultSubtitleStreamIndex_SmartWithForeignAudioAndOnlyForcedTrack_SelectsForcedTrack()
+    {
+        var streams = new MediaStream[]
+        {
+            new() { Index = 0, Type = MediaStreamType.Video, IsDefault = true },
+            new() { Index = 1, Type = MediaStreamType.Audio, Language = "eng", IsDefault = true },
+            new() { Index = 2, Type = MediaStreamType.Subtitle, Language = "fre", IsForced = true, IsDefault = true }
+        };
+
+        Assert.Equal(2, MediaStreamSelector.GetDefaultSubtitleStreamIndex(streams, ["fre"], SubtitlePlaybackMode.Smart, "eng"));
+    }
 }
