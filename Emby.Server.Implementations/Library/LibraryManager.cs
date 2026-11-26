@@ -2576,6 +2576,22 @@ namespace Emby.Server.Implementations.Library
         {
             ArgumentNullException.ThrowIfNull(item);
 
+            if (await RefreshImagesAsync(item, forceUpdate).ConfigureAwait(false))
+            {
+                await _persistenceService.SaveImagesAsync(item).ConfigureAwait(false);
+            }
+
+            RegisterItem(item);
+        }
+
+        /// <summary>
+        /// Refreshes the dimensions, blurhash and modification date of the item's images, without saving them.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="forceUpdate">Whether to refresh every image instead of only the outdated ones.</param>
+        /// <returns><c>true</c> if any image was refreshed.</returns>
+        private async Task<bool> RefreshImagesAsync(BaseItem item, bool forceUpdate)
+        {
             var outdated = forceUpdate
                 ? item.ImageInfos.Where(i => i.Path is not null).ToArray()
                 : item.ImageInfos.Where(ImageNeedsRefresh).ToArray();
@@ -2588,8 +2604,7 @@ namespace Emby.Server.Implementations.Library
             // Skip image processing if current or live tv show
             if (outdated.Length == 0 || isLiveTvShow)
             {
-                RegisterItem(item);
-                return;
+                return false;
             }
 
             foreach (var img in outdated)
@@ -2670,9 +2685,7 @@ namespace Emby.Server.Implementations.Library
 
             item.ValidateImages();
 
-            await _persistenceService.SaveImagesAsync(item).ConfigureAwait(false);
-
-            RegisterItem(item);
+            return true;
         }
 
         /// <inheritdoc />
@@ -2684,7 +2697,16 @@ namespace Emby.Server.Implementations.Library
                 item.OnMetadataChanged();
 
                 item.DateLastSaved = DateTime.UtcNow;
-                await RunMetadataSavers(item, updateReason).ConfigureAwait(false);
+                if (item.IsFileProtocol)
+                {
+                    await ProviderManager.SaveMetadataAsync(item, updateReason).ConfigureAwait(false);
+                }
+
+                // SaveItems stores the images with the item, so they are only refreshed here. Saving them
+                // on their own first fails for an item that has no row yet, such as a cached extra whose
+                // owner was deleted and replaced.
+                await RefreshImagesAsync(item, updateReason >= ItemUpdateType.ImageUpdate).ConfigureAwait(false);
+                RegisterItem(item);
 
                 // Modify again, so saved value is after write time of externally saved metadata
                 item.DateLastSaved = DateTime.UtcNow;
