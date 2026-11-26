@@ -15,6 +15,7 @@
     <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="Swashbuckle.AspNetCore" />
     <PackageReference Include="Swashbuckle.AspNetCore.ReDoc" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Swagger" />
   </ItemGroup>
 
   <ItemGroup>
