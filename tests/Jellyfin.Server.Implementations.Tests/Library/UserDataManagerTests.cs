@@ -248,6 +248,78 @@ public sealed class UserDataManagerTests : IDisposable
     }
 
     [Fact]
+    public void SaveUserData_ManyItems_WritesEveryKeyInOneGoAndRaisesPerItem()
+    {
+        var items = new[] { CreateAudioBook(), CreateAudioBook(), CreateAudioBook() };
+        var retiredKey = "Author-Old Album-0001Old File Name";
+
+        using (var ctx = CreateDbContext())
+        {
+            ctx.Users.Add(_user);
+            foreach (var item in items)
+            {
+                ctx.BaseItems.Add(new BaseItemEntity { Id = item.Id, Type = typeof(AudioBook).FullName! });
+            }
+
+            // one item already has a row under its current key, another only under a retired key
+            ctx.UserData.AddRange(
+                CreateUserDataRow(items[0], items[0].GetUserDataKeys()[0], 111),
+                CreateUserDataRow(items[1], retiredKey, 222));
+            ctx.SaveChanges();
+        }
+
+        var raised = new List<BaseItem>();
+        _userDataManager.UserDataSaved += (_, e) => raised.Add(e.Item);
+
+        _userDataManager.SaveUserData(
+            _user,
+            items.Select(item => ((BaseItem)item, new UserItemData { Key = item.GetUserDataKeys()[0], Played = true, PlayCount = 1 })).ToList(),
+            UserDataSaveReason.TogglePlayed,
+            CancellationToken.None);
+
+        Assert.Equal(items.Select(i => i.Id), raised.Select(i => i.Id));
+
+        using (var ctx = CreateDbContext())
+        {
+            foreach (var item in items)
+            {
+                var rows = ctx.UserData.Where(e => e.ItemId.Equals(item.Id)).ToList();
+                var expectedKeys = item.GetUserDataKeys();
+                if (item == items[1])
+                {
+                    // the retired-key row survives and is kept in agreement
+                    expectedKeys = expectedKeys.Append(retiredKey).ToList();
+                }
+
+                Assert.Equal(
+                    expectedKeys.OrderBy(e => e, StringComparer.Ordinal),
+                    rows.Select(e => e.CustomDataKey).OrderBy(e => e, StringComparer.Ordinal));
+                Assert.All(rows, row =>
+                {
+                    Assert.True(row.Played);
+                    Assert.Equal(1, row.PlayCount);
+                    Assert.Equal(0, row.PlaybackPositionTicks);
+                });
+            }
+        }
+
+        // the instances and the cache see the saved state without another query
+        Assert.All(items, item => Assert.True(_userDataManager.GetUserData(_user, item)!.Played));
+        Assert.All(_userDataManager.GetUserDataBatch(items, _user).Values, data => Assert.True(data.Played));
+    }
+
+    [Fact]
+    public void SaveUserData_NoItems_DoesNothing()
+    {
+        var raised = 0;
+        _userDataManager.UserDataSaved += (_, _) => raised++;
+
+        _userDataManager.SaveUserData(_user, [], UserDataSaveReason.TogglePlayed, CancellationToken.None);
+
+        Assert.Equal(0, raised);
+    }
+
+    [Fact]
     public void GetUserData_NullUser_ThrowsArgumentNullException()
     {
         var item = CreateAudioBook();

@@ -2265,6 +2265,20 @@ namespace MediaBrowser.Controller.Entities
         {
             ArgumentNullException.ThrowIfNull(user);
 
+            var data = GetPlayedUserData(user, datePlayed, resetPosition);
+
+            UserDataManager.SaveUserData(user, this, data, UserDataSaveReason.TogglePlayed, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Gets the user data for this item with the played state applied, without saving it.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="datePlayed">The date played.</param>
+        /// <param name="resetPosition">if set to <c>true</c> [reset position].</param>
+        /// <returns>The user data to save.</returns>
+        internal UserItemData GetPlayedUserData(User user, DateTime? datePlayed, bool resetPosition)
+        {
             var data = UserDataManager.GetUserData(user, this) ?? new UserItemData()
             {
                 Key = GetUserDataKeys().First(),
@@ -2287,7 +2301,7 @@ namespace MediaBrowser.Controller.Entities
             data.LastPlayedDate = datePlayed ?? data.LastPlayedDate ?? DateTime.UtcNow;
             data.Played = true;
 
-            UserDataManager.SaveUserData(user, this, data, UserDataSaveReason.TogglePlayed, CancellationToken.None);
+            return data;
         }
 
         /// <summary>
@@ -2299,6 +2313,18 @@ namespace MediaBrowser.Controller.Entities
         {
             ArgumentNullException.ThrowIfNull(user);
 
+            var data = GetUnplayedUserData(user);
+
+            UserDataManager.SaveUserData(user, this, data, UserDataSaveReason.TogglePlayed, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Gets the user data for this item with the played state cleared, without saving it.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <returns>The user data to save.</returns>
+        internal UserItemData GetUnplayedUserData(User user)
+        {
             var data = UserDataManager.GetUserData(user, this);
 
             // I think it is okay to do this here.
@@ -2306,7 +2332,7 @@ namespace MediaBrowser.Controller.Entities
             // then it probably is what we want to do...
             ResetPlayedState(data);
 
-            UserDataManager.SaveUserData(user, this, data, UserDataSaveReason.TogglePlayed, CancellationToken.None);
+            return data;
         }
 
         /// <summary>
