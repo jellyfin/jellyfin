@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Frozen;
 using System.IO;
 using System.Linq;
 using Emby.Naming.Common;
@@ -35,6 +36,30 @@ namespace Emby.Server.Implementations.Library.Resolvers
             "logo",
             "default"
         };
+
+        private static readonly FrozenSet<string> _mediaArtworkSuffixes = new[]
+        {
+            "poster",
+            "folder",
+            "cover",
+            "default",
+            "movie",
+            "logo",
+            "clearlogo",
+            "clearart",
+            "art",
+            "fanart",
+            "background",
+            "backdrop",
+            "banner",
+            "landscape",
+            "thumb",
+            "disc",
+            "discart",
+            "cdart"
+        }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
+
+        private static readonly FrozenSet<string>.AlternateLookup<ReadOnlySpan<char>> _mediaArtworkSuffixLookup = _mediaArtworkSuffixes.GetAlternateLookup<ReadOnlySpan<char>>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PhotoResolver"/> class.
@@ -97,7 +122,23 @@ namespace Emby.Server.Implementations.Library.Resolvers
         }
 
         internal static bool IsOwnedByResolvedMedia(ReadOnlySpan<char> file, ReadOnlySpan<char> imageFilename)
-            => imageFilename.StartsWith(Path.GetFileNameWithoutExtension(file), StringComparison.OrdinalIgnoreCase);
+        {
+            var videoBaseName = Path.GetFileNameWithoutExtension(file);
+            if (imageFilename.Equals(videoBaseName, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            if (imageFilename.StartsWith(videoBaseName, StringComparison.OrdinalIgnoreCase)
+                && imageFilename.Length > videoBaseName.Length
+                && imageFilename[videoBaseName.Length] == '-')
+            {
+                var suffix = imageFilename[(videoBaseName.Length + 1)..].TrimEnd("0123456789-");
+                return _mediaArtworkSuffixLookup.Contains(suffix);
+            }
+
+            return false;
+        }
 
         internal static bool IsImageFile(string path, IImageProcessor imageProcessor)
         {
