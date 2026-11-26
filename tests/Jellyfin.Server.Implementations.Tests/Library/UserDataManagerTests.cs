@@ -211,6 +211,34 @@ public sealed class UserDataManagerTests : IDisposable
     }
 
     [Fact]
+    public void GetUserDataBatch_UserReusingInternalIdOfDeletedUser_DoesNotGetItsCachedData()
+    {
+        // a new user gets the next InternalId, so it takes the number of the newest user once that one is deleted
+        _user.InternalId = 2;
+        var newUser = new User("new user", "auth-provider", "reset-provider")
+        {
+            Id = Guid.NewGuid(),
+            InternalId = 2
+        };
+
+        var item = CreateAudioBook();
+        item.UserData = new List<UserData>
+        {
+            CreateUserDataRow(item, item.GetUserDataKeys()[0], 222)
+        };
+
+        // caches _user's data for the item
+        Assert.Equal(222, _userDataManager.GetUserDataBatch([item], _user)[item.Id].PlaybackPositionTicks);
+
+        // deleting _user removes its rows
+        item.UserData = new List<UserData>();
+
+        var userData = _userDataManager.GetUserDataBatch([item], newUser)[item.Id];
+
+        Assert.Equal(0, userData.PlaybackPositionTicks);
+    }
+
+    [Fact]
     public void SaveUserData_RowUnderRetiredKey_IsKeptInAgreement()
     {
         var item = CreateAudioBook();
