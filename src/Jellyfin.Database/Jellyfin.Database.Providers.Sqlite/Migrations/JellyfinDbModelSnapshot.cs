@@ -507,6 +507,8 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasKey("ItemId", "ProviderId");
 
+                    b.HasIndex("ProviderId", "ProviderValue");
+
                     b.HasIndex("ProviderId", "ItemId", "ProviderValue");
 
                     b.ToTable("BaseItemProviders");
@@ -1027,6 +1029,13 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("CleanName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -1036,7 +1045,11 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ItemId");
+
                     b.HasIndex("Name");
+
+                    b.HasIndex("CleanName", "PersonType");
 
                     b.ToTable("Peoples");
 
