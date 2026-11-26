@@ -142,6 +142,28 @@ namespace Jellyfin.MediaEncoding.Subtitles.Tests
             Assert.Equal(subtitleInfo.IsExternal, result.IsExternal);
         }
 
+        [Theory]
+        [InlineData("/media/sub.mks", "ass", true)]
+        [InlineData("/media/sub.mks", "dvdsub", true)]
+        [InlineData("/media/sub.idx", "dvdsub", true)]
+        [InlineData("/media/SUB.IDX", "DVDSUB", true)]
+        // A .sub without its .idx is not read as a VobSub pair.
+        [InlineData("/media/sub.sub", "dvdsub", false)]
+        [InlineData("/media/sub.srt", "subrip", false)]
+        [InlineData(null, "dvdsub", false)]
+        public void IsExtractedFromSubtitleFile_Valid_Success(string? path, string codec, bool expected)
+        {
+            var subtitleStream = new MediaStream
+            {
+                Type = MediaStreamType.Subtitle,
+                Codec = codec,
+                Path = path,
+                IsExternal = path is not null
+            };
+
+            Assert.Equal(expected, SubtitleEncoder.IsExtractedFromSubtitleFile(subtitleStream));
+        }
+
         public static TheoryData<Encoding> GetSubtitleStream_NonUtf8LocalFile_TestData()
         {
             return

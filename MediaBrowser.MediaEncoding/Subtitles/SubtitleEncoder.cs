@@ -214,7 +214,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             MediaStream subtitleStream,
             CancellationToken cancellationToken)
         {
-            if (!subtitleStream.IsExternal || subtitleStream.Path.EndsWith(".mks", StringComparison.OrdinalIgnoreCase))
+            if (!subtitleStream.IsExternal || IsExtractedFromSubtitleFile(subtitleStream))
             {
                 await ExtractAllExtractableSubtitles(mediaSource, cancellationToken).ConfigureAwait(false);
 
@@ -521,6 +521,19 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 || MediaStream.IsVobSubFormat(codec);
         }
 
+        // Streams of a Matroska subtitle file, or of a VobSub .idx (FFmpeg reads the paired .sub with it), are extracted from that file instead of the media file.
+        internal static bool IsExtractedFromSubtitleFile(MediaStream subtitleStream)
+        {
+            var path = subtitleStream.Path;
+            if (string.IsNullOrEmpty(path))
+            {
+                return false;
+            }
+
+            return path.EndsWith(".mks", StringComparison.OrdinalIgnoreCase)
+                || (subtitleStream.IsVobSubSubtitleStream && path.EndsWith(".idx", StringComparison.OrdinalIgnoreCase));
+        }
+
         /// <inheritdoc />
         public async Task ExtractAllExtractableSubtitles(MediaSourceInfo mediaSource, CancellationToken cancellationToken)
         {
@@ -534,8 +547,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                 foreach (var subtitleStream in subtitleStreams)
                 {
-                    if (subtitleStream.IsExternal
-                        && !subtitleStream.Path.EndsWith(".mks", StringComparison.OrdinalIgnoreCase))
+                    if (subtitleStream.IsExternal && !IsExtractedFromSubtitleFile(subtitleStream))
                     {
                         continue;
                     }
@@ -583,7 +595,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             foreach (var subtitleStream in subtitleStreams)
             {
-                if (string.IsNullOrEmpty(subtitleStream.Path) || !subtitleStream.Path.EndsWith(".mks", StringComparison.OrdinalIgnoreCase))
+                if (!IsExtractedFromSubtitleFile(subtitleStream))
                 {
                     continue;
                 }
@@ -610,7 +622,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                 foreach (var subtitleStream in subtitleStreams)
                 {
-                    if (!subtitleStream.Path.Equals(mksFile, StringComparison.OrdinalIgnoreCase))
+                    if (!string.Equals(subtitleStream.Path, mksFile, StringComparison.OrdinalIgnoreCase))
                     {
                         continue;
                     }
@@ -667,7 +679,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             foreach (var subtitleStream in subtitleStreams)
             {
-                if (!string.IsNullOrEmpty(subtitleStream.Path) && subtitleStream.Path.EndsWith(".mks", StringComparison.OrdinalIgnoreCase))
+                if (IsExtractedFromSubtitleFile(subtitleStream))
                 {
                     _logger.LogDebug("Subtitle {Index} for file {InputPath} is part in an MKS file. Skipping", inputPath, subtitleStream.Index);
                     continue;
