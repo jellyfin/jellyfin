@@ -124,13 +124,19 @@ public class StreamInfo
     public IReadOnlyList<string> VideoCodecs { get; set; }
 
     /// <summary>
+    /// Gets or sets the video stream index.
+    /// </summary>
+    /// <value>The video stream index.</value>
+    public int? VideoStreamIndex { get; set; }
+
+    /// <summary>
     /// Gets or sets the audio stream index.
     /// </summary>
     /// <value>The audio stream index.</value>
     public int? AudioStreamIndex { get; set; }
 
     /// <summary>
-    /// Gets or sets the video stream index.
+    /// Gets or sets the subtitle stream index.
     /// </summary>
     /// <value>The subtitle stream index.</value>
     public int? SubtitleStreamIndex { get; set; }
@@ -292,7 +298,9 @@ public class StreamInfo
     /// Gets the video stream that will be used in the output stream.
     /// </summary>
     /// <value>The video stream.</value>
-    public MediaStream? TargetVideoStream => MediaSource?.VideoStream;
+    public MediaStream? TargetVideoStream => VideoStreamIndex.HasValue
+        ? MediaSource?.GetMediaStream(MediaStreamType.Video, VideoStreamIndex.Value) ?? MediaSource?.VideoStream
+        : MediaSource?.VideoStream;
 
     /// <summary>
     /// Gets the audio sample rate that will be in the output stream.
@@ -944,6 +952,12 @@ public class StreamInfo
         {
             sb.Append("&AudioCodec=");
             sb.AppendJoin(',', AudioCodecs);
+        }
+
+        if (VideoStreamIndex.HasValue)
+        {
+            sb.Append("&VideoStreamIndex=");
+            sb.Append(VideoStreamIndex.Value.ToString(CultureInfo.InvariantCulture));
         }
 
         if (AudioStreamIndex.HasValue)

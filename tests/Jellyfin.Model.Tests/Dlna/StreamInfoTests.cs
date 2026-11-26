@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using Xunit;
 
 namespace Jellyfin.Model.Tests.Dlna;
@@ -237,5 +239,31 @@ public class StreamInfoTests
 
             Assert.Equal(legacyUrl, newUrl, ignoreCase: true);
         }
+    }
+
+    [InlineData(null, 0)]
+    [InlineData(0, 0)]
+    [InlineData(1, 1)]
+    [InlineData(2, 0)]
+    [InlineData(5, 0)]
+    [Theory]
+    public void TargetVideoStream_HonorsVideoStreamIndex(int? videoStreamIndex, int expectedIndex)
+    {
+        var streamInfo = new StreamInfo
+        {
+            DeviceProfile = new DeviceProfile(),
+            MediaSource = new MediaSourceInfo
+            {
+                MediaStreams =
+                [
+                    new MediaStream { Index = 0, Type = MediaStreamType.Video, Codec = "hevc", Width = 1920, Height = 1040 },
+                    new MediaStream { Index = 1, Type = MediaStreamType.Video, Codec = "h264", Width = 1280, Height = 720 },
+                    new MediaStream { Index = 2, Type = MediaStreamType.Audio, Codec = "eac3" }
+                ]
+            },
+            VideoStreamIndex = videoStreamIndex
+        };
+
+        Assert.Equal(expectedIndex, streamInfo.TargetVideoStream?.Index);
     }
 }
