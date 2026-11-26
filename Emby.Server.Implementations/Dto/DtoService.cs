@@ -1485,9 +1485,13 @@ namespace Emby.Server.Implementations.Dto
                                 .ToArray();
                         }
                     }
-                    else
+                    else if (item.SourceType == SourceType.Channel)
                     {
                         mediaStreams = _mediaSourceManager.GetStaticMediaSources(item, true)[0].MediaStreams.ToArray();
+                    }
+                    else
+                    {
+                        mediaStreams = item.GetMediaStreams().ToArray();
                     }
 
                     dto.MediaStreams = mediaStreams;
