@@ -1,3 +1,5 @@
+#pragma warning disable CA1711 // FileStack is part of the public Jellyfin.Naming API; renaming it would break downstream consumers
+
 using System;
 using System.Collections.Generic;
 using Jellyfin.Extensions;
