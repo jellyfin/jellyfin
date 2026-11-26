@@ -126,7 +126,7 @@ public static class StreamingHelpers
 
             if (mediaSource is null)
             {
-                var mediaSources = await mediaSourceManager.GetPlaybackMediaSources(libraryManager.GetItemById<BaseItem>(streamingRequest.Id), null, false, false, cancellationToken).ConfigureAwait(false);
+                var mediaSources = await mediaSourceManager.GetPlaybackMediaSources(item, state.User, false, false, cancellationToken).ConfigureAwait(false);
 
                 mediaSource = string.IsNullOrEmpty(streamingRequest.MediaSourceId)
                     ? mediaSources[0]
@@ -160,6 +160,15 @@ public static class StreamingHelpers
             }
         }
 
+        ArgumentNullException.ThrowIfNull(mediaSource);
+
+        if (streamingRequest is VideoRequestDto videoRequest
+            && videoRequest.AlwaysBurnInSubtitleWhenTranscoding
+            && !videoRequest.SubtitleStreamIndex.HasValue)
+        {
+            videoRequest.SubtitleStreamIndex = mediaSource.DefaultSubtitleStreamIndex;
+        }
+
         var encodingOptions = serverConfigurationManager.GetEncodingOptions();
 
         encodingHelper.AttachMediaSourceInfo(state, encodingOptions, mediaSource, url);
@@ -168,7 +177,7 @@ public static class StreamingHelpers
 
         if (string.IsNullOrEmpty(containerInternal)
             && (!string.IsNullOrWhiteSpace(streamingRequest.LiveStreamId)
-                || (mediaSource != null && mediaSource.IsInfiniteStream)))
+                || mediaSource.IsInfiniteStream))
         {
             containerInternal = ".ts";
         }
