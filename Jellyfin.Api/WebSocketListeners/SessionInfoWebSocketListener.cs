@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -68,8 +69,13 @@ public class SessionInfoWebSocketListener : BasePeriodicWebSocketListener<IEnume
             !connection.AuthorizationInfo.IsApiKey &&
             !connection.AuthorizationInfo.User.HasPermission(PermissionKind.IsAdministrator))
         {
-            var userId = connection.AuthorizationInfo.User.Id;
-            sessions = sessions.Where(s => s.UserId.Equals(userId) || s.ContainsUser(userId));
+            var user = connection.AuthorizationInfo.User;
+            var userId = user.Id;
+            var canControlOtherUsers = user.HasPermission(PermissionKind.EnableRemoteControlOfOtherUsers);
+            sessions = sessions.Where(s =>
+                s.UserId.Equals(userId)
+                || s.ContainsUser(userId)
+                || (canControlOtherUsers && !s.UserId.Equals(Guid.Empty) && s.SupportsRemoteControl));
         }
 
         return Task.FromResult(sessions.Select(_sessionManager.ToSessionInfoDto));
