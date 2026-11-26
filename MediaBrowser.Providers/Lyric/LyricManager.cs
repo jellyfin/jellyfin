@@ -277,24 +277,72 @@ public class LyricManager : ILyricManager
     {
         ArgumentNullException.ThrowIfNull(audio);
 
-        var lyricStreams = audio.GetMediaStreams().Where(s => s.Type == MediaStreamType.Lyric);
-        foreach (var lyricStream in lyricStreams)
+        var paths = audio.GetMediaStreams().Where(s => s.Type == MediaStreamType.Lyric).Select(s => s.Path).OfType<string>().Where(p => p.Length > 0).ToList();
+        var parsedSources = new List<LyricDto>();
+        if (audio.IsFileProtocol && Path.GetDirectoryName(audio.Path) is string directory)
         {
-            var lyricContents = await File.ReadAllTextAsync(lyricStream.Path, Encoding.UTF8, cancellationToken).ConfigureAwait(false);
-
-            var lyricFile = new LyricFile(Path.GetFileName(lyricStream.Path), lyricContents);
-            foreach (var parser in _lyricParsers)
+            try
             {
-                var parsedLyrics = parser.ParseLyrics(lyricFile);
-                if (parsedLyrics is not null)
+                var extensions = _lyricParsers.SelectMany(p => p.SupportedExtensions).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+                paths.AddRange(LyricSourcePaths.Find(audio.Path, _directoryService.GetFiles(directory), extensions));
+            }
+            catch (IOException ex)
+            {
+                _logger.LogWarning(ex, "Unable to discover external lyrics for {AudioPath}", audio.Path);
+            }
+
+            // Read embedded metadata as an independent source. A sidecar must
+            // not prevent its translations from participating in the merge.
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var tags = new ATL.Track(audio.Path);
+                foreach (var embedded in tags.Lyrics.Where(l => l.Format != ATL.LyricsInfo.LyricsFormat.SRT))
                 {
-                    return parsedLyrics;
+                    var text = embedded.SynchronizedLyrics?.Count > 0 ? embedded.FormatSynch() : embedded.UnsynchronizedLyrics;
+                    if (!string.IsNullOrWhiteSpace(text) && ParseSource(new LyricFile("embedded.lrc", text)) is LyricDto parsed)
+                    {
+                        var language = embedded.LanguageCode?.Trim();
+                        if (!string.IsNullOrWhiteSpace(language) && !language.Equals("XXX", StringComparison.OrdinalIgnoreCase))
+                        {
+                            foreach (var track in parsed.Tracks.Where(t => t.Type == LyricTrackType.Main && t.Language is null))
+                            {
+                                track.Language = language;
+                            }
+                        }
+
+                        parsedSources.Add(parsed);
+                    }
                 }
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or FormatException)
+            {
+                _logger.LogWarning(ex, "Unable to read embedded lyrics for {AudioPath}", audio.Path);
             }
         }
 
-        return null;
+        foreach (var path in paths.Distinct(StringComparer.Ordinal))
+        {
+            try
+            {
+                var content = await File.ReadAllTextAsync(path, Encoding.UTF8, cancellationToken).ConfigureAwait(false);
+                if (ParseSource(new LyricFile(Path.GetFileName(path), content)) is LyricDto parsed)
+                {
+                    parsedSources.Add(parsed);
+                }
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                _logger.LogWarning(ex, "Unable to read lyric source {LyricPath}", path);
+            }
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        return LyricMerger.Merge(parsedSources);
     }
+
+    private LyricDto? ParseSource(LyricFile lyric)
+        => _lyricParsers.Select(parser => parser.ParseLyrics(lyric)).FirstOrDefault(parsed => parsed is not null);
 
     private ILyricProvider? GetProvider(string providerId)
     {
