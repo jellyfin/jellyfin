@@ -1,3 +1,5 @@
+#pragma warning disable CS0618
+
 using System;
 using System.Net;
 using System.Net.Http;

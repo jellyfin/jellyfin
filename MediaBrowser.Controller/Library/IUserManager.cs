@@ -28,18 +28,6 @@ namespace MediaBrowser.Controller.Library
         IEnumerable<User> GetUsers();
 
         /// <summary>
-        /// Gets the user ids.
-        /// </summary>
-        /// <returns>The users ids.</returns>
-        IEnumerable<Guid> GetUsersIds();
-
-        /// <summary>
-        /// Initializes the user manager and ensures that a user exists.
-        /// </summary>
-        /// <returns>Awaitable task.</returns>
-        Task InitializeAsync();
-
-        /// <summary>
         /// Gets a user by Id.
         /// </summary>
         /// <param name="id">The id.</param>

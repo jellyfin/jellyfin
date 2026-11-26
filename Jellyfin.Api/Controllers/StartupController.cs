@@ -2,6 +2,8 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.StartupDtos;
+using Jellyfin.Data;
+using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -18,6 +20,9 @@ namespace Jellyfin.Api.Controllers;
 [Authorize(Policy = Policies.FirstTimeSetupOrElevated)]
 public class StartupController : BaseJellyfinApiController
 {
+    // only exists for backwards compatibility on the user endpoints
+    private const string DefaultUsername = "jellyfin";
+
     private readonly IServerConfigurationManager _config;
     private readonly IUserManager _userManager;
 
@@ -39,6 +44,7 @@ public class StartupController : BaseJellyfinApiController
     /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
     [HttpPost("Complete")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [Obsolete("Use RegisterUser")]
     public ActionResult CompleteWizard()
     {
         _config.Configuration.IsStartupWizardCompleted = true;
@@ -53,7 +59,7 @@ public class StartupController : BaseJellyfinApiController
     /// <returns>An <see cref="OkResult"/> containing the initial startup wizard configuration.</returns>
     [HttpGet("Configuration")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [Obsolete("Use configuration endpoints")]
+    [Obsolete("Use GetConfiguration")]
     public ActionResult<StartupConfigurationDto> GetStartupConfiguration()
     {
         return new StartupConfigurationDto
@@ -73,7 +79,7 @@ public class StartupController : BaseJellyfinApiController
     /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
     [HttpPost("Configuration")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [Obsolete("Use configuration endpoints")]
+    [Obsolete("Use UpdateConfiguration")]
     public ActionResult UpdateInitialConfiguration([FromBody, Required] StartupConfigurationDto startupConfiguration)
     {
         _config.Configuration.ServerName = startupConfiguration.ServerName ?? string.Empty;
@@ -92,7 +98,7 @@ public class StartupController : BaseJellyfinApiController
     /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
     [HttpPost("RemoteAccess")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [Obsolete("Use configuration endpoints")]
+    [Obsolete("Use UpdateNamedConfiguration")]
     public ActionResult SetRemoteAccess([FromBody, Required] StartupRemoteAccessDto startupRemoteAccessDto)
     {
         NetworkConfiguration settings = _config.GetNetworkConfiguration();
@@ -109,15 +115,12 @@ public class StartupController : BaseJellyfinApiController
     [HttpGet("User")]
     [HttpGet("FirstUser", Name = "GetFirstUser_2")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [Obsolete("Use authentication endpoints")]
+    [Obsolete("Use RegisterUser")]
     public async Task<StartupUserDto> GetFirstUser()
     {
-        // TODO: Remove this method when startup wizard no longer requires an existing user.
-        await _userManager.InitializeAsync().ConfigureAwait(false);
-        var user = _userManager.GetFirstUser() ?? throw new InvalidOperationException("No user exists after initialization.");
         return new StartupUserDto
         {
-            Name = user.Username
+            Name = _userManager.GetFirstUser()?.Username ?? DefaultUsername
         };
     }
 
@@ -132,37 +135,26 @@ public class StartupController : BaseJellyfinApiController
     /// </returns>
     [HttpPost("User")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [Obsolete("Use RegisterUser")]
     public async Task<ActionResult> UpdateStartupUser([FromBody] StartupUserDto startupUserDto)
     {
-        var user = _userManager.GetFirstUser();
-        if (user is null)
-        {
-            return NotFound();
-        }
-
-        if (!string.IsNullOrEmpty(user.Password))
+        var user = _userManager.GetUserByName(startupUserDto.Name ?? DefaultUsername);
+        if (user is not null)
         {
             return Forbid();
         }
 
-        if (string.IsNullOrWhiteSpace(startupUserDto.Password))
+        if (string.IsNullOrWhiteSpace(startupUserDto.Password) || string.IsNullOrEmpty(startupUserDto.Password))
         {
             return BadRequest("Password must not be empty");
         }
 
+        user = await _userManager.CreateUserAsync(startupUserDto.Name ?? DefaultUsername).ConfigureAwait(false);
+        user.SetPermission(PermissionKind.EnableContentDeletion, true);
+        user.SetPermission(PermissionKind.EnableRemoteControlOfOtherUsers, true);
+        user.SetPermission(PermissionKind.IsAdministrator, true);
         await _userManager.UpdateUserAsync(user).ConfigureAwait(false);
-
-#pragma warning disable CA1309 // Use ordinal string comparison
-        if (startupUserDto.Name is not null && !startupUserDto.Name.Equals(user.Username, StringComparison.InvariantCultureIgnoreCase))
-        {
-            await _userManager.RenameUser(user.Id, user.Username, startupUserDto.Name).ConfigureAwait(false);
-        }
-#pragma warning restore CA1309 // Use ordinal string comparison
-
-        if (!string.IsNullOrEmpty(startupUserDto.Password))
-        {
-            await _userManager.ChangePassword(user.Id, startupUserDto.Password).ConfigureAwait(false);
-        }
+        await _userManager.ChangePassword(user.Id, startupUserDto.Password).ConfigureAwait(false);
 
         return NoContent();
     }
