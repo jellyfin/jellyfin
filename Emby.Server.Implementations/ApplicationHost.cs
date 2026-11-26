@@ -109,6 +109,7 @@ using MediaBrowser.Providers.Subtitles;
 using MediaBrowser.XbmcMetadata.Providers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -547,6 +548,11 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<ILocalizationManager, LocalizationManager>();
 
             serviceCollection.AddSingleton<IBlurayExaminer, BdInfoExaminer>();
+            serviceCollection.AddSingleton<IVirtualBlurayImageManager>(
+                provider => new VirtualBlurayImageManager(
+                    provider.GetRequiredService<IMemoryCache>(),
+                    provider.GetRequiredService<ILogger<VirtualBlurayImageManager>>(),
+                    path => IgnorePatterns.ShouldIgnore(path)));
 
             serviceCollection.AddSingleton<IUserDataManager, UserDataManager>();
 
