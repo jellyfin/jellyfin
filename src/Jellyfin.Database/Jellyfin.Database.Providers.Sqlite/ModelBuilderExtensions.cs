@@ -1,4 +1,5 @@
 using System;
+using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Providers.Sqlite.ValueConverters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -43,5 +44,23 @@ public static class ModelBuilderExtensions
     {
         modelBuilder.UseValueConverterForType<DateTime>(new DateTimeKindValueConverter(kind));
         modelBuilder.UseValueConverterForType<DateTime?>(new DateTimeKindValueConverter(kind));
+
+        // Provider air dates are date-only and may arrive as DateTimeKind.Unspecified. Treating those as
+        // local time shifts them back a day in negative UTC offsets, so PremiereDate keeps them as-is.
+        modelBuilder.Entity<BaseItemEntity>()
+            .Property(e => e.PremiereDate)
+            .HasConversion(new PremiereDateValueConverter(kind));
+    }
+
+    private sealed class PremiereDateValueConverter : ValueConverter<DateTime?, DateTime?>
+    {
+        public PremiereDateValueConverter(DateTimeKind kind)
+            : base(
+                v => v.HasValue
+                    ? (v.Value.Kind == DateTimeKind.Unspecified ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v.Value.ToUniversalTime())
+                    : v,
+                v => v.HasValue ? DateTime.SpecifyKind(v.Value, kind) : v)
+        {
+        }
     }
 }
