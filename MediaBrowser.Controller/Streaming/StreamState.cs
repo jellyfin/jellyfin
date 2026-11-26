@@ -122,6 +122,18 @@ public class StreamState : EncodingJobInfo, IDisposable
     }
 
     /// <summary>
+    /// Gets a value indicating whether the HLS output serves the audio as a separate fMP4 rendition
+    /// instead of muxing it into the video segments.
+    /// </summary>
+    public bool EnableSeparateAudioRendition =>
+        (VideoRequest?.SeparateAudioRendition ?? false)
+        && string.Equals(Request.SegmentContainer, "mp4", StringComparison.OrdinalIgnoreCase)
+        && VideoStream is not null
+        && AudioStream is not null
+        && !IsSegmentedLiveStream
+        && SubtitleDeliveryMethod != SubtitleDeliveryMethod.Embed;
+
+    /// <summary>
     /// Gets or sets the user agent.
     /// </summary>
     public string? UserAgent { get; set; }

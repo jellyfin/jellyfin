@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Controllers;
@@ -145,6 +146,27 @@ namespace Jellyfin.Api.Tests.Controllers
                 Task.Run(() => Parallel.For(0, RequestCount, _ => job.DecrementActiveRequestCount())));
 
             Assert.Equal(0, job.ActiveRequestCount);
+        }
+
+        [Fact]
+        public void GetVariantPlaylistPath_AppendsVariantName()
+        {
+            var playlist = Path.Combine("transcodes", "abc.m3u8");
+
+            Assert.Equal(Path.Combine("transcodes", "abc_audio.m3u8"), DynamicHlsController.GetVariantPlaylistPath(playlist, "audio"));
+        }
+
+        [Theory]
+        [InlineData("abc.m3u8", "abc12.mp4", true, 12)]
+        [InlineData("abc.m3u8", "abc-1.mp4", true, -1)]
+        [InlineData("abc.m3u8", "abc_video12.mp4", false, 0)]
+        [InlineData("abc_video.m3u8", "abc_video12.mp4", true, 12)]
+        [InlineData("abc_video.m3u8", "abc_audio12.mp4", false, 0)]
+        [InlineData("abc_audio.m3u8", "abc_audio-1.mp4", true, -1)]
+        public void TryGetSegmentIndex_OnlyMatchesSegmentsOfPlaylist(string playlist, string segment, bool expected, int expectedIndex)
+        {
+            Assert.Equal(expected, DynamicHlsController.TryGetSegmentIndex(playlist, segment, out var index));
+            Assert.Equal(expectedIndex, index);
         }
     }
 }

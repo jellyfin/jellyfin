@@ -141,7 +141,7 @@ public class TranscodingSegmentCleaner : IDisposable
         var name = Path.GetFileNameWithoutExtension(outputFilePath);
 
         var filesToDelete = _fileSystem.GetFilePaths(directory)
-            .Where(f => long.TryParse(Path.GetFileNameWithoutExtension(f).Replace(name, string.Empty, StringComparison.Ordinal), out var idx)
+            .Where(f => TryGetSegmentIndex(Path.GetFileNameWithoutExtension(f).Replace(name, string.Empty, StringComparison.Ordinal), out var idx)
                         && (idx >= idxMin && idx <= idxMax));
 
         List<Exception>? exs = null;
@@ -163,6 +163,17 @@ public class TranscodingSegmentCleaner : IDisposable
         {
             throw new AggregateException("Error deleting HLS segment files", exs);
         }
+    }
+
+    private static bool TryGetSegmentIndex(string suffix, out long index)
+    {
+        // Separate audio rendition segments are named {name}_video{index} and {name}_audio{index}.
+        if (suffix.StartsWith("_video", StringComparison.Ordinal) || suffix.StartsWith("_audio", StringComparison.Ordinal))
+        {
+            suffix = suffix[6..];
+        }
+
+        return long.TryParse(suffix, out index);
     }
 
     private void DisposeTimer()
