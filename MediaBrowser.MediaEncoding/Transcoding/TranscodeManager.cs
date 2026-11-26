@@ -17,6 +17,7 @@ using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Session;
@@ -91,7 +92,6 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         _attachmentExtractor = attachmentExtractor;
 
         _logger = loggerFactory.CreateLogger<TranscodeManager>();
-        DeleteEncodedMediaCache();
         _sessionManager.PlaybackProgress += OnPlaybackProgress;
         _sessionManager.PlaybackStart += OnPlaybackProgress;
     }
@@ -715,7 +715,8 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
         }
     }
 
-    private void DeleteEncodedMediaCache()
+    /// <inheritdoc />
+    public void DeleteEncodedMediaCache()
     {
         var path = _serverConfigurationManager.GetTranscodePath();
         if (!Directory.Exists(path))
@@ -725,13 +726,18 @@ public sealed class TranscodeManager : ITranscodeManager, IDisposable
 
         foreach (var file in _fileSystem.GetFilePaths(path, true))
         {
+            if (FileSystemHelper.IsProtectedCacheFile(file))
+            {
+                continue;
+            }
+
             try
             {
                 _fileSystem.DeleteFile(file);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error deleting encoded media cache file {Path}", path);
+                _logger.LogError(ex, "Error deleting encoded media cache file {Path}", file);
             }
         }
     }

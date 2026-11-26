@@ -147,7 +147,14 @@ namespace Emby.Server.Implementations.AppBase
             var markerPath = Path.Combine(path, markerName);
             if (!File.Exists(markerPath))
             {
-                FileHelper.CreateEmpty(markerPath);
+                try
+                {
+                    FileHelper.CreateEmpty(markerPath);
+                }
+                catch (IOException) when (File.Exists(markerPath))
+                {
+                    // Another thread created the marker between the check and the create, which is fine.
+                }
             }
         }
     }

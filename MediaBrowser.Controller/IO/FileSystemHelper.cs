@@ -13,6 +13,22 @@ namespace MediaBrowser.Controller.IO;
 public static class FileSystemHelper
 {
     /// <summary>
+    /// Checks whether a file is one of the files the server creates once in a cache folder and expects to find afterwards.
+    /// </summary>
+    /// <remarks>
+    /// These are the <c>.jellyfin-*</c> folder markers and <c>CACHEDIR.TAG</c>. Cache cleanup must not delete them,
+    /// nothing recreates them until the next restart.
+    /// </remarks>
+    /// <param name="path">The path of the file.</param>
+    /// <returns><c>true</c> if the file must be kept by cache cleanup; otherwise, <c>false</c>.</returns>
+    public static bool IsProtectedCacheFile(string path)
+    {
+        var name = Path.GetFileName(path.AsSpan());
+        return name.StartsWith(".jellyfin-", StringComparison.Ordinal)
+            || name.Equals("CACHEDIR.TAG", StringComparison.Ordinal);
+    }
+
+    /// <summary>
     /// Deletes the file.
     /// </summary>
     /// <param name="fileSystem">The fileSystem.</param>
