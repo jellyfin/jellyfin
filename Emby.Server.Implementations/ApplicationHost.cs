@@ -80,6 +80,7 @@ using MediaBrowser.Controller.QuickConnect;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Sorting;
+using MediaBrowser.Controller.Streaming;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Controller.SyncPlay;
 using MediaBrowser.Controller.TV;
@@ -631,6 +632,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddScoped<MediaInfoHelper>();
             serviceCollection.AddScoped<AudioHelper>();
             serviceCollection.AddScoped<DynamicHlsHelper>();
+            serviceCollection.AddSingleton<HlsCommandBuilder>();
             serviceCollection.AddScoped<IClientEventLogger, ClientEventLogger>();
             serviceCollection.AddSingleton<IDirectoryService, DirectoryService>();
 
