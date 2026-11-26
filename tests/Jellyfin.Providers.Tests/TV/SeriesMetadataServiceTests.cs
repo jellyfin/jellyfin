@@ -1,9 +1,16 @@
 using System.Collections.Generic;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Providers.TV;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
@@ -87,6 +94,31 @@ public class SeriesMetadataServiceTests
         episode.ProviderIds["Tvdb"] = " ";
 
         Assert.Empty(SeriesMetadataService.GetPresentEpisodeIds([episode]));
+    }
+
+    [Theory]
+    [InlineData(3, "Season 3")]
+    [InlineData(null, "Season Unknown")]
+    public void GetValidSeasonNameForSeries_NoName_UsesServerLanguage(int? seasonNumber, string expected)
+    {
+        // A refresh triggered from a British browser runs under en-GB, whose season name is "Series {0}".
+        var localization = new Mock<ILocalizationManager>();
+        localization.Setup(l => l.GetLocalizedString(It.IsAny<string>()))
+            .Returns<string>(phrase => phrase == "NameSeasonNumber" ? "Series {0}" : "Series Unknown");
+        localization.Setup(l => l.GetServerLocalizedString(It.IsAny<string>()))
+            .Returns<string>(phrase => phrase == "NameSeasonNumber" ? "Season {0}" : "Season Unknown");
+
+        var service = new SeriesMetadataService(
+            Mock.Of<IServerConfigurationManager>(),
+            NullLogger<SeriesMetadataService>.Instance,
+            Mock.Of<IProviderManager>(),
+            Mock.Of<IFileSystem>(),
+            Mock.Of<ILibraryManager>(),
+            localization.Object,
+            Mock.Of<IExternalDataManager>(),
+            Mock.Of<IItemRepository>());
+
+        Assert.Equal(expected, service.GetValidSeasonNameForSeries(new Series(), null, seasonNumber));
     }
 
     private static Episode Physical(int indexNumber, params (MetadataProvider Provider, string Id)[] providerIds)

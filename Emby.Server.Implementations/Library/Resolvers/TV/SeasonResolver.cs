@@ -100,8 +100,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                         string.Format(
                             CultureInfo.InvariantCulture,
                             _localization.GetServerLocalizedString("NameSeasonNumber"),
-                            seasonNumber,
-                            args.LibraryOptions.PreferredMetadataLanguage);
+                            seasonNumber);
                 }
 
                 SetProviderIdFromPath(season, path);
