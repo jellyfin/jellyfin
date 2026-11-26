@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Trickplay;
@@ -24,6 +25,7 @@ public class TrickplayImagesTask : IScheduledTask
     private readonly ILibraryManager _libraryManager;
     private readonly ILocalizationManager _localization;
     private readonly ITrickplayManager _trickplayManager;
+    private readonly IServerConfigurationManager _config;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TrickplayImagesTask"/> class.
@@ -32,16 +34,19 @@ public class TrickplayImagesTask : IScheduledTask
     /// <param name="libraryManager">The library manager.</param>
     /// <param name="localization">The localization manager.</param>
     /// <param name="trickplayManager">The trickplay manager.</param>
+    /// <param name="config">The server configuration manager.</param>
     public TrickplayImagesTask(
         ILogger<TrickplayImagesTask> logger,
         ILibraryManager libraryManager,
         ILocalizationManager localization,
-        ITrickplayManager trickplayManager)
+        ITrickplayManager trickplayManager,
+        IServerConfigurationManager config)
     {
         _libraryManager = libraryManager;
         _logger = logger;
         _localization = localization;
         _trickplayManager = trickplayManager;
+        _config = config;
     }
 
     /// <inheritdoc />
@@ -87,30 +92,36 @@ public class TrickplayImagesTask : IScheduledTask
 
         var startIndex = 0;
         var numComplete = 0;
+        var maxParallelism = _config.Configuration.TrickplayOptions.MaxParallelism;
+        if (maxParallelism < 1)
+        {
+            _logger.LogWarning("Trickplay max parallelism {MaxParallelism} is too small, using value of 1", maxParallelism);
+            maxParallelism = 1;
+        }
 
         while (startIndex < numberOfVideos)
         {
             query.StartIndex = startIndex;
             var videos = _libraryManager.GetItemList(query).OfType<Video>();
 
-            foreach (var video in videos)
+            await Parallel.ForEachAsync(
+            videos,
+            new ParallelOptions() { CancellationToken = cancellationToken, MaxDegreeOfParallelism = maxParallelism },
+            async (video, ct) =>
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
                 try
                 {
                     var libraryOptions = _libraryManager.GetLibraryOptions(video);
-                    await _trickplayManager.RefreshTrickplayDataAsync(video, false, libraryOptions, cancellationToken).ConfigureAwait(false);
+                    await _trickplayManager.RefreshTrickplayDataAsync(video, false, libraryOptions, ct).ConfigureAwait(false);
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex is not OperationCanceledException)
                 {
                     _logger.LogError(ex, "Error creating trickplay files for {ItemName}", video.Name);
                 }
 
-                numComplete++;
-                progress.Report(100d * numComplete / numberOfVideos);
-            }
-
+                var completed = Interlocked.Increment(ref numComplete);
+                progress.Report(100d * completed / numberOfVideos);
+            }).ConfigureAwait(false);
             startIndex += QueryPageLimit;
         }
 
