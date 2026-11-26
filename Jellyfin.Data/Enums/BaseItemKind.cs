@@ -109,6 +109,11 @@ namespace Jellyfin.Data.Enums
         MusicVideo,
 
         /// <summary>
+        /// Item is network.
+        /// </summary>
+        Network,
+
+        /// <summary>
         /// Item is person.
         /// </summary>
         Person,
