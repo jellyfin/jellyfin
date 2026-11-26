@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using AsyncKeyedLock;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Providers.Plugins.ListenBrainz.Api.Models;
 using MediaBrowser.Providers.Plugins.ListenBrainz.Configuration;
@@ -19,7 +20,7 @@ public class ListenBrainzLabsClient : IDisposable
 {
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<ListenBrainzLabsClient> _logger;
-    private readonly SemaphoreSlim _rateLimitLock = new(1, 1);
+    private readonly AsyncNonKeyedLocker _rateLimitLock = new(1);
 
     private DateTime _lastRequestTime = DateTime.MinValue;
 
@@ -107,8 +108,7 @@ public class ListenBrainzLabsClient : IDisposable
 
     private async Task EnforceRateLimitAsync(double rateLimitSeconds, CancellationToken cancellationToken)
     {
-        await _rateLimitLock.WaitAsync(cancellationToken).ConfigureAwait(false);
-        try
+        using (await _rateLimitLock.LockAsync(cancellationToken).ConfigureAwait(false))
         {
             var timeSinceLastRequest = DateTime.UtcNow - _lastRequestTime;
             var requiredDelay = TimeSpan.FromSeconds(rateLimitSeconds) - timeSinceLastRequest;
@@ -119,10 +119,6 @@ public class ListenBrainzLabsClient : IDisposable
             }
 
             _lastRequestTime = DateTime.UtcNow;
-        }
-        finally
-        {
-            _rateLimitLock.Release();
         }
     }
 }
