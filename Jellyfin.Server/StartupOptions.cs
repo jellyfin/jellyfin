@@ -81,6 +81,13 @@ namespace Jellyfin.Server
         public string? RestoreArchive { get; set; }
 
         /// <summary>
+        /// Gets or sets the path to the file describing how to provision an unconfigured server.
+        /// Required by, and only used with, <see cref="Configuration.StartupMode.Provision"/>.
+        /// </summary>
+        [Option("provision-file", Required = false, HelpText = "Path to a JSON file describing how to provision an unconfigured server. Requires --mode Provision.")]
+        public string? ProvisionFile { get; set; }
+
+        /// <summary>
         /// Gets or sets the mode of operation the server should perform when started.
         /// Defaults to: <see cref="StartupMode.MediaServer"/>.
         /// </summary>
