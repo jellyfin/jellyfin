@@ -1,5 +1,6 @@
 using System;
 using Emby.Server.Implementations.Data;
+using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Server.Implementations.Item;
 using MediaBrowser.Controller.Dto;
@@ -11,8 +12,8 @@ using BaseItemKind = Jellyfin.Data.Enums.BaseItemKind;
 namespace Jellyfin.Server.Implementations.Tests.Item;
 
 /// <summary>
-/// The by-name listings count what a cleaned value is attached to by joining ItemValuesMap to
-/// BaseItems. One item can reach the same clean value through more than one value row, so the
+/// The by-name listings count what a by-name item is attached to by joining a link table to
+/// BaseItems. One item can reach the same by-name item through more than one link row, so the
 /// join has to be counted per distinct item; counting rows reports a multiple of the truth.
 /// </summary>
 public sealed class BaseItemRepositoryByNameItemCountsTests : SqliteDbTestFixture
@@ -30,8 +31,8 @@ public sealed class BaseItemRepositoryByNameItemCountsTests : SqliteDbTestFixtur
     public void GetAllArtists_AlbumCreditedAsArtistAndAlbumArtist_CountsTheAlbumOnce()
     {
         // GetAllArtists spans both credit types, so an album whose artist is also its album artist
-        // reaches the one clean value through two rows.
-        SeedArtistWithAlbum(ItemValueType.Artist, ItemValueType.AlbumArtist);
+        // reaches the one artist through two credits.
+        SeedArtistWithAlbum(PersonKind.Artist, PersonKind.AlbumArtist);
 
         var result = _repository.GetAllArtists(CreateCountingQuery());
 
@@ -44,9 +45,8 @@ public sealed class BaseItemRepositoryByNameItemCountsTests : SqliteDbTestFixtur
     [Fact]
     public void GetAlbumArtists_TwoValueRowsCleaningToOneName_CountsTheAlbumOnce()
     {
-        // The shape that actually reaches users: only (Type, Value) is unique, so two differently
-        // cased credits of one type both clean down to a single name and both map the album.
-        SeedArtistWithAlbum(ItemValueType.AlbumArtist, ItemValueType.AlbumArtist);
+        // Two differently cased credits of one type, both resolved to the one artist.
+        SeedArtistWithAlbum(PersonKind.AlbumArtist, PersonKind.AlbumArtist);
 
         var result = _repository.GetAlbumArtists(CreateCountingQuery());
 
@@ -58,7 +58,7 @@ public sealed class BaseItemRepositoryByNameItemCountsTests : SqliteDbTestFixtur
     [Fact]
     public void GetArtists_TwoValueRowsCleaningToOneName_CountsTheAlbumOnce()
     {
-        SeedArtistWithAlbum(ItemValueType.Artist, ItemValueType.Artist);
+        SeedArtistWithAlbum(PersonKind.Artist, PersonKind.Artist);
 
         var result = _repository.GetArtists(CreateCountingQuery());
 
@@ -150,12 +150,11 @@ public sealed class BaseItemRepositoryByNameItemCountsTests : SqliteDbTestFixtur
     }
 
     /// <summary>
-    /// Seeds one artist and a single album mapped to that artist's clean name through two value
-    /// rows of the given types.
+    /// Seeds one artist and a single album crediting it through two credits of the given kinds.
     /// </summary>
-    /// <param name="first">The type of the first value row.</param>
-    /// <param name="second">The type of the second value row.</param>
-    private void SeedArtistWithAlbum(ItemValueType first, ItemValueType second)
+    /// <param name="first">The kind of the first credit.</param>
+    /// <param name="second">The kind of the second credit.</param>
+    private void SeedArtistWithAlbum(PersonKind first, PersonKind second)
     {
         const string Name = "Tangerine Dream";
         const string CleanName = "tangerine dream";
@@ -188,25 +187,26 @@ public sealed class BaseItemRepositoryByNameItemCountsTests : SqliteDbTestFixtur
         };
         ctx.BaseItems.Add(album);
 
-        var types = new[] { first, second };
-        for (var i = 0; i < types.Length; i++)
+        var kinds = new[] { first, second };
+        for (var i = 0; i < kinds.Length; i++)
         {
-            var itemValue = new ItemValue
+            var credit = new People
             {
-                ItemValueId = Guid.Parse($"cccccccc-0000-0000-0000-{i:D12}"),
-                Type = types[i],
-                // Distinct values, one clean name: exactly what the unique index permits.
-                Value = i == 0 ? Name : Name.ToUpperInvariant(),
-                CleanValue = CleanName
+                Id = Guid.Parse($"cccccccc-0000-0000-0000-{i:D12}"),
+                Name = i == 0 ? Name : Name.ToUpperInvariant(),
+                CleanName = CleanName,
+                PersonType = kinds[i].ToString(),
+                ItemId = artistId
             };
 
-            ctx.ItemValues.Add(itemValue);
-            ctx.ItemValuesMap.Add(new ItemValueMap
+            ctx.Peoples.Add(credit);
+            ctx.PeopleBaseItemMap.Add(new PeopleBaseItemMap
             {
                 ItemId = albumId,
-                ItemValueId = itemValue.ItemValueId,
+                PeopleId = credit.Id,
                 Item = album,
-                ItemValue = itemValue
+                People = credit,
+                Role = string.Empty
             });
         }
 

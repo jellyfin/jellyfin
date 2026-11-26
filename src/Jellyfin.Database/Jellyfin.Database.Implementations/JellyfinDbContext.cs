@@ -129,6 +129,11 @@ public class JellyfinDbContext(DbContextOptions<JellyfinDbContext> options, ILog
     public DbSet<ItemValueMap> ItemValuesMap => Set<ItemValueMap>();
 
     /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the tags items carry.
+    /// </summary>
+    public DbSet<BaseItemTag> BaseItemTags => Set<BaseItemTag>();
+
+    /// <summary>
     /// Gets the <see cref="DbSet{TEntity}"/>.
     /// </summary>
     public DbSet<MediaStreamInfo> MediaStreamInfos => Set<MediaStreamInfo>();

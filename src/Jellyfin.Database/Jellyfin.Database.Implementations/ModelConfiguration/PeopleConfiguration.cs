@@ -14,6 +14,9 @@ public class PeopleConfiguration : IEntityTypeConfiguration<People>
     {
         builder.HasKey(e => e.Id);
         builder.HasIndex(e => e.Name);
+        // Paired with the type, for the lookups keeping an Actor and a Director credit apart.
+        builder.HasIndex(e => new { e.CleanName, e.PersonType });
+        builder.HasIndex(e => e.ItemId);
         builder.HasMany(e => e.BaseItems);
     }
 }
