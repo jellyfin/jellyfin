@@ -591,6 +591,22 @@ public class UserLibraryController : BaseJellyfinApiController
         var dtos = _dtoService.GetBaseItemDtos(resolvedItems, dtoOptions, user, skipVisibilityCheck: true);
         for (int i = 0; i < dtos.Count; i++)
         {
+            if (resolvedItems[i] is MusicVideo musicVideo && musicVideo.Artists.Count > 0)
+            {
+                // Normalize semicolon-delimited credits for this response without changing metadata.
+                var artists = musicVideo.Artists
+                    .Where(artist => !string.IsNullOrWhiteSpace(artist))
+                    .SelectMany(artist => artist.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                    .ToArray();
+                var artistCredit = artists.Length > 1
+                    ? string.Join(", ", artists.Take(artists.Length - 1)) + " & " + artists[^1]
+                    : artists.FirstOrDefault();
+                if (!string.IsNullOrEmpty(artistCredit))
+                {
+                    dtos[i].Name = artistCredit + " - " + dtos[i].Name;
+                }
+            }
+
             if (childCounts[i] > 0)
             {
                 dtos[i].ChildCount = childCounts[i];
