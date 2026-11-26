@@ -17,7 +17,7 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// by-name listings, which reach the artist through the tracks that credit it, can be scoped to
 /// one library.
 /// </summary>
-public sealed class BaseItemRepositoryArtistLibraryScopeTests : SqliteDbTestFixture
+public abstract class BaseItemRepositoryArtistLibraryScopeTests : DbTestFixture
 {
     private static readonly Guid _firstLibrary = Guid.Parse("11111111-0000-0000-0000-000000000001");
     private static readonly Guid _secondLibrary = Guid.Parse("22222222-0000-0000-0000-000000000001");
@@ -25,7 +25,8 @@ public sealed class BaseItemRepositoryArtistLibraryScopeTests : SqliteDbTestFixt
     private readonly BaseItemRepository _repository;
     private readonly ItemTypeLookup _itemTypeLookup;
 
-    public BaseItemRepositoryArtistLibraryScopeTests()
+    protected BaseItemRepositoryArtistLibraryScopeTests(TestDatabase database)
+        : base(database)
     {
         _itemTypeLookup = new ItemTypeLookup();
         _repository = CreateBaseItemRepository(_itemTypeLookup);
@@ -154,4 +155,6 @@ public sealed class BaseItemRepositoryArtistLibraryScopeTests : SqliteDbTestFixt
 
         ctx.SaveChanges();
     }
+
+    public sealed class Sqlite() : BaseItemRepositoryArtistLibraryScopeTests(new SqliteTestDatabase());
 }

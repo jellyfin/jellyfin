@@ -15,11 +15,12 @@ namespace Jellyfin.Server.Implementations.Tests.Item;
 /// Names keep the case a metadata provider wrote them in, so the range has to ignore case the same way
 /// the list is sorted, or a capitalised name lands before every lowercase bound.
 /// </summary>
-public sealed class PeopleRepositoryNameRangeTests : SqliteDbTestFixture
+public abstract class PeopleRepositoryNameRangeTests : DbTestFixture
 {
     private readonly PeopleRepository _repository;
 
-    public PeopleRepositoryNameRangeTests()
+    protected PeopleRepositoryNameRangeTests(TestDatabase database)
+        : base(database)
     {
         using (var context = CreateDbContext())
         {
@@ -50,4 +51,6 @@ public sealed class PeopleRepositoryNameRangeTests : SqliteDbTestFixture
         Assert.Equal(expected, result.Items.Select(p => p.Name));
         Assert.Equal(expected.Length, result.TotalRecordCount);
     }
+
+    public sealed class Sqlite() : PeopleRepositoryNameRangeTests(new SqliteTestDatabase());
 }
