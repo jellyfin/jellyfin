@@ -1,4 +1,7 @@
 using System;
+using System.Linq;
+using System.Text;
+using J2N.Text;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
@@ -135,6 +138,29 @@ public class EpisodeMetadataService : MetadataService<Episode, EpisodeInfo>
             targetItem.IndexNumberEnd = sourceItem.IndexNumberEnd;
         }
 
+        // merging data for multi-episode files
+        // if replaceData flag is set - do it anyway just to remove empty parts if set so
+        if (sourceItem.IndexNumberEnd.HasValue || targetItem.IndexNumberEnd.HasValue)
+        {
+            const string Separator = " / ";
+            if (!lockedFields.Contains(MetadataField.Name))
+            {
+                var tmpName = MergeMultiParts(sourceItem.Name, targetItem.Name, Separator, replaceData);
+                // guard from empty name
+                if (!string.IsNullOrWhiteSpace(tmpName))
+                {
+                    targetItem.Name = tmpName;
+                }
+            }
+
+            targetItem.OriginalTitle = MergeMultiParts(sourceItem.OriginalTitle, targetItem.OriginalTitle, Separator, replaceData);
+
+            if (!lockedFields.Contains(MetadataField.Overview))
+            {
+                targetItem.Overview = MergeMultiParts(sourceItem.Overview, targetItem.Overview, Separator, replaceData);
+            }
+        }
+
         // Episode season numbers can be set from path parsing before local metadata is merged.
         // When a provider supplies an explicit season, prefer it during provider->temp and temp->item merges,
         // but avoid clobbering provider data when existing metadata is backfilled into temp.
@@ -144,5 +170,98 @@ public class EpisodeMetadataService : MetadataService<Episode, EpisodeInfo>
         {
             targetItem.ParentIndexNumber = sourceItem.ParentIndexNumber;
         }
+    }
+
+    private static string MergeMultiParts(string source, string target, string separator, bool replaceData, bool removeEmptyParts = false, bool removeTrailingEmptyParts = true)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(separator);
+
+        if (!removeEmptyParts && !removeTrailingEmptyParts)
+        {
+            if (replaceData || string.IsNullOrEmpty(target))
+            {
+                return source;
+            }
+
+            if (string.IsNullOrEmpty(source))
+            {
+                return target;
+            }
+        }
+        else if (string.IsNullOrEmpty(source) && string.IsNullOrEmpty(target))
+        {
+            return string.Empty;
+        }
+
+        var sb = new StringBuilder();
+
+        var targetSpan = target.AsSpan();
+        var sourceSpan = source.AsSpan();
+
+        var targetEnumerator = targetSpan.Split(separator);
+        var sourceEnumerator = sourceSpan.Split(separator);
+
+        var targetHasNext = targetEnumerator.MoveNext();
+        var sourceHasNext = sourceEnumerator.MoveNext();
+
+        var firstPart = true;
+        var separatorCnt = 0;
+
+        // maintain same position index
+        while (targetHasNext || sourceHasNext)
+        {
+            // select a part we want to keep
+            ReadOnlySpan<char> selected;
+            if (targetHasNext && targetSpan[targetEnumerator.Current].Length > 0 && !replaceData)
+            {
+                selected = targetSpan[targetEnumerator.Current];
+            }
+            else if (sourceHasNext && sourceSpan[sourceEnumerator.Current].Length > 0)
+            {
+                selected = sourceSpan[sourceEnumerator.Current];
+            }
+            else
+            {
+                selected = ReadOnlySpan<char>.Empty;
+            }
+
+            if (!removeEmptyParts || !selected.IsEmpty)
+            {
+                // no separator before the first part
+                if (firstPart)
+                {
+                    firstPart = false;
+                }
+                else
+                {
+                    separatorCnt++;
+                }
+            }
+
+            // append accumulated separators and part
+            if (!selected.IsEmpty)
+            {
+                for (; separatorCnt > 0; separatorCnt--)
+                {
+                    sb.Append(separator);
+                }
+
+                sb.Append(selected);
+            }
+
+            targetHasNext = targetEnumerator.MoveNext();
+            sourceHasNext = sourceEnumerator.MoveNext();
+        }
+
+        // add trailing separators if not removing empty parts
+        if (!removeTrailingEmptyParts && !removeEmptyParts)
+        {
+            for (; separatorCnt > 0; separatorCnt--)
+            {
+                sb.Append(separator);
+            }
+        }
+
+        return sb.ToString();
     }
 }

@@ -105,62 +105,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             }
 
             var episodeGroup = info.SeriesProviderIds.GetValueOrDefault(TmdbEpisodeGroupId.ProviderKey);
-            TvEpisode? episodeResult = null;
-            if (info.IndexNumberEnd.HasValue)
-            {
-                var startindex = episodeNumber;
-                var endindex = info.IndexNumberEnd;
-                List<TvEpisode>? result = null;
-                for (int? episode = startindex; episode <= endindex; episode++)
-                {
-                    var episodeInfo = await _tmdbClientManager.GetEpisodeAsync(seriesTmdbId, seasonNumber, episode.Value, episodeGroup, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage, info.MetadataCountryCode), info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
-                    if (episodeInfo is not null)
-                    {
-                        (result ??= new List<TvEpisode>()).Add(episodeInfo);
-                    }
-                }
 
-                if (result is not null)
-                {
-                    // Forces a deep copy of the first TvEpisode, so we don't modify the original because it's cached
-                    episodeResult = new TvEpisode()
-                    {
-                        Id = result[0].Id,
-                        Name = result[0].Name,
-                        Overview = result[0].Overview,
-                        AirDate = result[0].AirDate,
-                        VoteAverage = result[0].VoteAverage,
-                        ExternalIds = result[0].ExternalIds,
-                        Videos = result[0].Videos,
-                        Credits = result[0].Credits
-                    };
-
-                    if (result.Count > 1)
-                    {
-                        var name = new StringBuilder(episodeResult.Name);
-                        var overview = new StringBuilder(episodeResult.Overview);
-
-                        for (int i = 1; i < result.Count; i++)
-                        {
-                            name.Append(" / ").Append(result[i].Name);
-                            overview.Append(" / ").Append(result[i].Overview);
-                        }
-
-                        episodeResult.Name = name.ToString();
-                        episodeResult.Overview = overview.ToString();
-                    }
-                }
-                else
-                {
-                    return metadataResult;
-                }
-            }
-            else
-            {
-                episodeResult = await _tmdbClientManager
-                    .GetEpisodeAsync(seriesTmdbId, seasonNumber, episodeNumber.Value, episodeGroup, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage, info.MetadataCountryCode), info.MetadataCountryCode, cancellationToken)
-                    .ConfigureAwait(false);
-            }
+            var episodeResult = await _tmdbClientManager
+                .GetEpisodeAsync(seriesTmdbId, seasonNumber, episodeNumber.Value, episodeGroup, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage, info.MetadataCountryCode), info.MetadataCountryCode, cancellationToken)
+                .ConfigureAwait(false);
 
             if (episodeResult is null)
             {
