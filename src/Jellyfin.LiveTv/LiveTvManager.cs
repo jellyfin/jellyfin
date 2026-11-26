@@ -45,6 +45,7 @@ namespace Jellyfin.LiveTv
         private readonly ILocalizationManager _localization;
         private readonly IChannelManager _channelManager;
         private readonly IRecordingsManager _recordingsManager;
+        private readonly IMediaSourceManager _mediaSourceManager;
         private readonly LiveTvDtoService _tvDtoService;
         private readonly ILiveTvService[] _services;
 
@@ -58,6 +59,7 @@ namespace Jellyfin.LiveTv
             ILocalizationManager localization,
             IChannelManager channelManager,
             IRecordingsManager recordingsManager,
+            IMediaSourceManager mediaSourceManager,
             LiveTvDtoService liveTvDtoService,
             IEnumerable<ILiveTvService> services)
         {
@@ -71,6 +73,7 @@ namespace Jellyfin.LiveTv
             _channelManager = channelManager;
             _tvDtoService = liveTvDtoService;
             _recordingsManager = recordingsManager;
+            _mediaSourceManager = mediaSourceManager;
             _services = services.ToArray();
 
             var defaultService = _services.OfType<DefaultLiveTvService>().First();
@@ -986,6 +989,13 @@ namespace Jellyfin.LiveTv
                 dto.Number = channel.Number;
                 dto.ChannelNumber = channel.Number;
                 dto.ChannelType = channel.ChannelType;
+
+                var activeStreamCount = _mediaSourceManager.GetLiveStreams(channel.Id).Sum(i => i.ConsumerCount);
+
+                if (activeStreamCount > 0)
+                {
+                    dto.ActiveStreamCount = activeStreamCount;
+                }
 
                 currentChannelsDict[dto.Id] = dto;
 
