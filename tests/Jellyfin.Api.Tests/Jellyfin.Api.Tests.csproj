@@ -10,6 +10,7 @@
     <PackageReference Include="AutoFixture" />
     <PackageReference Include="AutoFixture.AutoMoq" />
     <PackageReference Include="AutoFixture.Xunit3" />
+    <PackageReference Include="FsCheck.Xunit.v3" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="xunit.v3" />
