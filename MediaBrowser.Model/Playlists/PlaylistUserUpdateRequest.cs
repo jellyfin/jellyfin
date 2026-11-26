@@ -13,6 +13,11 @@ public class PlaylistUserUpdateRequest
     public Guid Id { get; set; }
 
     /// <summary>
+    /// Gets or sets the id of the user who owns the playlist.
+    /// </summary>
+    public Guid PlaylistOwnerUserId { get; set; }
+
+    /// <summary>
     /// Gets or sets the id of the updated user.
     /// </summary>
     public Guid UserId { get; set; }
