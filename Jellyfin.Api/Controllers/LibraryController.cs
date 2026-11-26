@@ -335,7 +335,7 @@ public class LibraryController : BaseJellyfinApiController
     /// <response code="204">Library scan started.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("Library/Refresh")]
-    [Authorize(Policy = Policies.RequiresElevation)]
+    [Authorize(Policy = Policies.LoopbackOrRequiresElevation)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> RefreshLibrary()
     {
