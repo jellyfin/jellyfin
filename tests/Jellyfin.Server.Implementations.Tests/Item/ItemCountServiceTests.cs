@@ -1254,6 +1254,115 @@ public sealed class ItemCountServiceTests : IDisposable
         return genreIds;
     }
 
+    [Fact]
+    public void CollectionCounts_ExcludeItemsFromInaccessibleLibraries()
+    {
+        var user = new User("collection-access-test", "provider", "reset");
+        var accessibleLibraryId = Guid.NewGuid();
+        var restrictedLibraryId = Guid.NewGuid();
+        var collectionsLibraryId = Guid.NewGuid();
+        var boxSetId = Guid.NewGuid();
+        var accessibleMovieId = Guid.NewGuid();
+        var restrictedMovieId = Guid.NewGuid();
+
+        using (var context = CreateDbContext())
+        {
+            context.Users.Add(user);
+
+            var accessibleLibrary = CreateItem(accessibleLibraryId);
+            accessibleLibrary.TopParentId = accessibleLibraryId;
+            var restrictedLibrary = CreateItem(restrictedLibraryId);
+            restrictedLibrary.TopParentId = restrictedLibraryId;
+            var collectionsLibrary = CreateItem(collectionsLibraryId);
+            collectionsLibrary.TopParentId = collectionsLibraryId;
+
+            var boxSet = CreateItem(boxSetId, collectionsLibraryId);
+            boxSet.Type = "MediaBrowser.Controller.Entities.Movies.BoxSet";
+            boxSet.TopParentId = collectionsLibraryId;
+
+            var accessibleMovie = CreateLeaf(accessibleMovieId);
+            accessibleMovie.ParentId = accessibleLibraryId;
+            accessibleMovie.TopParentId = accessibleLibraryId;
+            var restrictedMovie = CreateLeaf(restrictedMovieId);
+            restrictedMovie.ParentId = restrictedLibraryId;
+            restrictedMovie.TopParentId = restrictedLibraryId;
+
+            context.BaseItems.AddRange(
+                accessibleLibrary,
+                restrictedLibrary,
+                collectionsLibrary,
+                boxSet,
+                accessibleMovie,
+                restrictedMovie);
+
+            context.SaveChanges();
+
+            context.LinkedChildren.AddRange(
+                new LinkedChildEntity
+                {
+                    ParentId = boxSetId,
+                    ChildId = accessibleMovieId,
+                    ChildType = LinkedChildType.Manual,
+                    SortOrder = 0
+                },
+                new LinkedChildEntity
+                {
+                    ParentId = boxSetId,
+                    ChildId = restrictedMovieId,
+                    ChildType = LinkedChildType.Manual,
+                    SortOrder = 1
+                });
+
+            context.UserData.Add(new UserData
+            {
+                ItemId = restrictedMovieId,
+                UserId = user.Id,
+                CustomDataKey = string.Empty,
+                Played = true,
+                Item = null,
+                User = null
+            });
+
+            context.SaveChanges();
+        }
+
+        Guid[] accessibleTopParents = [accessibleLibraryId, collectionsLibraryId];
+        var capturedFilters = new List<InternalItemsQuery>();
+
+        var factory = new Mock<IDbContextFactory<JellyfinDbContext>>();
+        factory.Setup(f => f.CreateDbContext()).Returns(CreateDbContext);
+
+        var queryHelpers = new Mock<IItemQueryHelpers>();
+        queryHelpers
+            .Setup(h => h.ApplyAccessFiltering(
+                It.IsAny<JellyfinDbContext>(),
+                It.IsAny<IQueryable<BaseItemEntity>>(),
+                It.IsAny<InternalItemsQuery>()))
+            .Returns((JellyfinDbContext _, IQueryable<BaseItemEntity> query, InternalItemsQuery filter) =>
+            {
+                capturedFilters.Add(filter);
+                return filter.TopParentIds.Length > 0
+                    ? query.Where(e => e.TopParentId.HasValue && filter.TopParentIds.Contains(e.TopParentId.Value))
+                    : query;
+            });
+
+        var service = new ItemCountService(
+            factory.Object,
+            new Mock<IItemTypeLookup>().Object,
+            queryHelpers.Object);
+
+        Assert.Equal(1, service.GetChildCountBatch([boxSetId], user, accessibleTopParents)[boxSetId]);
+        Assert.Equal((0, 1), service.GetPlayedAndTotalCountBatch([boxSetId], user, accessibleTopParents)[boxSetId]);
+
+        var queryFilter = new InternalItemsQuery(user)
+        {
+            TopParentIds = accessibleTopParents
+        };
+        Assert.Equal((0, 1), service.GetPlayedAndTotalCountFromLinkedChildren(queryFilter, boxSetId));
+        Assert.Equal(3, capturedFilters.Count);
+        Assert.All(capturedFilters, f => Assert.Equal(accessibleTopParents, f.TopParentIds));
+    }
+
     private static BaseItemEntity CreateItem(Guid id, Guid? parentId = null)
     {
         return new BaseItemEntity
