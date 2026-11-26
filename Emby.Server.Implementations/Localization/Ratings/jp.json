@@ -3,7 +3,7 @@
     "supportsSubScores": true,
     "ratings": [
         {
-            "ratingStrings": ["A", "G"],
+            "ratingStrings": ["G"],
             "ratingScore": {
                 "score": 0,
                 "subScore": 0
@@ -17,13 +17,6 @@
             }
         },
         {
-            "ratingStrings": ["B"],
-            "ratingScore": {
-                "score": 12,
-                "subScore": 1
-            }
-        },
-        {
             "ratingStrings": ["15A", "15PG"],
             "ratingScore": {
                 "score": 15,
@@ -31,7 +24,7 @@
             }
         },
         {
-            "ratingStrings": ["C", "15+", "R15+"],
+            "ratingStrings": ["15+", "R15+"],
             "ratingScore": {
                 "score": 15,
                 "subScore": 1
@@ -45,14 +38,7 @@
             }
         },
         {
-            "ratingStrings": ["D"],
-            "ratingScore": {
-                "score": 17,
-                "subScore": null
-            }
-        },
-        {
-            "ratingStrings": ["18+", "Z"],
+            "ratingStrings": ["18+", "R18+"],
             "ratingScore": {
                 "score": 18,
                 "subScore": null
