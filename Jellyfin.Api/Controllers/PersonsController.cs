@@ -5,7 +5,9 @@ using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data;
+using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -65,6 +67,8 @@ public class PersonsController : BaseJellyfinApiController
     /// <param name="personTypes">Optional. If specified results will be filtered to include only those containing the specified PersonType. Allows multiple, comma-delimited.</param>
     /// <param name="parentId">Optional. Specify this to localize the search to a specific library. Omit to use the root.</param>
     /// <param name="appearsInItemId">Optional. If specified, person results will be filtered on items related to said persons.</param>
+    /// <param name="sortBy">Optional. Specify one or more sort orders, comma delimited. Supported: SortName, Name, Random, DateCreated, PremiereDate, CommunityRating, IsFavoriteOrLiked. Other keys sort by name.</param>
+    /// <param name="sortOrder">Sort Order - Ascending,Descending.</param>
     /// <param name="userId">User id.</param>
     /// <param name="enableImages">Optional, include image information in output.</param>
     /// <response code="200">Persons returned.</response>
@@ -88,6 +92,8 @@ public class PersonsController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] string[] personTypes,
         [FromQuery] Guid? parentId,
         [FromQuery] Guid? appearsInItemId,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemSortBy[] sortBy,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] SortOrder[] sortOrder,
         [FromQuery] Guid? userId,
         [FromQuery] bool? enableImages = true)
     {
@@ -114,7 +120,8 @@ public class PersonsController : BaseJellyfinApiController
             AppearsInItemId = appearsInItemId ?? Guid.Empty,
             ParentId = parentId,
             StartIndex = startIndex,
-            Limit = limit ?? 0
+            Limit = limit ?? 0,
+            OrderBy = RequestHelpers.GetOrderBy(sortBy, sortOrder)
         });
 
         return new QueryResult<BaseItemDto>(
