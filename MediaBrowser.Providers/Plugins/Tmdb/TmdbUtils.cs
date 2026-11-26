@@ -116,6 +116,16 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         }
 
         /// <summary>
+        /// Sets a numeric external id reported by TMDb, skipping the zero TMDb sends for "no id".
+        /// </summary>
+        /// <param name="instance">The item.</param>
+        /// <param name="provider">The provider the id belongs to.</param>
+        /// <param name="value">The id.</param>
+        /// <returns><c>true</c> if the id was set; otherwise, <c>false</c>.</returns>
+        public static bool TrySetProviderId(this IHasProviderIds instance, MetadataProvider provider, int? value)
+            => value > 0 && instance.TrySetProviderId(provider, value.Value.ToString(CultureInfo.InvariantCulture));
+
+        /// <summary>
         /// Cleans the name according to TMDb requirements.
         /// </summary>
         /// <param name="name">The name of the entity.</param>
