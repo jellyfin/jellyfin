@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Server.ServerSetupApp;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -68,8 +69,12 @@ public class FixIncorrectOwnerIdRelationships : IAsyncMigrationRoutine
 
     private async Task RemoveDuplicateItemsAsync(JellyfinDbContext context, CancellationToken cancellationToken)
     {
+        // Shadow views intentionally share their parent's path; they are not duplicate media.
+        var duplicateCandidates = context.BaseItems
+            .Where(b => b.Type != typeof(UserView).FullName);
+
         // Find all paths that have duplicate entries
-        var duplicatePaths = await context.BaseItems
+        var duplicatePaths = await duplicateCandidates
             .Where(b => b.Path != null)
             .GroupBy(b => b.Path)
             .Where(g => g.Count() > 1)
@@ -101,7 +106,7 @@ public class FixIncorrectOwnerIdRelationships : IAsyncMigrationRoutine
             processedPaths++;
 
             // Get all items with this path
-            var itemsWithPath = await context.BaseItems
+            var itemsWithPath = await duplicateCandidates
                 .Where(b => b.Path == path)
                 .Select(b => new
                 {
