@@ -478,6 +478,14 @@ public class GuideManager : IGuideManager
             }
         }
 
+        var channelGroup = string.IsNullOrWhiteSpace(channelInfo.ChannelGroup) ? null : channelInfo.ChannelGroup.Trim();
+        if (!string.Equals(channelGroup, item.ChannelGroup, StringComparison.Ordinal))
+        {
+            forceUpdate = true;
+        }
+
+        item.ChannelGroup = channelGroup;
+
         if (isNew)
         {
             _libraryManager.CreateItem(item, parentFolder);

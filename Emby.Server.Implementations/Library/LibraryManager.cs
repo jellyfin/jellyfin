@@ -4261,6 +4261,18 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
+        public IReadOnlyList<(string Name, int ChannelCount)> GetLiveTvChannelGroups(InternalItemsQuery query)
+        {
+            if (query.User is not null)
+            {
+                AddUserToQuery(query, query.User);
+            }
+
+            SetTopParentOrAncestorIds(query);
+            return _itemRepository.GetLiveTvChannelGroups(query);
+        }
+
+        /// <inheritdoc />
         public IReadOnlyList<string> GetMediaStreamLanguages(MediaStreamType mediaStreamType)
         {
             return _mediaStreamRepository.GetMediaStreamLanguages(mediaStreamType);

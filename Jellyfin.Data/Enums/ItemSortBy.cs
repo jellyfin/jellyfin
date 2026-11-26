@@ -154,4 +154,9 @@ public enum ItemSortBy
     /// The index number.
     /// </summary>
     IndexNumber = 29,
+
+    /// <summary>
+    /// The live TV channel group.
+    /// </summary>
+    ChannelGroup = 30,
 }

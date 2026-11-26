@@ -129,6 +129,8 @@ public class LiveTvController : BaseJellyfinApiController
     /// <param name="enableUserData">Optional. Include user data.</param>
     /// <param name="sortBy">Optional. Key to sort by.</param>
     /// <param name="sortOrder">Optional. Sort order.</param>
+    /// <param name="channelGroups">Optional. Filter by channel group name, pipe delimited. A channel matches when it is in any of the groups.</param>
+    /// <param name="channelGroupIds">Optional. Filter by channel group id, comma delimited. A channel matches when it is in any of the groups.</param>
     /// <param name="enableFavoriteSorting">Optional. Incorporate favorite and like status into channel sorting.</param>
     /// <param name="addCurrentProgram">Optional. Adds current program info to each channel.</param>
     /// <response code="200">Available live tv channels returned.</response>
@@ -158,6 +160,8 @@ public class LiveTvController : BaseJellyfinApiController
         [FromQuery] bool? enableUserData,
         [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] ItemSortBy[] sortBy,
         [FromQuery] SortOrder? sortOrder,
+        [FromQuery, ModelBinder(typeof(PipeDelimitedCollectionModelBinder))] string[] channelGroups,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedCollectionModelBinder))] Guid[] channelGroupIds,
         [FromQuery] bool enableFavoriteSorting = false,
         [FromQuery] bool addCurrentProgram = true)
     {
@@ -175,6 +179,8 @@ public class LiveTvController : BaseJellyfinApiController
                 IsFavorite = isFavorite,
                 IsLiked = isLiked,
                 IsDisliked = isDisliked,
+                ChannelGroups = channelGroups,
+                ChannelGroupIds = channelGroupIds,
                 EnableFavoriteSorting = enableFavoriteSorting,
                 IsMovie = isMovie,
                 IsSeries = isSeries,
@@ -205,6 +211,24 @@ public class LiveTvController : BaseJellyfinApiController
             startIndex,
             channelResult.TotalRecordCount,
             returnArray);
+    }
+
+    /// <summary>
+    /// Gets the live tv channel groups.
+    /// </summary>
+    /// <param name="userId">Optional. Only count channels the user can see.</param>
+    /// <response code="200">Channel groups returned.</response>
+    /// <returns>
+    /// An <see cref="OkResult"/> containing the channel groups of the available channels, ordered by name,
+    /// each with the number of channels in it. Channels without a group are not represented.
+    /// </returns>
+    [HttpGet("ChannelGroups")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [Authorize(Policy = Policies.LiveTvAccess)]
+    public ActionResult<IReadOnlyList<LiveTvChannelGroup>> GetLiveTvChannelGroups([FromQuery] Guid? userId)
+    {
+        userId = RequestHelpers.GetUserId(User, userId);
+        return Ok(_liveTvManager.GetChannelGroups(userId.Value, CancellationToken.None));
     }
 
     /// <summary>

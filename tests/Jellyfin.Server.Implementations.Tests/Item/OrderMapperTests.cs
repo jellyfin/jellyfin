@@ -32,4 +32,28 @@ public class OrderMapperTests
         Assert.Equal(resultWithBothPremierDateAndProductionYear, expectedDate);
         Assert.Null(resultWithoutEitherPremierDateOrProductionYear);
     }
+
+    [Fact]
+    public void ShouldReturnMappedOrderForSortingByChannelGroup()
+    {
+        var orderFunc = OrderMapper.MapOrderByField(ItemSortBy.ChannelGroup, new InternalItemsQuery(), null!).Compile();
+
+        var grouped = new BaseItemEntity { Id = Guid.NewGuid(), Type = "Test" };
+        grouped.ItemValues =
+        [
+            Map(grouped, ItemValueType.Tags, "a tag"),
+            Map(grouped, ItemValueType.ChannelGroup, "sports")
+        ];
+        var ungrouped = new BaseItemEntity { Id = Guid.NewGuid(), Type = "Test" };
+        ungrouped.ItemValues = [Map(ungrouped, ItemValueType.Tags, "sports")];
+
+        Assert.Equal("sports", orderFunc(grouped));
+        Assert.Null(orderFunc(ungrouped));
+    }
+
+    private static ItemValueMap Map(BaseItemEntity item, ItemValueType type, string cleanValue)
+    {
+        var value = new ItemValue { ItemValueId = Guid.NewGuid(), Type = type, Value = cleanValue, CleanValue = cleanValue };
+        return new ItemValueMap { ItemId = item.Id, ItemValueId = value.ItemValueId, Item = item, ItemValue = value };
+    }
 }

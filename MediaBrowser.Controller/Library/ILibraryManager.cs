@@ -872,6 +872,13 @@ namespace MediaBrowser.Controller.Library
         IReadOnlyList<string> GetTagNames(InternalItemsQuery query);
 
         /// <summary>
+        /// Gets the distinct live TV channel groups of the matching channels with the number of channels in each.
+        /// </summary>
+        /// <param name="query">The query filter.</param>
+        /// <returns>The groups, ordered by name.</returns>
+        IReadOnlyList<(string Name, int ChannelCount)> GetLiveTvChannelGroups(InternalItemsQuery query);
+
+        /// <summary>
         /// Gets a list of all language codes of the provided stream type.
         /// </summary>
         /// <param name="mediaStreamType">The stream type.</param>

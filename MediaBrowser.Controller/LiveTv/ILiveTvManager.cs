@@ -217,6 +217,14 @@ namespace MediaBrowser.Controller.LiveTv
         QueryResult<BaseItem> GetInternalChannels(LiveTvChannelQuery query, DtoOptions dtoOptions, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Gets the channel groups of the channels the user can see, with the number of channels in each.
+        /// </summary>
+        /// <param name="userId">The user.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The groups, ordered by name.</returns>
+        IReadOnlyList<LiveTvChannelGroup> GetChannelGroups(Guid userId, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Adds the information to program dto.
         /// </summary>
         /// <param name="programs">The programs.</param>

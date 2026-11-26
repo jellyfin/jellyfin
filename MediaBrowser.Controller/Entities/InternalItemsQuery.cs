@@ -37,6 +37,7 @@ namespace MediaBrowser.Controller.Entities
             ExcludeTags = [];
             GenreIds = [];
             Genres = [];
+            ChannelGroups = [];
             GroupByPresentationUniqueKey = true;
             ImageTypes = [];
             IncludeItemTypes = [];
@@ -204,6 +205,11 @@ namespace MediaBrowser.Controller.Entities
         public string[] IncludeInheritedTags { get; set; }
 
         public IReadOnlyList<string> Genres { get; set; }
+
+        /// <summary>
+        /// Gets or sets the live TV channel groups to match (any of). Matching is case-insensitive.
+        /// </summary>
+        public IReadOnlyList<string> ChannelGroups { get; set; }
 
         public bool? IsSpecialSeason { get; set; }
 

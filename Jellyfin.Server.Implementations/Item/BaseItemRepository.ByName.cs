@@ -146,6 +146,37 @@ public sealed partial class BaseItemRepository
             .ToArray();
     }
 
+    /// <inheritdoc />
+    public IReadOnlyList<(string Name, int ChannelCount)> GetLiveTvChannelGroups(InternalItemsQuery filter)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+        PrepareFilterQuery(filter);
+
+        using var context = _dbProvider.CreateDbContext();
+        var baseQuery = PrepareItemQuery(context, filter);
+        baseQuery = TranslateQuery(baseQuery, context, filter);
+
+        var matchingItemIds = baseQuery.Select(e => e.Id);
+
+        // Same shape as GetTagNames: project the join before grouping so EF emits one GROUP BY
+        // instead of a correlated subquery per group.
+        return context.ItemValuesMap
+            .AsNoTracking()
+            .Join(
+                context.ItemValues,
+                ivm => ivm.ItemValueId,
+                iv => iv.ItemValueId,
+                (ivm, iv) => new { ivm.ItemId, iv.Type, iv.CleanValue, iv.Value })
+            .Where(iv => iv.Type == ItemValueType.ChannelGroup)
+            .Where(iv => matchingItemIds.Contains(iv.ItemId))
+            .GroupBy(iv => iv.CleanValue)
+            .Select(g => new { Name = g.Min(iv => iv.Value)!, ChannelCount = g.Select(iv => iv.ItemId).Distinct().Count() })
+            .OrderBy(g => g.Name)
+            .AsEnumerable()
+            .Select(g => (g.Name, g.ChannelCount))
+            .ToArray();
+    }
+
     private string[] GetItemValueNames(IReadOnlyList<ItemValueType> itemValueTypes, IReadOnlyList<string> withItemTypes, IReadOnlyList<string> excludeItemTypes)
     {
         using var context = _dbProvider.CreateDbContext();
