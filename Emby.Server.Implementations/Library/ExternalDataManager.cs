@@ -51,7 +51,7 @@ public class ExternalDataManager : IExternalDataManager
     /// <inheritdoc/>
     public async Task DeleteExternalItemDataAsync(BaseItem item, CancellationToken cancellationToken)
     {
-        DeleteExternalItemFiles(item);
+        DeleteExternalItemFiles(item, deleteMediaTrickplay: true);
 
         var itemId = item.Id;
         await _keyframeManager.DeleteKeyframeDataAsync(itemId, cancellationToken).ConfigureAwait(false);
@@ -61,10 +61,19 @@ public class ExternalDataManager : IExternalDataManager
     }
 
     /// <inheritdoc/>
-    public void DeleteExternalItemFiles(BaseItem item)
+    public void DeleteExternalItemFiles(BaseItem item, bool deleteMediaTrickplay = true)
     {
+        // Library removal must not delete user-accessible trickplay tiles saved
+        // next to media. Physical deletion or media-file replacement still may.
+        var preservedPath = !deleteMediaTrickplay && !string.IsNullOrEmpty(item.Path)
+            ? _pathManager.GetTrickplayDirectory(item, true)
+            : null;
         foreach (var path in _pathManager.GetExtractedDataPaths(item))
         {
+            if (string.Equals(path, preservedPath, StringComparison.Ordinal))
+            {
+                continue;
+            }
             if (!Directory.Exists(path))
             {
                 continue;

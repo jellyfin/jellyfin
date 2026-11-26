@@ -77,8 +77,18 @@ public class CleanDatabaseScheduledTask : ILibraryPostScanTask
                     }
 
                     var extractedDataFolders = _pathManager.GetExtractedDataPaths(mediaSourceItem);
+                    // When the library has been removed, the media files and their
+                    // adjacent trickplay images still belong to the user.
+                    var mediaTrickplayPath = !string.IsNullOrEmpty(mediaSourceItem.Path)
+                        ? _pathManager.GetTrickplayDirectory(mediaSourceItem, true)
+                        : null;
                     foreach (var folder in extractedDataFolders)
                     {
+                        if (string.Equals(folder, mediaTrickplayPath, StringComparison.Ordinal))
+                        {
+                            continue;
+                        }
+
                         if (Directory.Exists(folder))
                         {
                             try
