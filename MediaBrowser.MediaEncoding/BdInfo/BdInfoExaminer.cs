@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using BDInfo;
 using Jellyfin.Extensions;
@@ -24,6 +25,15 @@ public class BdInfoExaminer : IBlurayExaminer
     public BdInfoExaminer(IFileSystem fileSystem)
     {
         _fileSystem = fileSystem;
+    }
+
+    /// <inheritdoc />
+    public IReadOnlyList<BlurayIsoClip> GetIsoClips(string path)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(path);
+
+        using var image = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+        return BlurayIsoReader.ReadMainPlaylistClips(image);
     }
 
     /// <summary>
