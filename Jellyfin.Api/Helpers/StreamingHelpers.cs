@@ -56,18 +56,71 @@ public static class StreamingHelpers
         CancellationToken cancellationToken)
     {
         var httpRequest = httpContext.Request;
-        if (!string.IsNullOrWhiteSpace(streamingRequest.Params))
-        {
-            ParseParams(streamingRequest);
-        }
-
-        streamingRequest.StreamOptions = ParseStreamOptions(httpRequest.Query);
         if (httpRequest.Path.Value is null)
         {
             throw new ResourceNotFoundException(nameof(httpRequest.Path));
         }
 
-        var url = httpRequest.Path.Value.AsSpan().RightPart('.').ToString();
+        return await GetStreamingState(
+                streamingRequest,
+                httpRequest.Path.Value,
+                ParseStreamOptions(httpRequest.Query),
+                httpRequest.Headers[HeaderNames.UserAgent],
+                httpContext.User.GetUserId(),
+                mediaSourceManager,
+                userManager,
+                libraryManager,
+                serverConfigurationManager,
+                mediaEncoder,
+                encodingHelper,
+                transcodeManager,
+                transcodingJobType,
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Gets the streaming state for a request that does not come from an HTTP request, such as a server-side test.
+    /// </summary>
+    /// <param name="streamingRequest">The <see cref="StreamingRequestDto"/>.</param>
+    /// <param name="requestPath">The path of the streaming URL; its extension selects the output container.</param>
+    /// <param name="streamOptions">Additional stream options.</param>
+    /// <param name="userAgent">The user agent, if any.</param>
+    /// <param name="userId">The id of the requesting user, or <see cref="Guid.Empty"/>.</param>
+    /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
+    /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
+    /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
+    /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+    /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
+    /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
+    /// <param name="transcodeManager">Instance of the <see cref="ITranscodeManager"/> interface.</param>
+    /// <param name="transcodingJobType">The <see cref="TranscodingJobType"/>.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
+    /// <returns>A <see cref="Task"/> containing the current <see cref="StreamState"/>.</returns>
+    public static async Task<StreamState> GetStreamingState(
+        StreamingRequestDto streamingRequest,
+        string requestPath,
+        Dictionary<string, string?> streamOptions,
+        string? userAgent,
+        Guid userId,
+        IMediaSourceManager mediaSourceManager,
+        IUserManager userManager,
+        ILibraryManager libraryManager,
+        IServerConfigurationManager serverConfigurationManager,
+        IMediaEncoder mediaEncoder,
+        EncodingHelper encodingHelper,
+        ITranscodeManager transcodeManager,
+        TranscodingJobType transcodingJobType,
+        CancellationToken cancellationToken)
+    {
+        if (!string.IsNullOrWhiteSpace(streamingRequest.Params))
+        {
+            ParseParams(streamingRequest);
+        }
+
+        streamingRequest.StreamOptions = streamOptions;
+
+        var url = requestPath.AsSpan().RightPart('.').ToString();
 
         if (string.IsNullOrEmpty(streamingRequest.AudioCodec))
         {
@@ -78,10 +131,9 @@ public static class StreamingHelpers
         {
             Request = streamingRequest,
             RequestedUrl = url,
-            UserAgent = httpRequest.Headers[HeaderNames.UserAgent]
+            UserAgent = userAgent
         };
 
-        var userId = httpContext.User.GetUserId();
         if (!userId.IsEmpty())
         {
             state.User = userManager.GetUserById(userId);
