@@ -14,6 +14,12 @@ namespace MediaBrowser.Controller.LiveTv;
 public interface IListingsManager
 {
     /// <summary>
+    /// Gets the available listing provider types.
+    /// </summary>
+    /// <returns>The available listing provider types.</returns>
+    IEnumerable<NameIdPair> GetListingProviderTypes();
+
+    /// <summary>
     /// Saves the listing provider.
     /// </summary>
     /// <param name="info">The listing provider information.</param>
