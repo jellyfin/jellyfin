@@ -700,6 +700,7 @@ public partial class TrickplayManager : ITrickplayManager
             trickplayItems = await dbContext.TrickplayInfos
                 .AsNoTracking()
                 .OrderBy(i => i.ItemId)
+                .ThenBy(i => i.Width)
                 .Skip(offset)
                 .Take(limit)
                 .ToListAsync()
