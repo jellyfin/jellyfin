@@ -72,7 +72,15 @@ public class ExceptionMiddleware
                 || ex is AuthenticationException
                 || ex is FileNotFoundException;
 
-            if (ignoreStackTrace)
+            if (ex is BadHttpRequestException { StatusCode: >= 400 and < 500 })
+            {
+                _logger.LogDebug(
+                    "Invalid HTTP request: {ExceptionMessage}. URL {Method} {Url}.",
+                    ex.Message.TrimEnd('.'),
+                    context.Request.Method,
+                    context.Request.Path);
+            }
+            else if (ignoreStackTrace)
             {
                 _logger.LogError(
                     "Error processing request: {ExceptionMessage}. URL {Method} {Url}.",
@@ -124,6 +132,7 @@ public class ExceptionMiddleware
     {
         return ex switch
         {
+            BadHttpRequestException badRequest => badRequest.StatusCode,
             ArgumentException => StatusCodes.Status400BadRequest,
             AuthenticationException => StatusCodes.Status401Unauthorized,
             SecurityException => StatusCodes.Status403Forbidden,
