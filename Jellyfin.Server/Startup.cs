@@ -8,6 +8,7 @@ using System.Net.Mime;
 using System.Text;
 using Emby.Server.Implementations.EntryPoints;
 using Emby.Server.Implementations.Localization;
+using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Middleware;
 using Jellyfin.Database.Implementations;
 using Jellyfin.LiveTv.Extensions;
@@ -157,6 +158,7 @@ namespace Jellyfin.Server
             services.AddHostedService<UserDataChangeNotifier>();
             services.AddHostedService<RecordingNotifier>();
             services.AddHostedService<DeviceAccessHost>();
+            services.AddHostedService<OfflineDownloadHostedService>();
         }
 
         /// <summary>
