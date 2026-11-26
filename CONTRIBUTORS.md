@@ -253,6 +253,7 @@
  - [klizas](https://github.com/klizas)
  - [p27ZuH6CNAdzr](https://github.com/p27ZuH6CNAdzr)
  - [mysticalsoap](https://github.com/mysticalsoap)
+ - [munitkala](https://github.com/munitkala)
 
 # Emby Contributors
 
