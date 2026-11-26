@@ -27,7 +27,10 @@ namespace MediaBrowser.Controller.Entities.Audio
         public static IEnumerable<string> GetAllArtists<T>(this T item)
             where T : IHasArtist, IHasAlbumArtist
         {
-            return item.AlbumArtists.Concat(item.Artists).DistinctNames();
+            // Null/Empty check should not be necessary, but cases of it have been observed
+            return item.AlbumArtists.Concat(item.Artists)
+                .Where(a => !string.IsNullOrWhiteSpace(a))
+                .DistinctNames();
         }
     }
 }
