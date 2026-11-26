@@ -162,15 +162,44 @@ namespace Jellyfin.Model.Tests.Entities
         }
 
         [Theory]
+        [InlineData(1080, 1920, false, "1080p H264 SDR")]
+        [InlineData(1080, 1920, true, "1080i H264 SDR")]
+        [InlineData(720, 1280, false, "720p H264 SDR")]
+        [InlineData(480, 854, false, "480p H264 SDR")]
+        [InlineData(null, 1920, false, "H264 SDR")]
+        [InlineData(1080, null, false, "H264 SDR")]
+        [InlineData(null, null, false, "H264 SDR")]
+        public void DisplayTitle_VideoResolution(int? width, int? height, bool interlaced, string expected)
+        {
+            var mediaStream = new MediaStream
+            {
+                Type = MediaStreamType.Video,
+                Codec = "h264",
+                Width = width,
+                Height = height,
+                IsInterlaced = interlaced
+            };
+
+            Assert.Equal(expected, mediaStream.DisplayTitle);
+            Assert.Equal(width, mediaStream.Width);
+            Assert.Equal(height, mediaStream.Height);
+        }
+
+        [Theory]
         [InlineData(null, null, false, null)]
         [InlineData(null, 0, false, null)]
         [InlineData(0, null, false, null)]
+        [InlineData(null, 1920, false, null)]
+        [InlineData(1080, null, true, null)]
         [InlineData(256, 144, false, "144p")]
         [InlineData(256, 144, true, "144i")]
         [InlineData(426, 240, false, "240p")]
         [InlineData(426, 240, true, "240i")]
         [InlineData(640, 360, false, "360p")]
         [InlineData(640, 360, true, "360i")]
+        [InlineData(682, 384, false, "384p")]
+        [InlineData(682, 384, true, "384i")]
+        [InlineData(720, 404, true, "404i")]
         [InlineData(854, 480, false, "480p")]
         [InlineData(854, 480, true, "480i")]
         [InlineData(960, 540, false, "540p")]
@@ -179,10 +208,23 @@ namespace Jellyfin.Model.Tests.Entities
         [InlineData(1024, 576, true, "576i")]
         [InlineData(1280, 720, false, "720p")]
         [InlineData(1280, 720, true, "720i")]
+        [InlineData(1280, 962, false, "720p")]
+        [InlineData(1280, 963, false, "1080p")]
         [InlineData(2560, 1080, false, "1080p")]
         [InlineData(2560, 1080, true, "1080i")]
         [InlineData(4096, 3072, false, "4K")]
+        [InlineData(4096, 3072, true, "4K")]
         [InlineData(8192, 6144, false, "8K")]
+        [InlineData(8192, 6144, true, "8K")]
+        [InlineData(8193, 6144, false, null)]
+        [InlineData(144, 144, false, "144p")]
+        [InlineData(480, 480, false, "480p")]
+        [InlineData(720, 720, true, "720i")]
+        [InlineData(1080, 1080, false, "1080p")]
+        [InlineData(1441, 1441, false, "4K")]
+        [InlineData(3072, 3072, false, "4K")]
+        [InlineData(6144, 6144, false, "8K")]
+        [InlineData(6145, 6145, false, null)]
         [InlineData(512, 384, false, "384p")]
         [InlineData(576, 336, false, "360p")]
         [InlineData(576, 336, true, "360i")]
@@ -228,6 +270,7 @@ namespace Jellyfin.Model.Tests.Entities
         [InlineData(1920, 1070, false, "1080p")]
         [InlineData(1920, 1072, false, "1080p")]
         [InlineData(1920, 1440, false, "1080p")]
+        [InlineData(2560, 1440, true, "1080i")]
         [InlineData(3840, 1600, false, "4K")]
         [InlineData(3840, 1606, false, "4K")]
         [InlineData(3840, 1608, false, "4K")]
@@ -237,14 +280,20 @@ namespace Jellyfin.Model.Tests.Entities
         [InlineData(8190, 6140, false, "8K")]
         public void GetResolutionText_Valid(int? width, int? height, bool interlaced, string? expected)
         {
-            var mediaStream = new MediaStream()
+            // Each resolution should have the same label in either orientation.
+            foreach (var (streamWidth, streamHeight) in new[] { (width, height), (height, width) })
             {
-                Width = width,
-                Height = height,
-                IsInterlaced = interlaced
-            };
+                var mediaStream = new MediaStream
+                {
+                    Width = streamWidth,
+                    Height = streamHeight,
+                    IsInterlaced = interlaced
+                };
 
-            Assert.Equal(expected, mediaStream.GetResolutionText());
+                Assert.Equal(expected, mediaStream.GetResolutionText());
+                Assert.Equal(streamWidth, mediaStream.Width);
+                Assert.Equal(streamHeight, mediaStream.Height);
+            }
         }
     }
 }
