@@ -55,6 +55,9 @@ namespace Emby.Server.Implementations.Library
 
             cancellationToken.ThrowIfCancellationRequested();
 
+            // The cache and the saved event hand out this instance, so match the UTC value the database stores.
+            userData.LastPlayedDate = userData.LastPlayedDate?.ToUniversalTime();
+
             var keys = item.GetUserDataKeys();
 
             using var dbContext = _repository.CreateDbContext();

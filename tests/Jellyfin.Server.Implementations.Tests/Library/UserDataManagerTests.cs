@@ -253,4 +253,64 @@ public sealed class UserDataManagerTests : IDisposable
         var item = CreateAudioBook();
         Assert.Throws<ArgumentNullException>(() => _userDataManager.GetUserData(null!, item));
     }
+
+    [Theory]
+    [InlineData(DateTimeKind.Utc)]
+    [InlineData(DateTimeKind.Local)]
+    [InlineData(DateTimeKind.Unspecified)]
+    public void SaveUserData_LastPlayedDate_IsCachedPublishedAndStoredAsUtc(DateTimeKind kind)
+    {
+        var item = CreateStoredAudioBook();
+        var expected = new DateTime(2026, 11, 23, 4, 0, 0, DateTimeKind.Utc);
+
+        // Unspecified values are taken as server local time, so build both non-UTC inputs from the local wall clock
+        var input = kind == DateTimeKind.Utc ? expected : DateTime.SpecifyKind(expected.ToLocalTime(), kind);
+        DateTime? published = null;
+        _userDataManager.UserDataSaved += (_, e) => published = e.UserData.LastPlayedDate;
+
+        _userDataManager.SaveUserData(
+            _user,
+            item,
+            new UserItemData { Key = item.GetUserDataKeys()[0], LastPlayedDate = input },
+            UserDataSaveReason.UpdateUserData,
+            CancellationToken.None);
+
+        var cached = _userDataManager.GetUserDataBatch([item], _user)[item.Id].LastPlayedDate;
+        var stored = _userDataManager.GetUserDataDto(item, _user)!.LastPlayedDate; // rows reloaded from the database
+        Assert.All(new[] { cached, published, stored }, actual =>
+        {
+            // DateTime equality ignores Kind, so it is asserted separately
+            Assert.Equal(expected.Ticks, actual?.Ticks);
+            Assert.Equal(DateTimeKind.Utc, actual?.Kind);
+        });
+    }
+
+    [Fact]
+    public void SaveUserData_NullLastPlayedDate_StaysNull()
+    {
+        var item = CreateStoredAudioBook();
+
+        _userDataManager.SaveUserData(
+            _user,
+            item,
+            new UserItemData { Key = item.GetUserDataKeys()[0], LastPlayedDate = null },
+            UserDataSaveReason.UpdateUserData,
+            CancellationToken.None);
+
+        Assert.Null(_userDataManager.GetUserDataBatch([item], _user)[item.Id].LastPlayedDate);
+        Assert.Null(_userDataManager.GetUserDataDto(item, _user)!.LastPlayedDate);
+    }
+
+    private AudioBook CreateStoredAudioBook()
+    {
+        var item = CreateAudioBook();
+        item.UserData = new List<UserData>();
+
+        using var ctx = CreateDbContext();
+        ctx.Users.Add(_user);
+        ctx.BaseItems.Add(new BaseItemEntity { Id = item.Id, Type = typeof(AudioBook).FullName! });
+        ctx.SaveChanges();
+
+        return item;
+    }
 }
