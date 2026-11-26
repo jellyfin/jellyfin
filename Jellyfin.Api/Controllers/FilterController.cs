@@ -76,6 +76,13 @@ public class FilterController : BaseJellyfinApiController
             return new QueryFiltersLegacy();
         }
 
+        if (folder.SourceType == SourceType.Channel)
+        {
+            // Channel folders have no populated ancestor index, so resolving their filter options is
+            // both slow and pointless - clients only need filters for library content. Return empty.
+            return new QueryFiltersLegacy();
+        }
+
         var query = new InternalItemsQuery(user)
         {
             MediaTypes = mediaTypes,
