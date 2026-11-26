@@ -1,14 +1,26 @@
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Providers.Plugins.Omdb;
+using Moq;
 using Xunit;
 
 namespace Jellyfin.Providers.Tests.Omdb
 {
     public class OmdbProviderTests
     {
+        private const string TestUrl = "http://localhost/omdb";
+
         [Fact]
         public void AddPeople_CommaSeparatedList_SplitsIntoIndividualPeople()
         {
@@ -76,6 +88,112 @@ namespace Jellyfin.Providers.Tests.Omdb
             OmdbProvider.AddPeople(result, credits!, PersonKind.Actor);
 
             Assert.Null(result.People);
+        }
+
+        [Theory]
+        [InlineData("{\"Episodes\":[{\"Plot\":\"Line 1\\nLine 2\"}]}")]
+        [InlineData("{\"Episodes\":[{\"Plot\":\"Line 1\nLine 2\"}]}")] // Raw line feed
+        public async Task GetJsonObjectAsync_LineFeedInJsonString_ReturnsExpectedResult(string jsonResponse)
+        {
+            var provider = SetupOmdbProvider(response: jsonResponse);
+
+            var result = await provider.GetJsonObjectAsync<OmdbProvider.SeasonRootObject>(TestUrl, CancellationToken.None);
+
+            Assert.NotNull(result);
+            Assert.Equal("Line 1\nLine 2", result.Episodes[0].Plot);
+        }
+
+        [Theory]
+        [InlineData("{\"Episodes\":[{\"Plot\":\"Line 1\\nLine 2\"")]
+        [InlineData("{\"Episodes\":[{\"Plot\":\"Line 1\nLine 2\"")] // Raw line feed
+        public async Task GetJsonObjectAsync_TruncatedJson_ThrowsJsonException(string jsonResponse)
+        {
+            var provider = SetupOmdbProvider(response: jsonResponse);
+
+            await Assert.ThrowsAsync<JsonException>(
+                () => provider.GetJsonObjectAsync<OmdbProvider.SeasonRootObject>(TestUrl, CancellationToken.None));
+        }
+
+        [Theory]
+        [InlineData("{\"Episodes\":[{\"Plot\":\"Line 1\\nLine 2\"}]}")]
+        [InlineData("{\"Episodes\":[{\"Plot\":\"Line 1\nLine 2\"}]}")] // Raw line feed
+        public void EscapeLineFeedsInJsonStrings_LineFeedInJsonBytes_ReturnsExpectedBytes(string jsonResponse)
+        {
+            var result = OmdbProvider.EscapeLineFeedsInJsonStrings(Encoding.UTF8.GetBytes(jsonResponse));
+
+            var expectedBytes = "{\"Episodes\":[{\"Plot\":\"Line 1\\nLine 2\"}]}"u8;
+
+            Assert.Equal(expectedBytes, result);
+        }
+
+        [Theory]
+        [InlineData("{\n\"Plot\":\"Line 1\\nLine 2\"\n}")]
+        [InlineData("{\n\"Plot\":\"Line 1\nLine 2\"\n}")] // Raw line feed
+        public void EscapeLineFeedsInJsonStrings_LineFeedInPrettyJson_ReturnsExpectedBytes(string prettyJson)
+        {
+            var result = OmdbProvider.EscapeLineFeedsInJsonStrings(Encoding.UTF8.GetBytes(prettyJson));
+
+            var expectedBytes = "{\n\"Plot\":\"Line 1\\nLine 2\"\n}"u8;
+
+            Assert.Equal(expectedBytes, result);
+        }
+
+        [Theory]
+        [InlineData("{\"Plot\":\"Line 1\\\"\\nLine 2\"}")]
+        [InlineData("{\"Plot\":\"Line 1\\\"\nLine 2\"}")]
+        public void EscapeLineFeedsInJsonStrings_QuoteAndLineFeed_ReturnsExpectedBytes(string jsonResponse)
+        {
+            var result = OmdbProvider.EscapeLineFeedsInJsonStrings(Encoding.UTF8.GetBytes(jsonResponse));
+
+            var expectedBytes = "{\"Plot\":\"Line 1\\\"\\nLine 2\"}"u8;
+
+            Assert.Equal(expectedBytes, result);
+        }
+
+        [Theory]
+        [InlineData("{\"Plot\":\"Line 1\\\\\\nLine 2\"}")]
+        [InlineData("{\"Plot\":\"Line 1\\\\\nLine 2\"}")]
+        public void EscapeLineFeedsInJsonStrings_BackslashAndLineFeed_ReturnsExpectedBytes(string jsonResponse)
+        {
+            var result = OmdbProvider.EscapeLineFeedsInJsonStrings(Encoding.UTF8.GetBytes(jsonResponse));
+
+            var expectedBytes = "{\"Plot\":\"Line 1\\\\\\nLine 2\"}"u8;
+
+            Assert.Equal(expectedBytes, result);
+        }
+
+        private static OmdbProvider SetupOmdbProvider(string response)
+        {
+            // Mock factory to return faked client that returns response as bytes
+            var client = new HttpClient(new FakeHttpMessageHandler(Encoding.UTF8.GetBytes(response)));
+            var factory = new Mock<IHttpClientFactory>();
+
+            factory.Setup(f => f.CreateClient(NamedClient.Default)).Returns(client);
+
+            return new OmdbProvider(
+                factory.Object,
+                Mock.Of<IFileSystem>(),
+                Mock.Of<IServerConfigurationManager>());
+        }
+
+        private sealed class FakeHttpMessageHandler : HttpMessageHandler
+        {
+            private readonly byte[] _bytes;
+
+            public FakeHttpMessageHandler(byte[] bytes)
+            {
+                _bytes = bytes;
+            }
+
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                var response = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new ByteArrayContent(_bytes)
+                };
+
+                return Task.FromResult(response);
+            }
         }
     }
 }
