@@ -291,6 +291,12 @@ public class EncodingOptions
     public bool EnableSubtitleExtraction { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether graphical subtitles burned in with overlay_qsv or overlay_vaapi
+    /// are uploaded at their own resolution and scaled by the hardware overlay instead of by swscale.
+    /// </summary>
+    public bool EnableHardwareSubtitleScaling { get; set; }
+
+    /// <summary>
     /// Gets or sets the timeout for subtitle extraction in minutes.
     /// </summary>
     public int SubtitleExtractionTimeoutMinutes { get; set; }

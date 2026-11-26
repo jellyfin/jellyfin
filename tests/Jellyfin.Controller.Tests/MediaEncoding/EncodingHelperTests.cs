@@ -321,6 +321,24 @@ public class EncodingHelperTests
         Assert.Contains("pan=stereo", args, StringComparison.Ordinal);
     }
 
+    [Theory]
+    // same aspect ratio: fixed size passthrough, the overlay scales it
+    [InlineData(1920, 1080, 1920, 1080, "scale=1920:1080:fast_bilinear")]
+    // 4K canvas gets capped at 1080 before upload
+    [InlineData(3840, 2160, 3840, 2160, "scale=1920:1080:fast_bilinear")]
+    // wider video: extend the sides
+    [InlineData(1920, 800, 1920, 1080, "scale=1920:1080:fast_bilinear,pad=2592:1080:(ow-iw)/2:0:black@0")]
+    // narrower video: cut the sides
+    [InlineData(1440, 1080, 1920, 1080, "scale=1920:1080:fast_bilinear,crop=1440:1080")]
+    // unknown subtitle size: same filters as without the option
+    [InlineData(1920, 800, null, null, @"scale,scale=-1:800:fast_bilinear,crop,pad=max(1920\,iw):max(800\,ih):(ow-iw)/2:(oh-ih)/2:black@0,crop=1920:800")]
+    public void GetGraphicalSubHwScalePreProcessFilters_MatchesAspectWithoutScaling(int videoW, int videoH, int? subW, int? subH, string expected)
+    {
+        var filters = EncodingHelper.GetGraphicalSubHwScalePreProcessFilters(videoW, videoH, subW, subH, null, null, null, 1080);
+
+        Assert.Equal(expected, filters);
+    }
+
     private static EncodingJobInfo BuildAudioState(string audioCodec, int requestedSampleRate, string? outputContainer = null)
     {
         var audio = new MediaStream { Index = 0, Type = MediaStreamType.Audio, Codec = "flac", SampleRate = 96000 };
