@@ -104,7 +104,7 @@ public class CreateNetworkConfiguration : IAsyncMigrationRoutine
 
         public int PublicPort { get; set; } = DefaultHttpPort;
 
-        public bool EnableIPV6 { get; set; }
+        public bool EnableIPV6 { get; set; } = true;
 
         public bool EnableIPV4 { get; set; } = true;
 
