@@ -414,6 +414,12 @@ namespace MediaBrowser.Controller.Entities
 
         public IReadOnlyList<(ItemSortBy OrderBy, SortOrder SortOrder)> OrderBy { get; set; }
 
+        /// <summary>
+        /// Gets or sets the seed for sorting by Random, when it is the first sort key.
+        /// Queries with the same seed get the same order, so their pages don't overlap.
+        /// </summary>
+        public int? RandomSeed { get; set; }
+
         public DateTime? MinDateCreated { get; set; }
 
         public DateTime? MinDateLastSaved { get; set; }
