@@ -1,3 +1,5 @@
+using System;
+using System.Threading.Tasks;
 using Emby.Naming.Common;
 using Emby.Naming.TV;
 using Xunit;
@@ -6,6 +8,13 @@ namespace Jellyfin.Naming.Tests.TV
 {
     public class EpisodePathParserTest
     {
+        // 20 quality tags, and 40 empty ones: both well within what a real release name carries.
+        private const string Tags20 = "[1080p][HEVC][10bit][FLAC][Dual-Audio][BD][v2][REPACK][Multi-Subs][Uncensored]"
+            + "[1080p][HEVC][10bit][FLAC][Dual-Audio][BD][v2][REPACK][Multi-Subs][Uncensored]";
+
+        private const string EmptyTags40 = "[][][][][][][][][][][][][][][][][][][][]"
+            + "[][][][][][][][][][][][][][][][][][][][]";
+
         private readonly NamingOptions _namingOptions = new NamingOptions();
 
         [Theory]
@@ -99,6 +108,24 @@ namespace Jellyfin.Naming.Tests.TV
             var res = p.Parse("ABC_2019_10_21 11:00:00", false);
 
             Assert.True(res.Success);
+        }
+
+        [Theory]
+        [InlineData("/media/tv/[Group] Series Name " + Tags20 + ".mkv")]
+        [InlineData("/media/tv/" + EmptyTags40 + ".mkv")]
+        public async Task EpisodePathParserTest_NameWithManyBracketedTags_Terminates(string path)
+        {
+            // A run of bracketed tags used to be matched with \[.*?\], which let the run be split up in
+            // exponentially many ways. Names like these then took longer to parse than the whole scan they
+            // belong to, so parsing has to be asserted to finish rather than only to be correct.
+            EpisodePathParser p = new EpisodePathParser(_namingOptions);
+
+            Task parse = Task.Run(() => p.Parse(path, false));
+            Task finished = await Task.WhenAny(
+                parse,
+                Task.Delay(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken)).ConfigureAwait(true);
+
+            Assert.Same(parse, finished);
         }
     }
 }

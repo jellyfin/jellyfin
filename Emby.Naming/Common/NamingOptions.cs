@@ -376,7 +376,10 @@ namespace Emby.Naming.Common
 
                 // Not a Kodi rule as well, but below rule also causes false positives for triple-digit episode names
                 // [bar] Foo - 1 [baz] special case of below expression to prevent false positives with digits in the series name
-                new EpisodeExpression(@".*[\\\/]?.*?(\[.*?\])+.*?(?<seriesname>[-\w\s]+?)[\s_]*-[\s_]*(?<epnumber>[0-9]+).*$")
+                // The bracket contents are matched with [^\]] rather than .*?, because with .*? a run of
+                // bracketed tags can be split up in exponentially many ways, and matching a name that
+                // carries several of them never finishes.
+                new EpisodeExpression(@".*(\[[^\]]*\])+.*?(?<seriesname>[-\w\s]+?)[\s_]*-[\s_]*(?<epnumber>[0-9]+).*$")
                 {
                     IsNamed = true
                 },
