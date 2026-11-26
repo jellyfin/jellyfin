@@ -547,7 +547,11 @@ namespace Jellyfin.Server.Implementations.Users
 
             bool success;
             var user = GetUserByName(username);
-            using (await _userLock.LockAsync(user?.Id ?? Guid.Empty).ConfigureAwait(false))
+
+            // Unknown usernames get a lock per name rather than one shared lock. A shared lock would queue them
+            // behind each other, and the wait could reveal that a username does not exist.
+            var lockKey = user?.Id ?? username.ToUpperInvariant().GetMD5();
+            using (await _userLock.LockAsync(lockKey).ConfigureAwait(false))
             {
                 using var dbContext = _dbProvider.CreateDbContext();
 
@@ -719,10 +723,24 @@ namespace Jellyfin.Server.Implementations.Users
 
             if (user is not null && isInNetwork)
             {
-                await UpdateUserAsync(user).ConfigureAwait(false);
+                // Send the response without waiting for this write. The write only happens for existing users,
+                // so waiting on it would cause small time differences that could reveal which usernames exist.
+                _ = Task.Run(() => UpdateUserAfterForgotPasswordAsync(user));
             }
 
             return result;
+        }
+
+        private async Task UpdateUserAfterForgotPasswordAsync(User user)
+        {
+            try
+            {
+                await UpdateUserAsync(user).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to update user {UserName} after starting the forgot password process", user.Username);
+            }
         }
 
         /// <inheritdoc/>

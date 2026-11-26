@@ -56,13 +56,16 @@ namespace Jellyfin.Server.Implementations.Tests.Users
 
             var appHost = new Mock<IApplicationHost>();
 
+            var dummyPasswordVerifier = new DummyPasswordVerifier(cryptoProvider.Object);
             var defaultAuthProvider = new DefaultAuthenticationProvider(
                 NullLogger<DefaultAuthenticationProvider>.Instance,
-                cryptoProvider.Object);
-            var invalidAuthProvider = new InvalidAuthProvider();
+                cryptoProvider.Object,
+                dummyPasswordVerifier);
+            var invalidAuthProvider = new InvalidAuthProvider(dummyPasswordVerifier);
             var defaultPasswordResetProvider = new DefaultPasswordResetProvider(
                 configManager.Object,
-                appHost.Object);
+                appHost.Object,
+                NullLogger<DefaultPasswordResetProvider>.Instance);
 
             _userManager = new UserManager(
                 factory.Object,
