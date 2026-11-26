@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
 using Movie = MediaBrowser.Controller.Entities.Movies.Movie;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb.Movies;
@@ -17,17 +17,14 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies;
 public class TmdbMovieSimilarProvider : IRemoteSimilarItemsProvider<Movie>
 {
     private readonly TmdbClientManager _tmdbClientManager;
-    private readonly ILogger<TmdbMovieSimilarProvider> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TmdbMovieSimilarProvider"/> class.
     /// </summary>
     /// <param name="tmdbClientManager">The TMDb client manager.</param>
-    /// <param name="logger">The logger.</param>
-    public TmdbMovieSimilarProvider(TmdbClientManager tmdbClientManager, ILogger<TmdbMovieSimilarProvider> logger)
+    public TmdbMovieSimilarProvider(TmdbClientManager tmdbClientManager)
     {
         _tmdbClientManager = tmdbClientManager;
-        _logger = logger;
     }
 
     /// <inheritdoc/>
@@ -58,39 +55,15 @@ public class TmdbMovieSimilarProvider : IRemoteSimilarItemsProvider<Movie>
         }
 
         var providerName = MetadataProvider.Tmdb.ToString();
-        var page = 1;
-        var totalPages = 1;
-
-        while (page <= totalPages && !cancellationToken.IsCancellationRequested)
+        await foreach (var recommendation in _tmdbClientManager
+            .GetMovieRecommendationsAsync(tmdbId, TmdbUtils.GetImageLanguagesParam(string.Empty), cancellationToken)
+            .ConfigureAwait(false))
         {
-            IReadOnlyList<TMDbLib.Objects.Search.SearchMovie> pageResults;
-            try
+            yield return new SimilarItemReference
             {
-                (pageResults, totalPages) = await _tmdbClientManager
-                    .GetMovieRecommendationsPageAsync(tmdbId, page, TmdbUtils.GetImageLanguagesParam(string.Empty), cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Failed to get recommended movies from TMDb for {TmdbId} page {Page}", tmdbId, page);
-                yield break;
-            }
-
-            if (pageResults.Count == 0)
-            {
-                yield break;
-            }
-
-            foreach (var recommendation in pageResults)
-            {
-                yield return new SimilarItemReference
-                {
-                    ProviderName = providerName,
-                    ProviderId = recommendation.Id.ToString(CultureInfo.InvariantCulture)
-                };
-            }
-
-            page++;
+                ProviderName = providerName,
+                ProviderId = recommendation.Id.ToString(CultureInfo.InvariantCulture)
+            };
         }
     }
 }
