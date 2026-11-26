@@ -226,7 +226,7 @@ public sealed class MigrateRatingLevelsTests : IDisposable
         var factory = new Mock<IDbContextFactory<JellyfinDbContext>>();
         factory.Setup(f => f.CreateDbContext()).Returns(CreateDbContext);
 
-        new MigrateRatingLevels(factory.Object, new StartupLogger<MigrateRatingLevels>(NullLogger<MigrateRatingLevels>.Instance), _localizationManager.Object, _libraryManager.Object, _appHost.Object).Perform();
+        new MigrateRatingLevels(factory.Object, new StartupLogger<MigrateRatingLevels>(NullLogger<MigrateRatingLevels>.Instance), _localizationManager.Object, _libraryManager.Object, _appHost.Object).PerformCore();
     }
 
     private JellyfinDbContext CreateDbContext() => new(
