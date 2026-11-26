@@ -278,7 +278,7 @@ namespace MediaBrowser.Controller.Entities
                     }
                 })
                 .Where(i => i is not null)
-                .Select(i => GetUserViewWithName(CollectionType.moviegenre, i.SortName, parent));
+                .Select(i => GetUserViewWithName(CollectionType.moviegenre, i!.SortName, parent));
 
             return GetResult(genres, query);
         }
@@ -406,7 +406,7 @@ namespace MediaBrowser.Controller.Entities
                     }
                 })
                 .Where(i => i is not null)
-                .Select(i => GetUserViewWithName(CollectionType.tvgenre, i.SortName, parent));
+                .Select(i => GetUserViewWithName(CollectionType.tvgenre, i!.SortName, parent));
 
             return GetResult(genres, query);
         }
