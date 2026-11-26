@@ -253,6 +253,7 @@
  - [klizas](https://github.com/klizas)
  - [p27ZuH6CNAdzr](https://github.com/p27ZuH6CNAdzr)
  - [mysticalsoap](https://github.com/mysticalsoap)
+ - [akramxsaleh](https://github.com/akramxsaleh)
 
 # Emby Contributors
 
@@ -316,4 +317,3 @@
  - [tikuf](https://github.com/tikuf/)
  - [Tim Hobbs](https://github.com/timhobbs)
  - [SvenVandenbrande](https://github.com/SvenVandenbrande)
- - [akramxsaleh](https://github.com/akramxsaleh)
