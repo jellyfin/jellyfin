@@ -91,6 +91,11 @@ namespace MediaBrowser.Model.Dlna
         public int? MaxBitrate { get; set; }
 
         /// <summary>
+        /// Gets or sets the bitrate limit applied to intensive transcodes.
+        /// </summary>
+        public int? VideoTranscodeBitrateLimit { get; set; }
+
+        /// <summary>
         /// Gets or sets the context.
         /// </summary>
         /// <value>The context.</value>
