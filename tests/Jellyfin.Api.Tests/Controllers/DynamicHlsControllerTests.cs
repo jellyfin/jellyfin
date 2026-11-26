@@ -40,6 +40,26 @@ namespace Jellyfin.Api.Tests.Controllers
         }
 
         [Theory]
+        [InlineData("ts", false)]
+        [InlineData("TS", false)]
+        [InlineData("mp4", true)]
+        [InlineData(null, true)]
+        public void UseHevcMp4Tag_SkipsMpegTs(string? segmentContainer, bool expected)
+        {
+            Assert.Equal(expected, DynamicHlsController.UseHevcMp4Tag(segmentContainer));
+        }
+
+        [Theory]
+        [InlineData(null, false, false)]
+        [InlineData("0", false, false)]
+        [InlineData("4", true, false)]
+        [InlineData("4", false, true)]
+        public void UseAnnexBBitStreamFilter_SkipsLiveAndAnnexB(string? nalLengthSize, bool isInfiniteStream, bool expected)
+        {
+            Assert.Equal(expected, DynamicHlsController.UseAnnexBBitStreamFilter(nalLengthSize, isInfiniteStream));
+        }
+
+        [Theory]
         [MemberData(nameof(GetSegmentLengths_Success_TestData))]
         public void GetSegmentLengths_Success(long runtimeTicks, int segmentlength, double[] expected)
         {
