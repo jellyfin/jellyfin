@@ -503,9 +503,9 @@ namespace Emby.Server.Implementations.Updates
             var plugins = _pluginManager.Plugins;
             foreach (var plugin in plugins)
             {
-                // Don't auto update when plugin marked not to, or when it's disabled or pending removal.
+                // Don't auto update when plugin marked not to, or when it's disabled, superseded or pending removal.
                 if (plugin.Manifest?.AutoUpdate == false
-                    || plugin.Manifest?.Status is PluginStatus.Disabled or PluginStatus.Deleted)
+                    || plugin.Manifest?.Status is PluginStatus.Disabled or PluginStatus.Superseded or PluginStatus.Deleted)
                 {
                     continue;
                 }
