@@ -30,6 +30,7 @@ using MediaBrowser.Controller.Events.Session;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Controller.Telemetry;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Library;
@@ -183,6 +184,8 @@ namespace Emby.Server.Implementations.Session
 
         private void OnSessionStarted(SessionInfo info)
         {
+            SessionMetrics.OnSessionStarted(info.Id, info.Client);
+
             if (!string.IsNullOrEmpty(info.DeviceId))
             {
                 var capabilities = _deviceManager.GetCapabilities(info.DeviceId);
@@ -207,6 +210,9 @@ namespace Emby.Server.Implementations.Session
 
         private async ValueTask OnSessionEnded(SessionInfo info)
         {
+            SessionMetrics.OnSessionEnded(info.Id, info.Client);
+            PlaybackMetrics.OnSessionEnded(info.Id);
+
             EventHelper.QueueEventIfNotNull(
                 SessionEnded,
                 this,
@@ -385,12 +391,14 @@ namespace Emby.Server.Implementations.Session
         /// <summary>
         /// Updates the now playing item id.
         /// </summary>
-        /// <returns>Task.</returns>
-        private async Task UpdateNowPlayingItem(SessionInfo session, PlaybackProgressInfo info, BaseItem libraryItem, bool updateLastCheckInTime)
+        /// <returns>The media source that was resolved, or <c>null</c> when the now playing item did not change.</returns>
+        private async Task<MediaSourceInfo> UpdateNowPlayingItem(SessionInfo session, PlaybackProgressInfo info, BaseItem libraryItem, bool updateLastCheckInTime)
         {
+            MediaSourceInfo mediaSource = null;
+
             if (session is null)
             {
-                return;
+                return null;
             }
 
             if (string.IsNullOrEmpty(info.MediaSourceId))
@@ -406,7 +414,6 @@ namespace Emby.Server.Implementations.Session
                 {
                     var runtimeTicks = libraryItem.RunTimeTicks;
 
-                    MediaSourceInfo mediaSource = null;
                     if (libraryItem is IHasMediaSources)
                     {
                         mediaSource = await GetMediaSource(libraryItem, info.MediaSourceId, info.LiveStreamId).ConfigureAwait(false);
@@ -457,6 +464,8 @@ namespace Emby.Server.Implementations.Session
             session.PlayState.RepeatMode = info.RepeatMode;
             session.PlayState.PlaybackOrder = info.PlaybackOrder;
             session.PlaylistItemId = info.PlaylistItemId;
+
+            return mediaSource;
         }
 
         /// <summary>
@@ -774,7 +783,7 @@ namespace Emby.Server.Implementations.Session
                 ? null
                 : GetNowPlayingItem(session, info.ItemId);
 
-            await UpdateNowPlayingItem(session, info, libraryItem, true).ConfigureAwait(false);
+            var mediaSource = await UpdateNowPlayingItem(session, info, libraryItem, true).ConfigureAwait(false);
 
             if (!string.IsNullOrEmpty(session.DeviceId) && info.PlayMethod != PlayMethod.Transcode)
             {
@@ -782,6 +791,14 @@ namespace Emby.Server.Implementations.Session
             }
 
             session.StartAutomaticProgress(info);
+
+            PlaybackMetrics.OnPlaybackStarted(
+                info.PlaySessionId,
+                info.SessionId,
+                info.PlayMethod,
+                libraryItem?.MediaType ?? MediaType.Unknown,
+                session.Client,
+                mediaSource?.Bitrate);
 
             var users = GetUsers(session);
 
@@ -922,6 +939,13 @@ namespace Emby.Server.Implementations.Session
             {
                 ClearTranscodingInfo(session.DeviceId);
             }
+
+            PlaybackMetrics.OnPlaybackProgress(
+                info.PlaySessionId,
+                info.SessionId,
+                info.PlayMethod,
+                libraryItem?.MediaType ?? MediaType.Unknown,
+                session.Client);
 
             var users = GetUsers(session);
 
@@ -1147,6 +1171,8 @@ namespace Emby.Server.Implementations.Session
                     playedToCompletion = OnPlaybackStopped(user, progressItem, info.PositionTicks, info.Failed);
                 }
             }
+
+            PlaybackMetrics.OnPlaybackStopped(info.PlaySessionId, info.SessionId, playedToCompletion, info.Failed);
 
             if (!string.IsNullOrEmpty(info.LiveStreamId))
             {
@@ -1715,6 +1741,31 @@ namespace Emby.Server.Implementations.Session
 
         internal async Task<AuthenticationResult> AuthenticateNewSessionInternal(AuthenticationRequest request, bool enforcePassword)
         {
+            try
+            {
+                var result = await AuthenticateNewSessionCore(request, enforcePassword).ConfigureAwait(false);
+                AuthenticationMetrics.OnAuthenticationAttempt(AuthenticationMetrics.OutcomeSucceeded);
+                return result;
+            }
+            catch (AuthenticationException)
+            {
+                AuthenticationMetrics.OnAuthenticationAttempt(AuthenticationMetrics.OutcomeInvalidCredentials);
+                throw;
+            }
+            catch (SecurityException)
+            {
+                AuthenticationMetrics.OnAuthenticationAttempt(AuthenticationMetrics.OutcomeNotPermitted);
+                throw;
+            }
+            catch (Exception)
+            {
+                AuthenticationMetrics.OnAuthenticationAttempt(AuthenticationMetrics.OutcomeError);
+                throw;
+            }
+        }
+
+        private async Task<AuthenticationResult> AuthenticateNewSessionCore(AuthenticationRequest request, bool enforcePassword)
+        {
             CheckDisposed();
 
             ArgumentException.ThrowIfNullOrEmpty(request.App);
@@ -2237,6 +2288,9 @@ namespace Emby.Server.Implementations.Session
 
             foreach (var session in _activeConnections.Values)
             {
+                // The metrics state is static and outlives an in-process restart.
+                SessionMetrics.OnSessionEnded(session.Id, session.Client);
+                PlaybackMetrics.OnSessionEnded(session.Id);
                 await session.DisposeAsync().ConfigureAwait(false);
             }
 
@@ -2275,6 +2329,9 @@ namespace Emby.Server.Implementations.Session
             // Close open websockets to allow Kestrel to shut down cleanly
             foreach (var session in _activeConnections.Values)
             {
+                // The metrics state is static and outlives an in-process restart.
+                SessionMetrics.OnSessionEnded(session.Id, session.Client);
+                PlaybackMetrics.OnSessionEnded(session.Id);
                 await session.DisposeAsync().ConfigureAwait(false);
             }
 

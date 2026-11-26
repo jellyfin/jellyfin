@@ -92,6 +92,11 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public long? RunTimeTicks { get; set; }
 
+        /// <summary>
+        /// Gets or sets the encoding speed ffmpeg last reported, as a multiple of realtime.
+        /// </summary>
+        public double? TranscodingSpeed { get; set; }
+
         public bool ReadInputAtNativeFramerate { get; set; }
 
         public string OutputFilePath { get; set; }
