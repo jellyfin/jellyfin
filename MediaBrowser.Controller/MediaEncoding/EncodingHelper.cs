@@ -344,6 +344,46 @@ namespace MediaBrowser.Controller.MediaEncoding
             // Let transpose_vt optional for the time being.
         }
 
+        /// <summary>
+        /// Whether this transcode keeps HDR: switched on in the server settings, and the
+        /// client asked for a range type the source can be carried in.
+        /// </summary>
+        private bool IsHdrTranscodeOutput(EncodingJobInfo state, EncodingOptions options)
+            => options.EnableHdrTranscoding
+                && state.IsHdrTranscode
+                && IsTenBitHevcEncoder(GetVideoEncoder(state, options))
+                && !UsesVulkanVaapiChain(options);
+
+        /// <summary>
+        /// AMD VAAPI on Linux can pick the Vulkan filter chain, which has no 10-bit HDR output
+        /// yet. Those streams stay on the tone-mapped path so the picture is never mislabelled.
+        /// </summary>
+        private bool UsesVulkanVaapiChain(EncodingOptions options)
+            => options.HardwareAccelerationType == HardwareAccelerationType.vaapi
+                && _mediaEncoder.IsVaapiDeviceAmd
+                && _mediaEncoder.IsVaapiDeviceSupportVulkanDrmInterop
+                && IsVulkanFullSupported()
+                && Environment.OSVersion.Version >= _minKernelVersionAmdVkFmtModifier;
+
+        /// <summary>
+        /// Whether the encoder can produce 10-bit HEVC, which every HDR output needs. 4:2:0
+        /// Main10 covers all of these; H.264 encoders are excluded by the caller already.
+        /// </summary>
+        private static bool IsTenBitHevcEncoder(string videoEncoder)
+        {
+            if (string.IsNullOrEmpty(videoEncoder))
+            {
+                return false;
+            }
+
+            return videoEncoder.Equals("libx265", StringComparison.OrdinalIgnoreCase)
+                || videoEncoder.Equals("hevc_nvenc", StringComparison.OrdinalIgnoreCase)
+                || videoEncoder.Equals("hevc_qsv", StringComparison.OrdinalIgnoreCase)
+                || videoEncoder.Equals("hevc_vaapi", StringComparison.OrdinalIgnoreCase)
+                || videoEncoder.Equals("hevc_amf", StringComparison.OrdinalIgnoreCase)
+                || videoEncoder.Equals("hevc_videotoolbox", StringComparison.OrdinalIgnoreCase);
+        }
+
         private bool IsSwTonemapAvailable(EncodingJobInfo state, EncodingOptions options)
         {
             if (state.VideoStream is null
@@ -353,7 +393,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return false;
             }
 
-            return state.VideoStream.VideoRange == VideoRange.HDR;
+            return state.VideoStream.VideoRange == VideoRange.HDR && !IsHdrTranscodeOutput(state, options);
         }
 
         private bool IsHwTonemapAvailable(EncodingJobInfo state, EncodingOptions options)
@@ -361,6 +401,12 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (state.VideoStream is null
                 || !options.EnableTonemapping
                 || GetVideoColorBitDepth(state) < 10)
+            {
+                return false;
+            }
+
+            // The client asked for HDR and the output can carry it: nothing to tone-map.
+            if (IsHdrTranscodeOutput(state, options))
             {
                 return false;
             }
@@ -2231,8 +2277,13 @@ namespace MediaBrowser.Controller.MediaEncoding
                 profile = string.Empty;
             }
 
-            // We only transcode to HEVC 8-bit for now, force Main Profile.
-            if (profile.Contains("main10", StringComparison.OrdinalIgnoreCase)
+            // Transcodes stay 8-bit HEVC for now, except when HDR is being kept: then the
+            // profile is Main10 so the 10-bit chain survives to the encoder.
+            if (state.IsHdrTranscode && encodingOptions.EnableHdrTranscoding)
+            {
+                profile = "main10";
+            }
+            else if (profile.Contains("main10", StringComparison.OrdinalIgnoreCase)
                 || profile.Contains("mainstill", StringComparison.OrdinalIgnoreCase))
             {
                 profile = "main";
@@ -3939,6 +3990,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var doDeintH2645 = IsDeinterlaceAvailable(state);
             var doToneMap = IsSwTonemapAvailable(state, options);
+            var isHdrOutput = IsHdrTranscodeOutput(state, options);
             var requireDoviReshaping = doToneMap && state.VideoStream.VideoRangeType == VideoRangeType.DOVI;
 
             var hasSubs = state.SubtitleStream is not null && ShouldEncodeSubtitle(state);
@@ -3953,7 +4005,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             /* Make main filters for video stream */
             var mainFilters = new List<string>();
 
-            mainFilters.Add(GetOverwriteColorPropertiesParam(state, doToneMap));
+            mainFilters.Add(GetOverwriteColorPropertiesParam(state, doToneMap || isHdrOutput));
 
             // INPUT sw surface(memory/copy-back from vram)
             // sw deint
@@ -3972,6 +4024,11 @@ namespace MediaBrowser.Controller.MediaEncoding
             else if (isV4l2Encoder)
             {
                 outFormat = "yuv420p";
+            }
+
+            if (isHdrOutput)
+            {
+                outFormat = "p010le";
             }
 
             // sw scale
@@ -4092,6 +4149,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             var doDeintH2645 = IsDeinterlaceAvailable(state);
             var doCuTonemap = IsHwTonemapAvailable(state, options);
 
+            // Keep 10-bit HDR end to end instead of tone-mapping to 8-bit SDR.
+            var isHdrOutput = IsHdrTranscodeOutput(state, options);
+
             var hasSubs = state.SubtitleStream is not null && ShouldEncodeSubtitle(state);
             var hasTextSubs = hasSubs && state.SubtitleStream.IsTextSubtitleStream;
             var hasGraphicalSubs = hasSubs && !state.SubtitleStream.IsTextSubtitleStream;
@@ -4111,7 +4171,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             /* Make main filters for video stream */
             var mainFilters = new List<string>();
 
-            mainFilters.Add(GetOverwriteColorPropertiesParam(state, doCuTonemap));
+            mainFilters.Add(GetOverwriteColorPropertiesParam(state, doCuTonemap || isHdrOutput));
 
             if (isSwDecoder)
             {
@@ -4123,7 +4183,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     mainFilters.Add(swDeintFilter);
                 }
 
-                var outFormat = doCuTonemap ? "p010le" : "yuv420p";
+                var outFormat = doCuTonemap || isHdrOutput ? "p010le" : "yuv420p";
                 var swScaleFilter = GetSwScaleFilter(state, options, vidEncoder, swpInW, swpInH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH);
                 // sw scale
                 mainFilters.Add(swScaleFilter);
@@ -4153,7 +4213,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
 
                 var isRext = IsVideoStreamHevcRext(state);
-                var outFormat = doCuTonemap ? (isRext ? "p010" : string.Empty) : "yuv420p";
+                var outFormat = doCuTonemap
+                    ? (isRext ? "p010" : string.Empty)
+                    : (isHdrOutput ? "p010le" : "yuv420p");
                 var hwScaleFilter = GetHwScaleFilter("scale", "cuda", outFormat, false, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
                 // hw scale
                 mainFilters.Add(hwScaleFilter);
@@ -4172,9 +4234,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 memoryOutput = true;
 
-                // OUTPUT yuv420p surface(memory)
+                // OUTPUT yuv420p, or 10-bit when HDR is kept, surface(memory)
                 mainFilters.Add("hwdownload");
-                mainFilters.Add("format=yuv420p");
+                mainFilters.Add(isHdrOutput ? "format=p010le" : "format=yuv420p");
             }
 
             // OUTPUT yuv420p surface(memory)
@@ -4300,6 +4362,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var doDeintH2645 = IsDeinterlaceAvailable(state);
             var doOclTonemap = IsHwTonemapAvailable(state, options);
+            var isHdrOutput = IsHdrTranscodeOutput(state, options);
 
             var hasSubs = state.SubtitleStream is not null && ShouldEncodeSubtitle(state);
             var hasTextSubs = hasSubs && state.SubtitleStream.IsTextSubtitleStream;
@@ -4321,7 +4384,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             /* Make main filters for video stream */
             var mainFilters = new List<string>();
 
-            mainFilters.Add(GetOverwriteColorPropertiesParam(state, doOclTonemap));
+            mainFilters.Add(GetOverwriteColorPropertiesParam(state, doOclTonemap || isHdrOutput));
 
             if (isSwDecoder)
             {
@@ -4333,7 +4396,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     mainFilters.Add(swDeintFilter);
                 }
 
-                var outFormat = doOclTonemap ? "yuv420p10le" : "yuv420p";
+                var outFormat = doOclTonemap || isHdrOutput ? "yuv420p10le" : "yuv420p";
                 var swScaleFilter = GetSwScaleFilter(state, options, vidEncoder, swpInW, swpInH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH);
                 // sw scale
                 mainFilters.Add(swScaleFilter);
@@ -4369,7 +4432,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     mainFilters.Add($"transpose_opencl=dir={transposeDir}");
                 }
 
-                var outFormat = doOclTonemap ? string.Empty : "nv12";
+                var outFormat = doOclTonemap ? string.Empty : (isHdrOutput ? "p010" : "nv12");
                 var hwScaleFilter = GetHwScaleFilter("scale", "opencl", outFormat, false, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
                 // hw scale
                 mainFilters.Add(hwScaleFilter);
@@ -4392,7 +4455,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // prefer hwmap to hwdownload on opencl.
                 var hwTransferFilter = hasGraphicalSubs ? "hwdownload" : "hwmap=mode=read";
                 mainFilters.Add(hwTransferFilter);
-                mainFilters.Add("format=nv12");
+                mainFilters.Add(isHdrOutput ? "format=p010le" : "format=nv12");
             }
 
             // OUTPUT yuv420p surface
@@ -4838,6 +4901,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var doVaVppTonemap = IsIntelVppTonemapAvailable(state, options);
             var doOclTonemap = !doVaVppTonemap && IsHwTonemapAvailable(state, options);
+            var isHdrOutput = IsHdrTranscodeOutput(state, options);
             var doTonemap = doVaVppTonemap || doOclTonemap;
             var doDeintH2645 = IsDeinterlaceAvailable(state);
 
@@ -4860,7 +4924,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             /* Make main filters for video stream */
             var mainFilters = new List<string>();
 
-            mainFilters.Add(GetOverwriteColorPropertiesParam(state, doTonemap));
+            mainFilters.Add(GetOverwriteColorPropertiesParam(state, doTonemap || isHdrOutput));
 
             if (isSwDecoder)
             {
@@ -4872,7 +4936,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     mainFilters.Add(swDeintFilter);
                 }
 
-                var outFormat = doOclTonemap ? "yuv420p10le" : (hasGraphicalSubs ? "yuv420p" : "nv12");
+                var outFormat = doOclTonemap || isHdrOutput ? "yuv420p10le" : (hasGraphicalSubs ? "yuv420p" : "nv12");
                 var swScaleFilter = GetSwScaleFilter(state, options, vidEncoder, swpInW, swpInH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH);
                 if (isMjpegEncoder && !doOclTonemap)
                 {
@@ -4915,7 +4979,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     mainFilters.Add($"transpose_vaapi=dir={transposeDir}");
                 }
 
-                var outFormat = doTonemap ? (((isQsvDecoder && doVppTranspose) || isRext) ? "p010" : string.Empty) : "nv12";
+                var outFormat = isHdrOutput ? "p010" : (doTonemap ? (((isQsvDecoder && doVppTranspose) || isRext) ? "p010" : string.Empty) : "nv12");
                 var swapOutputWandH = isQsvDecoder && doVppTranspose && swapWAndH;
                 var hwScalePrefix = isQsvDecoder ? "vpp" : "scale";
                 var hwScaleFilter = GetHwScaleFilter(hwScalePrefix, hwFilterSuffix, outFormat, swapOutputWandH, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
@@ -4986,7 +5050,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // prefer hwmap to hwdownload on opencl/vaapi.
                 // qsv hwmap is not fully implemented for the time being.
                 mainFilters.Add(isHwmapUsable ? "hwmap=mode=read" : "hwdownload");
-                mainFilters.Add("format=nv12");
+                mainFilters.Add(isHdrOutput ? "format=p010le" : "format=nv12");
             }
 
             // OUTPUT nv12 surface(memory)
@@ -5167,6 +5231,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var doVaVppTonemap = isVaapiDecoder && IsIntelVppTonemapAvailable(state, options);
             var doOclTonemap = !doVaVppTonemap && IsHwTonemapAvailable(state, options);
+            var isHdrOutput = IsHdrTranscodeOutput(state, options);
             var doTonemap = doVaVppTonemap || doOclTonemap;
             var doDeintH2645 = IsDeinterlaceAvailable(state);
 
@@ -5189,7 +5254,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             /* Make main filters for video stream */
             var mainFilters = new List<string>();
 
-            mainFilters.Add(GetOverwriteColorPropertiesParam(state, doTonemap));
+            mainFilters.Add(GetOverwriteColorPropertiesParam(state, doTonemap || isHdrOutput));
 
             if (isSwDecoder)
             {
@@ -5201,7 +5266,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     mainFilters.Add(swDeintFilter);
                 }
 
-                var outFormat = doOclTonemap ? "yuv420p10le" : "nv12";
+                var outFormat = doOclTonemap || isHdrOutput ? "yuv420p10le" : "nv12";
                 var swScaleFilter = GetSwScaleFilter(state, options, vidEncoder, swpInW, swpInH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH);
                 if (isMjpegEncoder && !doOclTonemap)
                 {
@@ -5239,7 +5304,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     mainFilters.Add($"transpose_vaapi=dir={transposeDir}");
                 }
 
-                var outFormat = doTonemap ? (isRext ? "p010" : string.Empty) : "nv12";
+                var outFormat = isHdrOutput ? "p010" : (doTonemap ? (isRext ? "p010" : string.Empty) : "nv12");
                 var hwScaleFilter = GetHwScaleFilter("scale", "vaapi", outFormat, false, swpInW, swpInH, reqW, reqH, reqMaxW, reqMaxH);
 
                 if (!string.IsNullOrEmpty(hwScaleFilter) && isMjpegEncoder)
@@ -5296,7 +5361,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // OUTPUT nv12 surface(memory)
                 // prefer hwmap to hwdownload on opencl/vaapi.
                 mainFilters.Add(isHwmapNotUsable ? "hwdownload" : "hwmap=mode=read");
-                mainFilters.Add("format=nv12");
+                mainFilters.Add(isHdrOutput ? "format=p010le" : "format=nv12");
             }
 
             // OUTPUT nv12 surface(memory)
@@ -5654,6 +5719,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var doDeintH2645 = IsDeinterlaceAvailable(state);
             var doOclTonemap = IsHwTonemapAvailable(state, options);
+            var isHdrOutput = IsHdrTranscodeOutput(state, options);
 
             var hasSubs = state.SubtitleStream is not null && ShouldEncodeSubtitle(state);
             var hasTextSubs = hasSubs && state.SubtitleStream.IsTextSubtitleStream;
@@ -5667,7 +5733,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             /* Make main filters for video stream */
             var mainFilters = new List<string>();
 
-            mainFilters.Add(GetOverwriteColorPropertiesParam(state, doOclTonemap));
+            mainFilters.Add(GetOverwriteColorPropertiesParam(state, doOclTonemap || isHdrOutput));
 
             var outFormat = string.Empty;
             if (isSwDecoder)
@@ -5680,7 +5746,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     mainFilters.Add(swDeintFilter);
                 }
 
-                outFormat = doOclTonemap ? "yuv420p10le" : "nv12";
+                outFormat = doOclTonemap || isHdrOutput ? "yuv420p10le" : "nv12";
                 var swScaleFilter = GetSwScaleFilter(state, options, vidEncoder, swpInW, swpInH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH);
                 if (isMjpegEncoder && !doOclTonemap)
                 {
@@ -5710,7 +5776,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     mainFilters.Add(deintFilter);
                 }
 
-                outFormat = doOclTonemap ? string.Empty : "nv12";
+                outFormat = isHdrOutput ? "p010" : (doOclTonemap ? string.Empty : "nv12");
                 var hwScaleFilter = GetHwScaleFilter("scale", "vaapi", outFormat, false, inW, inH, reqW, reqH, reqMaxW, reqMaxH);
 
                 if (!string.IsNullOrEmpty(hwScaleFilter) && isMjpegEncoder)
@@ -5774,7 +5840,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // OUTPUT nv12 surface(memory)
                 // prefer hwmap to hwdownload on opencl/vaapi.
                 mainFilters.Add(isHwmapNotUsable ? "hwdownload" : "hwmap");
-                mainFilters.Add("format=nv12");
+                mainFilters.Add(isHdrOutput ? "format=p010le" : "format=nv12");
             }
 
             // OUTPUT nv12 surface(memory)
