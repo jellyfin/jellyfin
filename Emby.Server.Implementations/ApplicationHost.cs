@@ -751,7 +751,7 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Discovers the types.
         /// </summary>
-        protected void DiscoverTypes()
+        public void DiscoverTypes()
         {
             Logger.LogInformation("Loading assemblies");
 
