@@ -58,7 +58,8 @@ public sealed class NfoUserDataSaver : IHostedService
     private async void OnUserDataSaved(object? sender, UserDataSaveEventArgs e)
     {
         if (e.SaveReason is not (UserDataSaveReason.PlaybackFinished
-            or UserDataSaveReason.TogglePlayed or UserDataSaveReason.UpdateUserRating))
+            or UserDataSaveReason.TogglePlayed or UserDataSaveReason.UpdateUserRating
+            or UserDataSaveReason.UpdateUserData))
         {
             return;
         }
