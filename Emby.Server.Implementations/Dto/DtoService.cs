@@ -248,12 +248,19 @@ namespace Emby.Server.Implementations.Dto
 
             // Batch-fetch people across all items to avoid one GetPeople query per item.
             IReadOnlyDictionary<Guid, IReadOnlyList<PersonInfo>>? peopleBatch = null;
+            IReadOnlyDictionary<string, Person>? personsBatch = null;
             if (options.ContainsField(ItemFields.People))
             {
                 var peopleItemIds = accessibleItems.Where(i => i.SupportsPeople).Select(i => i.Id).ToList();
                 if (peopleItemIds.Count > 0)
                 {
                     peopleBatch = _libraryManager.GetPeopleByItems(peopleItemIds);
+
+                    // And every person named across the page in one query, not one GetPerson per name per item.
+                    var names = peopleBatch.Values.SelectMany(p => p).Select(p => p.Name)
+                        .Where(n => !string.IsNullOrEmpty(n))
+                        .ToHashSet(StringComparer.OrdinalIgnoreCase);
+                    personsBatch = _libraryManager.GetPersons(names);
                 }
             }
 
@@ -284,7 +291,8 @@ namespace Emby.Server.Implementations.Dto
                     artistsBatch,
                     resumeDataBatch?.GetValueOrDefault(item.Id),
                     peopleBatch,
-                    alternateVersionItemIds);
+                    alternateVersionItemIds,
+                    personsBatch);
 
                 if (item is LiveTvChannel tvChannel)
                 {
@@ -348,7 +356,8 @@ namespace Emby.Server.Implementations.Dto
             IReadOnlyDictionary<string, MusicArtist[]>? artistsBatch = null,
             VersionResumeData? resumeData = null,
             IReadOnlyDictionary<Guid, IReadOnlyList<PersonInfo>>? peopleBatch = null,
-            IReadOnlySet<Guid>? alternateVersionItemIds = null)
+            IReadOnlySet<Guid>? alternateVersionItemIds = null,
+            IReadOnlyDictionary<string, Person>? personsBatch = null)
         {
             var dto = new BaseItemDto
             {
@@ -370,7 +379,7 @@ namespace Emby.Server.Implementations.Dto
                     prefetchedPeople = peopleBatch.GetValueOrDefault(item.Id) ?? [];
                 }
 
-                AttachPeople(dto, item, user, prefetchedPeople);
+                AttachPeople(dto, item, user, prefetchedPeople, personsBatch);
             }
 
             if (options.ContainsField(ItemFields.PrimaryImageAspectRatio))
@@ -887,7 +896,13 @@ namespace Emby.Server.Implementations.Dto
         /// <param name="item">The item.</param>
         /// <param name="user">The requesting user.</param>
         /// <param name="prefetchedPeople">People fetched in batch by the caller; when null the people are queried per item.</param>
-        private void AttachPeople(BaseItemDto dto, BaseItem item, User? user = null, IReadOnlyList<PersonInfo>? prefetchedPeople = null)
+        /// <param name="prefetchedPersons">The person items of the caller's whole page, by name; when null each is looked up by name.</param>
+        private void AttachPeople(
+            BaseItemDto dto,
+            BaseItem item,
+            User? user = null,
+            IReadOnlyList<PersonInfo>? prefetchedPeople = null,
+            IReadOnlyDictionary<string, Person>? prefetchedPersons = null)
         {
             // When rendering a page of items the caller batch-fetches people for every item up
             // front and passes them in, avoiding one GetPeople query per item. Fall back to the
@@ -939,6 +954,11 @@ namespace Emby.Server.Implementations.Dto
             Dictionary<string, Person> dictionary = people.Select(p => p.Name)
                 .Distinct(StringComparer.OrdinalIgnoreCase).Select(c =>
                 {
+                    if (prefetchedPersons is not null)
+                    {
+                        return prefetchedPersons.GetValueOrDefault(c);
+                    }
+
                     try
                     {
                         return _libraryManager.GetPerson(c);

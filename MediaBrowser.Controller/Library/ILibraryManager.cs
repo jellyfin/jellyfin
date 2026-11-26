@@ -107,6 +107,14 @@ namespace MediaBrowser.Controller.Library
         Person? GetPerson(string name);
 
         /// <summary>
+        /// Gets the <see cref="Person"/> items of many names in one query, keyed by name in any case.
+        /// A name with no item is absent.
+        /// </summary>
+        /// <param name="names">The names of the people.</param>
+        /// <returns>The people found, by name.</returns>
+        IReadOnlyDictionary<string, Person> GetPersons(IReadOnlyCollection<string> names);
+
+        /// <summary>
         /// Gets a Person, creating and persisting it if no item exists for the name yet.
         /// </summary>
         /// <param name="name">The name of the person.</param>
