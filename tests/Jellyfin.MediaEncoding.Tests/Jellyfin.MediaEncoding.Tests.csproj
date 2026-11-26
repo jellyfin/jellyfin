@@ -28,14 +28,6 @@
 
   <ItemGroup>
     <ProjectReference Include="../../MediaBrowser.MediaEncoding/MediaBrowser.MediaEncoding.csproj" />
-    <ProjectReference Include="../Jellyfin.MediaEncoding.TestHelper/Jellyfin.MediaEncoding.TestHelper.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
-
-  <Target Name="CopyFakeProbe" AfterTargets="Build">
-    <ItemGroup>
-      <FakeProbeFiles Include="../Jellyfin.MediaEncoding.TestHelper/bin/$(Configuration)/$(TargetFramework)/*" />
-    </ItemGroup>
-    <Copy SourceFiles="@(FakeProbeFiles)" DestinationFolder="$(OutDir)FakeProbe" SkipUnchangedFiles="true" />
-  </Target>
 
 </Project>
