@@ -75,10 +75,21 @@ public interface ILocalizationManager
     /// <summary>
     /// Gets a human-readable display name for the given language code.
     /// Truncates at the first semicolon or comma to avoid cluttered ISO-639-2 names.
+    /// The name is localized to the current UI culture when .NET knows the same language.
     /// </summary>
     /// <param name="language">An ISO language code.</param>
     /// <returns>The display name, or null if not found.</returns>
     string? GetLanguageDisplayName(string language);
+
+    /// <summary>
+    /// Gets the display name for the language of a media stream, like <see cref="GetLanguageDisplayName(string)"/>.
+    /// When the stream title already contains the English name, such as "English SDH", the English name is returned,
+    /// so the language is not named twice in the display title.
+    /// </summary>
+    /// <param name="language">An ISO language code.</param>
+    /// <param name="title">The title of the stream.</param>
+    /// <returns>The display name, or null if not found.</returns>
+    string? GetLanguageDisplayName(string language, string? title);
 
     /// <summary>
     /// Returns the language in ISO 639-2/T when the input is ISO 639-2/B.
