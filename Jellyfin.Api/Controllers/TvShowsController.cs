@@ -275,11 +275,13 @@ public class TvShowsController : BaseJellyfinApiController
                 .ToList();
         }
 
+        Video? requestedVersion = null;
         if (startItemId.HasValue)
         {
             // The start item may be an alternate version, which is not part of the episode listing; start from its primary episode instead.
             var startId = startItemId.Value;
-            if (_libraryManager.GetItemById<Video>(startId)?.PrimaryVersionId is { } primaryVersionId)
+            requestedVersion = _libraryManager.GetItemById<Video>(startId);
+            if (requestedVersion?.PrimaryVersionId is { } primaryVersionId)
             {
                 startId = primaryVersionId;
             }
@@ -293,6 +295,19 @@ public class TvShowsController : BaseJellyfinApiController
         if (!adjacentTo.IsNullOrEmpty())
         {
             episodes = UserViewBuilder.FilterForAdjacency(episodes, adjacentTo.Value).ToList();
+        }
+
+        // The start item may be an alternate version, which is not part of the episode listing.
+        // Put it back at the position of its primary episode so clients that use this
+        // listing as a play queue start with the version the user selected.
+        if (requestedVersion is not null
+            && requestedVersion.PrimaryVersionId is { } requestedPrimaryId)
+        {
+            var primaryIndex = episodes.FindIndex(i => i.Id.Equals(requestedPrimaryId));
+            if (primaryIndex >= 0)
+            {
+                episodes[primaryIndex] = requestedVersion;
+            }
         }
 
         if (sortBy == ItemSortBy.Random)
