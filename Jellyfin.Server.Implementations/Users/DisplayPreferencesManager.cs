@@ -133,9 +133,27 @@ public sealed class DisplayPreferencesManager : IDisplayPreferencesManager
     /// <inheritdoc/>
     public void UpdateDisplayPreferences(DisplayPreferences displayPreferences)
     {
+        // The caller replaces the home sections on a detached entity, so the context below has never tracked the
+        // stored rows. They have to be deleted explicitly or every save only inserts the new set and leaves the
+        // previous one behind.
         using var dbContext = _dbContextFactory.CreateDbContext();
-        dbContext.DisplayPreferences.Attach(displayPreferences).State = EntityState.Modified;
+        using var transaction = dbContext.Database.BeginTransaction();
+        dbContext.Set<HomeSection>()
+            .Where(section => section.DisplayPreferencesId == displayPreferences.Id)
+            .ExecuteDelete();
+
+        // Tracking the entity through Entry() instead of Attach() keeps the graph out of the context, so the
+        // replacement sections are added below rather than being attached as unchanged.
+        dbContext.Entry(displayPreferences).State = EntityState.Modified;
+
+        foreach (var homeSection in displayPreferences.HomeSections)
+        {
+            homeSection.DisplayPreferencesId = displayPreferences.Id;
+            dbContext.Set<HomeSection>().Add(homeSection);
+        }
+
         dbContext.SaveChanges();
+        transaction.Commit();
     }
 
     /// <inheritdoc/>
