@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Emby.Server.Implementations.Images;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
@@ -54,7 +55,8 @@ public sealed class CollectionFolderImageProviderTests
             Mock.Of<IProviderManager>(),
             Mock.Of<IApplicationPaths>(),
             Mock.Of<IImageProcessor>(),
-            libraryManager);
+            libraryManager,
+            Mock.Of<IUserManager>(u => u.GetUsers() == Array.Empty<User>()));
     }
 
     private sealed class TestableCollectionFolderImageProvider : CollectionFolderImageProvider
@@ -64,8 +66,9 @@ public sealed class CollectionFolderImageProviderTests
             IProviderManager providerManager,
             IApplicationPaths applicationPaths,
             IImageProcessor imageProcessor,
-            ILibraryManager libraryManager)
-            : base(fileSystem, providerManager, applicationPaths, imageProcessor, libraryManager)
+            ILibraryManager libraryManager,
+            IUserManager userManager)
+            : base(fileSystem, providerManager, applicationPaths, imageProcessor, libraryManager, userManager)
         {
         }
 

@@ -177,7 +177,7 @@ public sealed partial class BaseItemRepository
 
         using var context = _dbProvider.CreateDbContext();
 
-        var innerQueryFilter = TranslateQuery(context.BaseItems.Where(e => e.Id != EF.Constant(PlaceholderId)), context, new InternalItemsQuery(filter.User)
+        var innerFilter = new InternalItemsQuery(filter.User)
         {
             ExcludeItemTypes = filter.ExcludeItemTypes,
             IncludeItemTypes = filter.IncludeItemTypes,
@@ -192,7 +192,10 @@ public sealed partial class BaseItemRepository
             IsKids = filter.IsKids,
             IsNews = filter.IsNews,
             IsSeries = filter.IsSeries
-        });
+        };
+        KeepExcludedInheritedTags(innerFilter, filter);
+
+        var innerQueryFilter = TranslateQuery(context.BaseItems.Where(e => e.Id != EF.Constant(PlaceholderId)), context, innerFilter);
 
         var innerQuery = PrepareItemQuery(context, filter)
             .Where(e => e.Type == returnType)
@@ -231,6 +234,7 @@ public sealed partial class BaseItemRepository
             // instead: a value gets this far only when an item the user may see carries it.
             IncludeInheritedTags = []
         };
+        KeepExcludedInheritedTags(outerQueryFilter, filter);
 
         // Collapse rows that share a PresentationUniqueKey (e.g. alternate versions) into one
         // representative id per group, then materialize the representative ids once.
@@ -319,6 +323,21 @@ public sealed partial class BaseItemRepository
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Carries the inherited tags a caller excludes over to a query rebuilt from its user. Rebuilt that way
+    /// the query only excludes what the user blocks, which drops the tags of a caller with no user at all,
+    /// such as an image shared by every user.
+    /// </summary>
+    /// <param name="rebuilt">The query rebuilt from the user of <paramref name="filter"/>.</param>
+    /// <param name="filter">The query the caller asked for.</param>
+    private static void KeepExcludedInheritedTags(InternalItemsQuery rebuilt, InternalItemsQuery filter)
+    {
+        if (filter.ExcludeInheritedTags.Length > 0)
+        {
+            rebuilt.ExcludeInheritedTags = rebuilt.ExcludeInheritedTags.Union(filter.ExcludeInheritedTags, StringComparer.Ordinal).ToArray();
+        }
     }
 
     private Dictionary<string, ItemCounts> BuildItemCountsByCleanName(
