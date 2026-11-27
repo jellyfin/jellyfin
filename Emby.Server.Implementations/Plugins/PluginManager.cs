@@ -10,6 +10,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Library;
+using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
 using Jellyfin.Extensions.Json.Converters;
 using MediaBrowser.Common.Extensions;
@@ -806,16 +807,16 @@ namespace Emby.Server.Implementations.Plugins
                 versions.Add(LoadManifest(dir));
             }
 
-            string lastName = string.Empty;
+            Guid lastId = Guid.Empty;
             versions.Sort(LocalPlugin.Compare);
             // Traverse backwards through the list.
             // The first item will be the latest version.
             for (int x = versions.Count - 1; x >= 0; x--)
             {
                 var entry = versions[x];
-                if (!string.Equals(lastName, entry.Name, StringComparison.OrdinalIgnoreCase))
+                if (entry.Id.IsEmpty() || !lastId.Equals(entry.Id))
                 {
-                    lastName = string.Empty;
+                    lastId = Guid.Empty;
 
                     if (!TryGetPluginDlls(entry, out var allowedDlls))
                     {
@@ -829,15 +830,9 @@ namespace Emby.Server.Implementations.Plugins
                     // Only clean up older versions when this version will actually be loaded.
                     if (entry.IsEnabledAndSupported)
                     {
-                        lastName = entry.Name;
+                        lastId = entry.Id;
                     }
 
-                    continue;
-                }
-
-                if (string.IsNullOrEmpty(lastName))
-                {
-                    // Unnamed plugin, so there is nothing to match older versions against.
                     continue;
                 }
 
