@@ -50,6 +50,11 @@ namespace Emby.Server.Implementations.Images
 
         public int Order => 0;
 
+        /// <summary>
+        /// Gets a value indicating whether a previously generated image is removed once there is nothing left to build it from.
+        /// </summary>
+        protected virtual bool RemoveImageWhenEmpty => false;
+
         protected virtual bool Supports(BaseItem item) => true;
 
         public async Task<ItemUpdateType> FetchAsync(T item, MetadataRefreshOptions options, CancellationToken cancellationToken)
@@ -104,6 +109,11 @@ namespace Emby.Server.Implementations.Images
             ImageType imageType,
             CancellationToken cancellationToken)
         {
+            if (itemsWithImages.Count == 0 && RemoveImageWhenEmpty)
+            {
+                return RemoveImage(item, imageType);
+            }
+
             var outputPathWithoutExtension = Path.Combine(ApplicationPaths.TempDirectory, Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture));
             Directory.CreateDirectory(Path.GetDirectoryName(outputPathWithoutExtension));
             string outputPath = CreateImage(item, itemsWithImages, outputPathWithoutExtension, imageType, 0);
@@ -121,7 +131,32 @@ namespace Emby.Server.Implementations.Images
             }
 
             await ProviderManager.SaveImage(item, outputPath, mimeType, imageType, null, false, cancellationToken).ConfigureAwait(false);
+            OnImageSaved(item, itemsWithImages, imageType);
 
+            return ItemUpdateType.ImageUpdate;
+        }
+
+        /// <summary>
+        /// Called once a newly generated image has been saved to the item.
+        /// </summary>
+        /// <param name="item">The item the image belongs to.</param>
+        /// <param name="itemsWithImages">The items the image was built from.</param>
+        /// <param name="imageType">The type of the image.</param>
+        protected virtual void OnImageSaved(BaseItem item, IReadOnlyList<BaseItem> itemsWithImages, ImageType imageType)
+        {
+        }
+
+        private ItemUpdateType RemoveImage(BaseItem item, ImageType imageType)
+        {
+            // Only reached for an image this provider generated, see FetchAsync.
+            var image = item.GetImageInfo(imageType, 0);
+            if (image is null)
+            {
+                return ItemUpdateType.None;
+            }
+
+            FileSystem.DeleteFile(image.Path);
+            item.RemoveImage(image);
             return ItemUpdateType.ImageUpdate;
         }
 
