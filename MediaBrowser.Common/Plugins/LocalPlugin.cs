@@ -98,14 +98,7 @@ namespace MediaBrowser.Common.Plugins
                 throw new ArgumentNullException(a is null ? nameof(a) : nameof(b));
             }
 
-            var compare = string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase);
-
-            // Id is not equal but name is.
-            if (!a.Id.Equals(b.Id) && compare == 0)
-            {
-                compare = a.Id.CompareTo(b.Id);
-            }
-
+            var compare = a.Id.CompareTo(b.Id);
             return compare == 0 ? a.Version.CompareTo(b.Version) : compare;
         }
 
