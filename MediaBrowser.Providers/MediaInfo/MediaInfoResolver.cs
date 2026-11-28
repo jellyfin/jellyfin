@@ -96,7 +96,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             var pathInfos = GetExternalFiles(video, directoryService, clearCache);
 
-            if (!pathInfos.Any())
+            if (pathInfos.Count == 0)
             {
                 return Array.Empty<MediaStream>();
             }
