@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data;
+using Jellyfin.Data.Events.Users;
 using Jellyfin.Database.Implementations;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Database.Implementations.Enums;
@@ -17,6 +18,7 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Events;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Users;
 using Microsoft.Data.Sqlite;
@@ -32,6 +34,7 @@ public sealed class UserManagerUpdateUserTests : IDisposable
     private readonly SqliteConnection _connection;
     private readonly DbContextOptions<JellyfinDbContext> _dbOptions;
     private readonly UserManager _userManager;
+    private readonly RecordingEventManager _eventManager = new();
 
     public UserManagerUpdateUserTests()
     {
@@ -69,7 +72,7 @@ public sealed class UserManagerUpdateUserTests : IDisposable
 
         _userManager = new UserManager(
             factory.Object,
-            new NoopEventManager(),
+            _eventManager,
             new Mock<INetworkManager>().Object,
             appHost.Object,
             new Mock<IImageProcessor>().Object,
@@ -143,6 +146,25 @@ public sealed class UserManagerUpdateUserTests : IDisposable
     }
 
     [Fact]
+    public async Task UpdateConfigurationAsync_PublishesUserUpdated()
+    {
+        var user = await _userManager.CreateUserAsync("configeventuser");
+        _eventManager.Published.Clear();
+
+        await _userManager.UpdateConfigurationAsync(
+            user.Id,
+            new UserConfiguration
+            {
+                AudioLanguagePreference = "fre",
+                SubtitleLanguagePreference = "eng"
+            });
+
+        var published = Assert.Single(_eventManager.Published.OfType<UserUpdatedEventArgs>());
+        Assert.Equal(user.Id, published.Argument.Id);
+        Assert.Equal("fre", published.Argument.AudioLanguagePreference);
+    }
+
+    [Fact]
     public async Task UpdateUserAsync_AppliesPermissionAndPreferenceChanges()
     {
         var user = await _userManager.CreateUserAsync("policyuser");
@@ -190,15 +212,19 @@ public sealed class UserManagerUpdateUserTests : IDisposable
         return permissions.Concat(preferences).ToList();
     }
 
-    private sealed class NoopEventManager : IEventManager
+    private sealed class RecordingEventManager : IEventManager
     {
+        public List<EventArgs> Published { get; } = [];
+
         public void Publish<T>(T eventArgs)
             where T : EventArgs
-        {
-        }
+            => Published.Add(eventArgs);
 
         public Task PublishAsync<T>(T eventArgs)
             where T : EventArgs
-            => Task.CompletedTask;
+        {
+            Published.Add(eventArgs);
+            return Task.CompletedTask;
+        }
     }
 }

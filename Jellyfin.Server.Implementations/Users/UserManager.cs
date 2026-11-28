@@ -804,12 +804,13 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public async Task UpdateConfigurationAsync(Guid userId, UserConfiguration config)
         {
+            User user;
             using (await _userLock.LockAsync(userId).ConfigureAwait(false))
             {
                 var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
                 await using (dbContext.ConfigureAwait(false))
                 {
-                    var user = UserQuery(dbContext)
+                    user = UserQuery(dbContext)
                                    .AsTracking()
                                    .FirstOrDefault(u => u.Id.Equals(userId))
                                ?? throw new ArgumentException("No user exists with given Id!");
@@ -842,6 +843,11 @@ namespace Jellyfin.Server.Implementations.Users
                     await dbContext.SaveChangesAsync().ConfigureAwait(false);
                 }
             }
+
+            // Let the user's other sessions know, so they can apply the new settings (such as language
+            // preferences or hidden libraries) without signing in again. OnUserUpdated isn't raised: its only
+            // handler updates device access, which depends on the policy, not the configuration.
+            await _eventManager.PublishAsync(new UserUpdatedEventArgs(user)).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
