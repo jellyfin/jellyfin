@@ -680,6 +680,7 @@ namespace MediaBrowser.Controller.Entities
                     correctVideo.Path = video.Path;
                     correctVideo.Name = video.Name;
                     correctVideo.VideoType = video.VideoType;
+                    correctVideo.IsShortcut = video.IsShortcut;
                     correctVideo.ProductionYear = video.ProductionYear;
                     correctVideo.ExtraType = video.ExtraType;
                     video = correctVideo;
