@@ -159,18 +159,27 @@ namespace MediaBrowser.Providers.MediaInfo
                 && item.SupportsLocalMetadata
                 && !video.IsPlaceHolder)
             {
-                var externalFiles = new HashSet<string>(_subtitleResolver.GetExternalFiles(video, directoryService, false).Select(info => info.Path), StringComparer.OrdinalIgnoreCase);
-                if (!new HashSet<string>(video.SubtitleFiles, StringComparer.Ordinal).SetEquals(externalFiles))
+                var subtitleFiles = new HashSet<string>(_subtitleResolver.GetExternalFiles(video, directoryService, false).Select(info => info.Path), StringComparer.OrdinalIgnoreCase);
+                if (!new HashSet<string>(video.SubtitleFiles, StringComparer.Ordinal).SetEquals(subtitleFiles))
                 {
                     _logger.LogDebug("Refreshing {ItemPath} due to external subtitles change.", item.Path);
                     MarkExternalFilesOnlyChange(video, directoryService);
                     return true;
                 }
 
-                externalFiles = new HashSet<string>(_audioResolver.GetExternalFiles(video, directoryService, false).Select(info => info.Path), StringComparer.OrdinalIgnoreCase);
-                if (!new HashSet<string>(video.AudioFiles, StringComparer.Ordinal).SetEquals(externalFiles))
+                var audioFiles = new HashSet<string>(_audioResolver.GetExternalFiles(video, directoryService, false).Select(info => info.Path), StringComparer.OrdinalIgnoreCase);
+                if (!new HashSet<string>(video.AudioFiles, StringComparer.Ordinal).SetEquals(audioFiles))
                 {
                     _logger.LogDebug("Refreshing {ItemPath} due to external audio change.", item.Path);
+                    MarkExternalFilesOnlyChange(video, directoryService);
+                    return true;
+                }
+
+                // A file replaced under the same name leaves the sets equal, so also look at when they were written.
+                if (video.DateLastRefreshed != DateTime.MinValue
+                    && subtitleFiles.Concat(audioFiles).Any(path => directoryService.GetFile(path)?.LastWriteTimeUtc > video.DateLastRefreshed))
+                {
+                    _logger.LogDebug("Refreshing {ItemPath} due to modified external files.", item.Path);
                     MarkExternalFilesOnlyChange(video, directoryService);
                     return true;
                 }

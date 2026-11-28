@@ -222,20 +222,54 @@ public class ProbeProviderTests
         context.VerifyMediaFileProbed(Times.Once());
     }
 
+    [Fact]
+    public async Task FetchAsync_ExternalSubtitleRewritten_ReprobesOnlyExternalFile()
+    {
+        var context = new ExternalFilesContext(subtitleWriteTime: ExternalFilesContext.LastRefreshed.AddMinutes(1));
+        var movie = context.CreateMovie(
+            new MediaStream { Index = 0, Type = MediaStreamType.Subtitle, Codec = "ass", IsExternal = true, Path = ExternalFilesContext.SubtitlePath },
+            new MediaStream { Index = 1, Type = MediaStreamType.Video, Codec = "h264" });
+        movie.SubtitleFiles = [ExternalFilesContext.SubtitlePath];
+
+        Assert.True(context.Provider.HasChanged(movie, context.DirectoryService));
+        await context.Provider.FetchAsync(movie, context.CreateOptions(), CancellationToken.None);
+
+        context.VerifyMediaFileProbed(Times.Never());
+        context.VerifyExternalFileProbed(Times.Once());
+        Assert.Collection(
+            context.SavedStreams,
+            s => Assert.True(s is { Index: 0, IsExternal: true, Codec: "subrip" }),
+            s => Assert.True(s is { Index: 1, Type: MediaStreamType.Video }));
+    }
+
+    [Fact]
+    public void HasChanged_ExternalSubtitleWrittenBeforeLastRefresh_ReturnsFalse()
+    {
+        var context = new ExternalFilesContext(subtitleWriteTime: ExternalFilesContext.LastRefreshed.AddMinutes(-1));
+        var movie = context.CreateMovie(new MediaStream { Index = 0, Type = MediaStreamType.Video, Codec = "h264" });
+        movie.SubtitleFiles = [ExternalFilesContext.SubtitlePath];
+
+        Assert.False(context.Provider.HasChanged(movie, context.DirectoryService));
+    }
+
     private sealed class ExternalFilesContext
     {
         public const string MoviePath = "/media/Movie/Movie.mkv";
         public const string SubtitlePath = "/media/Movie/Movie.srt";
+
+        public static readonly DateTime LastRefreshed = new(2026, 2, 3, 4, 5, 6, DateTimeKind.Utc);
 
         // What Video.ContainingFolderPath gives for MoviePath on the platform running the tests.
         private static readonly string _folderPath = System.IO.Path.GetDirectoryName(MoviePath)!;
 
         private readonly Mock<IMediaEncoder> _mediaEncoder = new();
         private readonly bool _withSubtitle;
+        private readonly DateTime? _subtitleWriteTime;
 
-        public ExternalFilesContext(bool withSubtitle = true)
+        public ExternalFilesContext(bool withSubtitle = true, DateTime? subtitleWriteTime = null)
         {
             _withSubtitle = withSubtitle;
+            _subtitleWriteTime = subtitleWriteTime;
 
             _mediaEncoder.Setup(m => m.GetMediaInfo(It.Is<MediaInfoRequest>(r => r.MediaType == DlnaProfileType.Subtitle), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(() => new MediaBrowser.Model.MediaInfo.MediaInfo { MediaStreams = [new MediaStream { Type = MediaStreamType.Subtitle, Codec = "subrip" }] });
@@ -284,6 +318,12 @@ public class ProbeProviderTests
             var directoryService = new Mock<IDirectoryService>();
             directoryService.Setup(d => d.GetFilePaths(_folderPath, It.IsAny<bool>()))
                 .Returns(_withSubtitle ? [MoviePath, SubtitlePath] : [MoviePath]);
+            if (_subtitleWriteTime is not null)
+            {
+                directoryService.Setup(d => d.GetFile(SubtitlePath))
+                    .Returns(new FileSystemMetadata { FullName = SubtitlePath, Exists = true, LastWriteTimeUtc = _subtitleWriteTime.Value });
+            }
+
             return directoryService.Object;
         }
 
@@ -295,12 +335,18 @@ public class ProbeProviderTests
             Path = MoviePath,
             RunTimeTicks = TimeSpan.TicksPerHour,
             DateModified = new DateTime(2026, 1, 2, 3, 4, 5, DateTimeKind.Utc),
+            DateLastRefreshed = LastRefreshed,
             StoredStreams = storedStreams
         };
 
         public void VerifyMediaFileProbed(Times times)
             => _mediaEncoder.Verify(
                 m => m.GetMediaInfo(It.Is<MediaInfoRequest>(r => r.MediaType == DlnaProfileType.Video), It.IsAny<CancellationToken>()),
+                times);
+
+        public void VerifyExternalFileProbed(Times times)
+            => _mediaEncoder.Verify(
+                m => m.GetMediaInfo(It.Is<MediaInfoRequest>(r => r.MediaType == DlnaProfileType.Subtitle), It.IsAny<CancellationToken>()),
                 times);
     }
 
