@@ -152,6 +152,54 @@ namespace MediaBrowser.Providers.MediaInfo
             return ItemUpdateType.MetadataImport;
         }
 
+        /// <summary>
+        /// Reads the external subtitle and audio files again while keeping what was probed from the media file
+        /// before, so a change to them doesn't cost another probe of the media file.
+        /// Falls back to <see cref="ProbeVideo{T}"/> when the stored streams can't be reused.
+        /// </summary>
+        /// <param name="item">The video.</param>
+        /// <param name="options">The refresh options.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <typeparam name="T">The type of video.</typeparam>
+        /// <returns>The <see cref="ItemUpdateType"/>.</returns>
+        internal async Task<ItemUpdateType> RefreshExternalStreams<T>(
+            T item,
+            MetadataRefreshOptions options,
+            CancellationToken cancellationToken)
+            where T : Video
+        {
+            var storedStreams = item.GetMediaStreams();
+            var oldExternalCount = storedStreams.Count(s => s.IsExternal);
+            var fileStreams = storedStreams.Where(s => !s.IsExternal).ToList();
+
+            // Fetch puts the external streams in front of the ones from the file. Any other layout can't be
+            // rebased safely, and no streams at all means there is nothing to keep.
+            if (fileStreams.Count == 0 || fileStreams.Any(s => s.Index < oldExternalCount))
+            {
+                return await ProbeVideo(item, options, cancellationToken).ConfigureAwait(false);
+            }
+
+            _logger.LogDebug("Only external files changed, keeping the probed streams of {Path}", item.Path);
+
+            var mediaStreams = new List<MediaStream>();
+            await AddExternalAudioAsync(item, mediaStreams, options, cancellationToken).ConfigureAwait(false);
+            mediaStreams.AddRange(fileStreams);
+            await AddExternalSubtitlesAsync(item, mediaStreams, options, cancellationToken).ConfigureAwait(false);
+
+            var externalCount = mediaStreams.Count - fileStreams.Count;
+            var index = 0;
+            foreach (var stream in mediaStreams)
+            {
+                // Shift the streams from the file instead of renumbering them, so gaps left by streams that were
+                // filtered out stay where a full probe would put them.
+                stream.Index = stream.IsExternal ? index++ : stream.Index - oldExternalCount + externalCount;
+            }
+
+            SaveMediaStreams(item, mediaStreams, _libraryManager.GetLibraryOptions(item), cancellationToken);
+
+            return ItemUpdateType.MetadataImport;
+        }
+
         private Task<Model.MediaInfo.MediaInfo> GetMediaInfo(
             Video item,
             CancellationToken cancellationToken)

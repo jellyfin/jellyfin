@@ -1,9 +1,11 @@
 #nullable disable
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Naming.Common;
@@ -52,6 +54,11 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly FFProbeVideoInfo _videoProber;
         private readonly AudioFileProber _audioProber;
         private readonly Task<ItemUpdateType> _cachedTask = Task.FromResult(ItemUpdateType.None);
+
+        // Videos whose only change is in their external subtitle or audio files, with the DateModified seen at
+        // the time. Refreshes that run every provider never call HasChanged, so the entries are kept per refresh
+        // (its directory service) to stop a leftover entry from skipping the probe of a refresh that needs it.
+        private readonly ConditionalWeakTable<IDirectoryService, ConcurrentDictionary<Guid, DateTime>> _externalFilesOnlyChanges = new();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProbeProvider"/> class.
@@ -156,6 +163,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 if (!new HashSet<string>(video.SubtitleFiles, StringComparer.Ordinal).SetEquals(externalFiles))
                 {
                     _logger.LogDebug("Refreshing {ItemPath} due to external subtitles change.", item.Path);
+                    MarkExternalFilesOnlyChange(video, directoryService);
                     return true;
                 }
 
@@ -163,6 +171,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 if (!new HashSet<string>(video.AudioFiles, StringComparer.Ordinal).SetEquals(externalFiles))
                 {
                     _logger.LogDebug("Refreshing {ItemPath} due to external audio change.", item.Path);
+                    MarkExternalFilesOnlyChange(video, directoryService);
                     return true;
                 }
             }
@@ -304,6 +313,8 @@ namespace MediaBrowser.Providers.MediaInfo
         public Task<ItemUpdateType> FetchVideoInfo<T>(T item, MetadataRefreshOptions options, CancellationToken cancellationToken)
             where T : Video
         {
+            var externalFilesOnly = TakeExternalFilesOnlyChange(item, options);
+
             if (item.IsPlaceHolder)
             {
                 return _cachedTask;
@@ -329,7 +340,37 @@ namespace MediaBrowser.Providers.MediaInfo
                 FetchShortcutInfo(item);
             }
 
+            if (externalFilesOnly)
+            {
+                return _videoProber.RefreshExternalStreams(item, options, cancellationToken);
+            }
+
             return _videoProber.ProbeVideo(item, options, cancellationToken);
+        }
+
+        private void MarkExternalFilesOnlyChange(Video video, IDirectoryService directoryService)
+        {
+            _externalFilesOnlyChanges.GetOrCreateValue(directoryService)[video.Id] = video.DateModified;
+        }
+
+        /// <summary>
+        /// Removes the record that <see cref="HasChanged"/> found nothing but changed external files for this video,
+        /// and reports whether it applies to this refresh.
+        /// </summary>
+        private bool TakeExternalFilesOnlyChange(Video item, MetadataRefreshOptions options)
+        {
+            if (options.DirectoryService is null
+                || !_externalFilesOnlyChanges.TryGetValue(options.DirectoryService, out var changes)
+                || !changes.TryRemove(item.Id, out var dateModified))
+            {
+                return false;
+            }
+
+            // A full refresh asked for everything to be read again, and a different DateModified means the file
+            // itself changed after the record was made.
+            return options.MetadataRefreshMode == MetadataRefreshMode.Default
+                && !options.ReplaceAllMetadata
+                && dateModified == item.DateModified;
         }
 
         private string NormalizeStrmLine(string line)
