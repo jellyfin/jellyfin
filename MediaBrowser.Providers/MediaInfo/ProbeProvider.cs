@@ -324,8 +324,10 @@ namespace MediaBrowser.Providers.MediaInfo
                 return _cachedTask;
             }
 
-            if (item.IsShortcut)
+            // Additional parts saved before the resolver preserved IsShortcut can still be in the library.
+            if (item.IsShortcut || (Path.GetExtension(item.Path.AsSpan()).Equals(".strm", StringComparison.OrdinalIgnoreCase) && item.IsFileProtocol))
             {
+                item.IsShortcut = true;
                 FetchShortcutInfo(item);
             }
 
