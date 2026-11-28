@@ -248,28 +248,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 video.Video3DFormat ??= mediaInfo.Video3DFormat;
             }
 
-            if (libraryOptions.AllowEmbeddedSubtitles == EmbeddedSubtitleOptions.AllowText || libraryOptions.AllowEmbeddedSubtitles == EmbeddedSubtitleOptions.AllowNone)
-            {
-                _logger.LogDebug("Disabling embedded image subtitles for {Path} due to DisableEmbeddedImageSubtitles setting", video.Path);
-                mediaStreams.RemoveAll(i => i.Type == MediaStreamType.Subtitle && !i.IsExternal && !i.IsTextSubtitleStream);
-            }
-
-            if (libraryOptions.AllowEmbeddedSubtitles == EmbeddedSubtitleOptions.AllowImage || libraryOptions.AllowEmbeddedSubtitles == EmbeddedSubtitleOptions.AllowNone)
-            {
-                _logger.LogDebug("Disabling embedded text subtitles for {Path} due to DisableEmbeddedTextSubtitles setting", video.Path);
-                mediaStreams.RemoveAll(i => i.Type == MediaStreamType.Subtitle && !i.IsExternal && i.IsTextSubtitleStream);
-            }
-
-            var videoStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
-
-            video.Height = videoStream?.Height ?? 0;
-            video.Width = videoStream?.Width ?? 0;
-
-            video.DefaultVideoStreamIndex = videoStream?.Index;
-
-            video.HasSubtitles = mediaStreams.Any(i => i.Type == MediaStreamType.Subtitle);
-
-            _mediaStreamRepository.SaveMediaStreams(video.Id, mediaStreams, cancellationToken);
+            SaveMediaStreams(video, mediaStreams, libraryOptions, cancellationToken);
 
             _mediaAttachmentRepository.SaveMediaAttachments(video.Id, mediaAttachments, cancellationToken);
 
@@ -293,6 +272,32 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 _chapterManager.SaveChapters(video, chapters);
             }
+        }
+
+        private void SaveMediaStreams(Video video, List<MediaStream> mediaStreams, LibraryOptions libraryOptions, CancellationToken cancellationToken)
+        {
+            if (libraryOptions.AllowEmbeddedSubtitles == EmbeddedSubtitleOptions.AllowText || libraryOptions.AllowEmbeddedSubtitles == EmbeddedSubtitleOptions.AllowNone)
+            {
+                _logger.LogDebug("Disabling embedded image subtitles for {Path} due to DisableEmbeddedImageSubtitles setting", video.Path);
+                mediaStreams.RemoveAll(i => i.Type == MediaStreamType.Subtitle && !i.IsExternal && !i.IsTextSubtitleStream);
+            }
+
+            if (libraryOptions.AllowEmbeddedSubtitles == EmbeddedSubtitleOptions.AllowImage || libraryOptions.AllowEmbeddedSubtitles == EmbeddedSubtitleOptions.AllowNone)
+            {
+                _logger.LogDebug("Disabling embedded text subtitles for {Path} due to DisableEmbeddedTextSubtitles setting", video.Path);
+                mediaStreams.RemoveAll(i => i.Type == MediaStreamType.Subtitle && !i.IsExternal && i.IsTextSubtitleStream);
+            }
+
+            var videoStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
+
+            video.Height = videoStream?.Height ?? 0;
+            video.Width = videoStream?.Width ?? 0;
+
+            video.DefaultVideoStreamIndex = videoStream?.Index;
+
+            video.HasSubtitles = mediaStreams.Any(i => i.Type == MediaStreamType.Subtitle);
+
+            _mediaStreamRepository.SaveMediaStreams(video.Id, mediaStreams, cancellationToken);
         }
 
         private void NormalizeChapterNames(ChapterInfo[] chapters)
