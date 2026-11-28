@@ -742,7 +742,7 @@ public class NetworkManager : INetworkManager, IDisposable
             return RemoteAccessPolicyResult.RejectDueToRemoteAccessDisabled;
         }
 
-        if (!_remoteAddressFilter.Any())
+        if (_remoteAddressFilter.Count == 0)
         {
             // No filter on remote addresses, allow any of them.
             return RemoteAccessPolicyResult.Allow;
